@@ -14,6 +14,7 @@ import java.io.File;
 
 public class AMConfig extends Configuration{
 
+	private final String KEY_Burnout = "Enable_Burnout_Effect";
 	private final String KEY_PlayerSpellsDamageTerrain = "Player_Spells_Destroy_Terrain";
 	private final String KEY_NPCSpellsDamageTerrain = "NPC_Spells_Destroy_Terrain";
 	private final String KEY_TowergenGridSize = "Towergen_Grid_Size";
@@ -295,6 +296,7 @@ public class AMConfig extends Configuration{
 	private boolean allowCompendiumUpdates;
 	private boolean allowVersionChecks;
 	private boolean canDryadsDespawn;
+	private boolean enableburnouteffects;
 	
 	private int witchwoodFrequency;
 	private int poolFrequency;
@@ -427,6 +429,8 @@ public class AMConfig extends Configuration{
 		savePowerOnWorldSave = get(CATEGORY_GENERAL, KEY_SavePowerOnWorldSave, true, "Set this to false if you are experiencing tick lage due to AM2 saving power data alongside the world save.  This will instead cache the power data in memory to be saved later.  This comes with more risk in the event of a crash, and a larger memory footprint, but increased performance. Can be used alongside chunk unload save config. Power data is still always saved at world unload (server shutdown).").getBoolean(true);
 
 		canDryadsDespawn = get(CATEGORY_MOBS, KEY_CanDryadsDespawn, true, "Set this to false if you don't want dryads to despawn.").getBoolean(true);
+
+		enableburnouteffects = get(CATEGORY_GENERAL, KEY_Burnout, true, "Set this to false to disable effect from burnout fatigue").getBoolean(true);
 		
 		witchwoodFrequency = get(CATEGORY_GENERAL, KEY_WitchwoodFrequency, 35, "The chance of a witchwood tree generating. Lower numbers give more trees.").getInt(35);
 		poolFrequency = get(CATEGORY_GENERAL, KEY_EssenceLakeFrequency, 25, "The chance of an etherium pool generating. Lower numbers give more pools. Any number lower than, or equals to 0 will disable this particular pool type as a compatibility feature with the LE fork.").getInt(25);
@@ -615,6 +619,8 @@ public class AMConfig extends Configuration{
 	public boolean spawnHugeTrees(){
 		return SpawnHugeTrees;
 	}
+
+	public boolean getBurnoutEffects() { return enableburnouteffects;}
 
 	public boolean isGlobalTimeManipulationEnabled(){
 		return enableGlobalTime;

@@ -14,6 +14,7 @@ import am2.armor.infusions.GenericImbuement;
 import am2.armor.infusions.ImbuementRegistry;
 import am2.bosses.EntityLifeGuardian;
 import am2.buffs.BuffList;
+import am2.damage.DamageSources;
 import am2.guis.AMGuiHelper;
 import am2.items.ItemManaStone;
 import am2.items.ItemSoulspike;
@@ -124,8 +125,6 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 	public float bankedInfusionBoots = 0.0f;
 
 	private Entity inanimateTarget;
-//	private Entity approentity;
-//	private MultiblockStructureDefinition.BlockDec approblock;
 
 	public int[] armorProcCooldowns = new int[4];
 
@@ -551,26 +550,9 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 		return healCooldown <= 0;
 	}
 
-//	public Object getAppro(Object object){
-//		if(object instanceof MultiblockStructureDefinition.BlockDec){
-//			return approblock;
-//		}else if (object instanceof Entity){
-//			return approentity;
-//		}
-//		return null;
-//	}
-
 	//=======================================================================================
 	// Setters
 	//=======================================================================================
-//	public void setAppro(Object object){
-//		if(object instanceof MultiblockStructureDefinition.BlockDec){
-//			approblock = (MultiblockStructureDefinition.BlockDec)object;
-//		}else if(object instanceof Entity){
-//			approentity = (Entity) object;
-//		}
-//	}
-
 	public void setMarkLocation(double x, double y, double z, int dimension){
 		setMarkX(x);
 		setMarkY(y);
@@ -626,7 +608,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 		if (currentFatigue >= getMaxFatigue()) {
 			currentFatigue = getMaxFatigue() - 1;
 			// BURNOUT NEGATIVE EFFECTS
-			if (this.entity instanceof EntityPlayer && !((EntityPlayer)this.entity).capabilities.isCreativeMode){
+			if (AMCore.config.getBurnoutEffects() && this.entity instanceof EntityPlayer && !((EntityPlayer)this.entity).capabilities.isCreativeMode ){
 				Random random = new Random();
 				if (currentFatigue > 50){ // lvl 5+
 					int roll = random.nextInt(4);
@@ -705,8 +687,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 				if (currentFatigue > 950){ // lvl 95+
 					int roll = random.nextInt(3);
 					if (roll == 2){
-						this.entity.setHealth(0);
-						this.entity.onDeath(DamageSource.generic);
+						this.entity.attackEntityFrom(DamageSources.wtfBoom, Integer.MAX_VALUE);
 					}
 				}
 			}
