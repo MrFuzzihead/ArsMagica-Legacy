@@ -8,6 +8,8 @@ import am2.api.spell.component.interfaces.*;
 import am2.api.spell.enums.Affinity;
 import am2.api.spell.enums.SpellModifiers;
 import am2.containers.ContainerInscriptionTable;
+import am2.items.ItemEssence;
+import am2.items.ItemRune;
 import am2.items.ItemsCommonProxy;
 import am2.lore.Story;
 import am2.network.AMDataReader;
@@ -46,7 +48,7 @@ import java.util.*;
 
 public class TileEntityInscriptionTable extends TileEntity implements IInventory{
 
-	private ItemStack inscriptionTableItemStacks[];
+	private ItemStack[] inscriptionTableItemStacks;
 	private final ArrayList<ISpellPart> currentRecipe;
 	private final ArrayList<ArrayList<ISpellPart>> shapeGroups;
 	private int numStageGroups = 2;
@@ -155,11 +157,6 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 
 	private boolean isRenderingLeft(){
 		return (worldObj.getBlockMetadata(xCoord, yCoord, zCoord) & 0x8) == 0x8;
-	}
-
-	@Override
-	public boolean canUpdate(){
-		return true;
 	}
 
 	@Override
@@ -276,9 +273,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 		if (inscriptionTableItemStacks[index] == null) return false;
 		if (inscriptionTableItemStacks[index].getItem() == null) return false;
 		if (inscriptionTableItemStacks[index].getItem() != item) return false;
-		if (meta > -1 && inscriptionTableItemStacks[index].getItemDamage() != meta) return false;
-
-		return true;
+		return meta <= -1 || inscriptionTableItemStacks[index].getItemDamage() == meta;
 	}
 
 	private ItemStack[] getCraftingGridContents(){
@@ -427,8 +422,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 		if (this.currentPlayerUsing != null) writer.add(this.currentPlayerUsing.getEntityId());
 
 		writer.add(this.currentRecipe.size());
-		for (int i = 0; i < this.currentRecipe.size(); ++i){
-			ISpellPart part = this.currentRecipe.get(i);
+		for (ISpellPart part : this.currentRecipe){
 			int id = part.getID();
 			if (part instanceof ISpellComponent)
 				id += SkillManager.COMPONENT_OFFSET;
@@ -456,8 +450,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 	public Packet getDescriptionPacket(){
 		NBTTagCompound compound = new NBTTagCompound();
 		this.writeToNBT(compound);
-		S35PacketUpdateTileEntity packet = new S35PacketUpdateTileEntity(xCoord, yCoord, zCoord, worldObj.getBlockMetadata(xCoord, yCoord, zCoord), compound);
-		return packet;
+		return new S35PacketUpdateTileEntity(xCoord, yCoord, zCoord, worldObj.getBlockMetadata(xCoord, yCoord, zCoord), compound);
 	}
 
 	@Override
@@ -547,7 +540,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 		}
 
 		ArrayList<ArrayList<ISpellPart>> stages = SpellValidator.splitToStages(currentRecipe);
-		if (stages.size() == 0) return;
+		if (stages.isEmpty()) return;
 		ArrayList<ISpellPart> currentStage = stages.get(stages.size() - 1);
 		countModifiersInList(currentStage);
 	}
@@ -621,7 +614,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 
 			LinkedHashMap<String, Integer> materialsList = new LinkedHashMap<String, Integer>();
 
-			materialsList.put(ItemsCommonProxy.rune.getItemStackDisplayName(new ItemStack(ItemsCommonProxy.rune, 1, ItemsCommonProxy.rune.META_BLANK)), 1);
+			materialsList.put(ItemsCommonProxy.rune.getItemStackDisplayName(new ItemStack(ItemsCommonProxy.rune, 1, ItemRune.META_BLANK)), 1);
 
 			ArrayList<ItemStack> componentRecipeList = new ArrayList<ItemStack>();
 			int count = 0;
@@ -629,7 +622,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 			ArrayList<ISpellPart> allRecipeItems = new ArrayList<ISpellPart>();
 
 			for (ArrayList<ISpellPart> shapeGroup : shapeGroups){
-				if (shapeGroup == null || shapeGroup.size() == 0)
+				if (shapeGroup == null || shapeGroup.isEmpty())
 					continue;
 				allRecipeItems.addAll(shapeGroup);
 			}
@@ -694,12 +687,12 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 									flag |= f;
 								}
 
-								recipeStack = new ItemStack(ItemsCommonProxy.essence, qty, ItemsCommonProxy.essence.META_MAX + flag);
+								recipeStack = new ItemStack(ItemsCommonProxy.essence, qty, ItemEssence.META_MAX + flag);
 							}
 
 						}else{
 							ArrayList<ItemStack> ores = OreDictionary.getOres((String)o);
-							recipeStack = ores.size() > 0 ? ores.get(1) : null;
+							recipeStack = !ores.isEmpty() ? ores.get(1) : null;
 							materialkey = (String)o;
 						}
 					}
@@ -723,7 +716,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 			int sgCount = 0;
 			int[][] shapeGroupCombos = new int[shapeGroups.size()][];
 			for (ArrayList<ISpellPart> shapeGroup : shapeGroups){
-				sb.append("Shape Group " + ++sgCount + "\n\n");
+				sb.append("Shape Group ").append(++sgCount).append("\n\n");
 				Iterator<ISpellPart> it = shapeGroup.iterator();
 				shapeGroupCombos[sgCount - 1] = SpellPartListToStringBuilder(it, sb, " -");
 				sb.append("\n");
@@ -739,7 +732,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 			sb = new StringBuilder();
 			sb.append("\n\nMaterials List:\n\n");
 			for (String s : materialsList.keySet()){
-				sb.append(materialsList.get(s) + " x " + s + "\n");
+				sb.append(materialsList.get(s)).append(" x ").append(s).append("\n");
 			}
 
 			pages.addAll(Story.splitStoryPartIntoPages(sb.toString()));
@@ -795,7 +788,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 			}
 			bookstack.stackTagCompound.setString("spell_mod_version", AMCore.instance.getVersion());
 
-			if (currentSpellName.equals(""))
+			if (currentSpellName.isEmpty())
 				currentSpellName = "Spell Recipe";
 			bookstack.setStackDisplayName(currentSpellName);
 
@@ -830,12 +823,12 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 			String displayName = SkillManager.instance.getDisplayName(part);
 
 			if (prefix != null){
-				sb.append(prefix + displayName + "\n");
+				sb.append(prefix).append(displayName).append("\n");
 			}else{
 				if (part instanceof ISpellShape){
-					sb.append(displayName + "\n");
+					sb.append(displayName).append("\n");
 				}else{
-					sb.append("-" + displayName + "\n");
+					sb.append("-").append(displayName).append("\n");
 				}
 			}
 
@@ -912,11 +905,9 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 			ISpellShape shape = SpellUtils.instance.getShapeForStage(stack, i);
 			this.currentRecipe.add(shape);
 			ISpellComponent[] components = SpellUtils.instance.getComponentsForStage(stack, i);
-			for (ISpellComponent component : components)
-				this.currentRecipe.add(component);
+			this.currentRecipe.addAll(Arrays.asList(components));
 			ISpellModifier[] modifiers = SpellUtils.instance.getModifiersForStage(stack, i);
-			for (ISpellModifier modifier : modifiers)
-				this.currentRecipe.add(modifier);
+			this.currentRecipe.addAll(Arrays.asList(modifiers));
 		}
 
 		int numShapeGroups = SpellUtils.instance.numShapeGroups(stack);
@@ -924,7 +915,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 			int[] parts = SpellUtils.instance.getShapeGroupParts(stack, i);
 			for (int partID : parts){
 				ISkillTreeEntry entry = SkillManager.instance.getSkill(partID);
-				if (entry != null && entry instanceof ISpellPart)
+				if (entry instanceof ISpellPart)
 					this.shapeGroups.get(i).add((ISpellPart)entry);
 			}
 		}

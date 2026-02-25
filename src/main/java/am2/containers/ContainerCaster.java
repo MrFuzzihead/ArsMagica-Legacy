@@ -3,7 +3,7 @@ package am2.containers;
 import am2.api.spell.ItemSpellBase;
 import am2.blocks.tileentities.TileEntityBlockCaster;
 import am2.containers.slots.SlotFocusOnly;
-import am2.containers.slots.SlotOneItemClassOnly;
+import am2.containers.slots.SlotSpell;
 import am2.items.ItemFocus;
 import am2.items.ItemFocusCharge;
 import am2.items.ItemFocusGreater;
@@ -26,7 +26,7 @@ public class ContainerCaster extends Container {
       this.addSlotToContainer(new SlotFocusOnly(caster, 0, 133, 31));
       this.addSlotToContainer(new SlotFocusOnly(caster, 1, 15, 70));
       this.addSlotToContainer(new SlotFocusOnly(caster, 2, 111, 142));
-      this.addSlotToContainer(new SlotOneItemClassOnly(caster, 3, 81, 76, ItemSpellBase.class, 1));
+      this.addSlotToContainer(new SlotSpell(caster, 3, 81, 76));
 
       int j1;
       for(j1 = 0; j1 < 3; ++j1) {

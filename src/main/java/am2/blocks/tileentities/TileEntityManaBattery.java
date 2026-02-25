@@ -11,13 +11,11 @@ import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 public class TileEntityManaBattery extends TileEntityAMPower{
 
 	private boolean active;
-	public static int storageCapacity;
 	private PowerTypes outputPowerType = PowerTypes.NONE;
 	private int tickCounter = 0;
 
 	public TileEntityManaBattery(){
 		super(250000);
-		this.storageCapacity = 250000;
 		active = false;
 	}
 

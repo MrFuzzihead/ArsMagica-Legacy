@@ -4,6 +4,7 @@ import am2.AMCore;
 import am2.EntityItemWatcher;
 import am2.LogHelper;
 import am2.MeteorSpawnHelper;
+import am2.api.items.armor.IManaGoggle;
 import am2.api.math.AMVector3;
 import am2.api.power.IPowerNode;
 import am2.api.power.PowerTypes;
@@ -165,7 +166,7 @@ public class ClientTickHandler{
 
 	private void spawnPowerPathVisuals(){
 		if (Minecraft.getMinecraft().thePlayer.getCurrentArmor(3) != null &&
-				(Minecraft.getMinecraft().thePlayer.getCurrentArmor(3).getItem() == ItemsCommonProxy.magitechGoggles ||
+				(Minecraft.getMinecraft().thePlayer.getCurrentArmor(3).getItem() instanceof IManaGoggle ||
 						ArmorHelper.isInfusionPreset(Minecraft.getMinecraft().thePlayer.getCurrentArmor(3), GenericImbuement.magitechGoggleIntegration))
 				){
 

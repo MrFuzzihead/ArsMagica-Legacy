@@ -1,8 +1,10 @@
 package am2.blocks;
 
 import am2.AMCore;
+import am2.api.math.AMVector3;
 import am2.api.power.PowerTypes;
 import am2.blocks.tileentities.TileEntityManaBattery;
+import am2.network.AMNetHandler;
 import am2.power.PowerNodeRegistry;
 import am2.texture.ResourceManager;
 import cpw.mods.fml.relauncher.Side;
@@ -58,6 +60,7 @@ public class BlockManaBattery extends PoweredBlock{
 		if (te != null){
 			float charge = PowerNodeRegistry.For(par1World).getPower(te, te.getPowerType()) / te.getCapacity() * 100;
 			String color = AMCore.config.colourblindMode() ? getColorNameFromPowerType(te.getPowerType()) : te.getPowerType().chatColor();
+			AMNetHandler.INSTANCE.sendPowerRequestToServer(new AMVector3(te));
 				// TODO localize these messages
 			if (par1World.isRemote){
 				if (AMCore.config.colourblindMode()){

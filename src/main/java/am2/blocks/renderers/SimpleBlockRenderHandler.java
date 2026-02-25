@@ -1,6 +1,7 @@
 package am2.blocks.renderers;
 
 import am2.AMCore;
+import am2.api.items.armor.IManaGoggle;
 import am2.blocks.BlockInlay;
 import am2.blocks.BlocksClientProxy;
 import am2.blocks.BlocksCommonProxy;
@@ -250,7 +251,7 @@ public class SimpleBlockRenderHandler implements ISimpleBlockRenderingHandler{
 
 	private void RenderBrokenPowerLink(RenderBlocks renderer, int x, int y, int z){
 		EntityPlayer player = AMCore.proxy.getLocalPlayer();
-		if ((x == 0 && y == 0 && z == 0) || (player != null && player.getCurrentArmor(3) != null && player.getCurrentArmor(3).getItem() == ItemsCommonProxy.magitechGoggles)){
+		if ((x == 0 && y == 0 && z == 0) || (player != null && player.getCurrentArmor(3) != null && player.getCurrentArmor(3).getItem() instanceof IManaGoggle)){
 			Block block = BlocksCommonProxy.brokenLinkBlock;
 			renderer.overrideBlockTexture = block.getIcon(0, 0);
 			renderer.renderStandardBlock(block, x, y, z);

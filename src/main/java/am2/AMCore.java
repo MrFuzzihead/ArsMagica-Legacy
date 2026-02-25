@@ -1,6 +1,8 @@
 package am2;
 
 import am2.api.ArsMagicaApi;
+import am2.api.power.Mana;
+import am2.api.power.ManaRegistry;
 import am2.api.spell.enums.Affinity;
 import am2.armor.infusions.ImbuementRegistry;
 import am2.blocks.RecipesEssenceRefiner;

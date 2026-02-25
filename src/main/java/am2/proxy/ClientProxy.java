@@ -5,6 +5,7 @@ import am2.AMCore;
 import am2.AMKeyBindings;
 import am2.api.events.RegisterCompendiumEntries;
 import am2.api.events.RegisterSkillTreeIcons;
+import am2.api.items.armor.IManaGoggle;
 import am2.api.math.AMVector3;
 import am2.api.power.IPowerNode;
 import am2.api.power.PowerTypes;
@@ -349,12 +350,12 @@ public class ClientProxy extends CommonProxy{
 	@Override
 	public void drawPowerOnBlockHighlight(EntityPlayer player, MovingObjectPosition target, float partialTicks){
 		if (AMCore.proxy.getLocalPlayer().getCurrentArmor(3) != null &&
-				(AMCore.proxy.getLocalPlayer().getCurrentArmor(3).getItem() == ItemsCommonProxy.magitechGoggles ||
+				(AMCore.proxy.getLocalPlayer().getCurrentArmor(3).getItem() instanceof IManaGoggle ||
 						ArmorHelper.isInfusionPreset(AMCore.proxy.getLocalPlayer().getCurrentArmor(3), GenericImbuement.magitechGoggleIntegration))
 				){
 
 			TileEntity te = player.worldObj.getTileEntity(target.blockX, target.blockY, target.blockZ);
-			if (te != null && te instanceof IPowerNode){
+			if (te instanceof IPowerNode){
 				AMCore.proxy.setTrackedLocation(new AMVector3(target.blockX, target.blockY, target.blockZ));
 			}else{
 				AMCore.proxy.setTrackedLocation(AMVector3.zero());

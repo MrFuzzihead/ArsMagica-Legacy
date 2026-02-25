@@ -42,9 +42,7 @@ public class ContainerMagiciansWorkbench extends AM2Container{
 		workbenchInventory.openInventory();
 		firstoutput = new InventoryCraftResult();
 		secondoutput = new InventoryCraftResult();
-
 		this.world = world;
-
 		INVENTORY_STORAGE_START = tileEntity.getStorageStart() - 3;
 		if (tileEntity.getUpgradeStatus(TileEntityMagiciansWorkbench.UPG_CRAFT))
 			INVENTORY_STORAGE_START += 5;
@@ -52,8 +50,6 @@ public class ContainerMagiciansWorkbench extends AM2Container{
 		PLAYER_ACTION_BAR_START = PLAYER_INVENTORY_START + 27;
 		PLAYER_ACTION_BAR_END = PLAYER_ACTION_BAR_START + 9;
 		secondCraftMatrix = tileEntity.getUpgradeStatus(TileEntityMagiciansWorkbench.UPG_CRAFT) ? new InventoryCrafting(this, 3, 3) : new InventoryCrafting(this, 2, 2);
-
-
 
 		int index = 0;
 		//first crafting grid
@@ -93,15 +89,6 @@ public class ContainerMagiciansWorkbench extends AM2Container{
 		//display player inventory
 		addPlayerInventory(playerInventory.player, 20,168);
 		addPlayerActionBar(playerInventory.player, 20,226);
-//		for (int i = 0; i < 3; i++){
-//			for (int k = 0; k < 9; k++){
-//				addSlotToContainer(new Slot(playerInventory, k + i * 9 + 9, 20 + k * 18, 168 + i * 18));
-//			}
-//		}
-
-//		for (int j1 = 0; j1 < 9; j1++){
-//			addSlotToContainer(new Slot(playerInventory, j1, 20 + j1 * 18, 226));
-//		}
 		//keystone lockable slots
 		addSlotToContainer(new SlotGhostRune(tileEntity, 45, 194, 177));
 		addSlotToContainer(new SlotGhostRune(tileEntity, 46, 194, 195));
@@ -122,23 +109,6 @@ public class ContainerMagiciansWorkbench extends AM2Container{
 		}else if(inventory == secondCraftMatrix){
 			this.secondoutput.setInventorySlotContents(0, CraftingManager.getInstance().findMatchingRecipe(secondCraftMatrix, world));
 		}
-
-
-
-//		this.workbenchInventory.firstCraftResult.setInventorySlotContents(0, CraftingManager.getInstance().findMatchingRecipe(this.firstCraftMatrix, world));
-//		if (!initializing){
-//			for (int i = 0; i < 9; ++i){
-//				workbenchInventory.setInventorySlotContents(i, firstCraftMatrix.getStackInSlot(i));
-//			}
-//		}
-//
-//		this.workbenchInventory.secondCraftResult.setInventorySlotContents(0, CraftingManager.getInstance().findMatchingRecipe(this.secondCraftMatrix, world));
-//		if (!initializing){
-//			for (int i = 0; i < 9; ++i){
-//				workbenchInventory.setInventorySlotContents(i + 9, secondCraftMatrix.getStackInSlot(i));
-//			}
-//		}
-//		detectAndSendChanges();
 	}
 
 	@Override
@@ -153,24 +123,22 @@ public class ContainerMagiciansWorkbench extends AM2Container{
 	public void onContainerClosed(EntityPlayer par1EntityPlayer){
 		workbenchInventory.closeInventory();
 		super.onContainerClosed(par1EntityPlayer);
-		if (!world.isRemote)
-		{
 			for (int i = 0; i < 9; ++i)
 			{
 				ItemStack itemstack = this.firstCraftMatrix.getStackInSlotOnClosing(i);
-				if (itemstack != null )
+				if (itemstack != null)
 				{
 					par1EntityPlayer.dropPlayerItemWithRandomChoice(itemstack, false);
 				}
 			}
-			int i = workbenchInventory.getUpgradeStatus(TileEntityMagiciansWorkbench.UPG_CRAFT) ? 9: 3;
+			int i = secondCraftMatrix.getSizeInventory();
 			for(int j = 0; j < i; ++j){
-				ItemStack itemstack = this.secondCraftMatrix.getStackInSlotOnClosing(i);
+				ItemStack itemstack = this.secondCraftMatrix.getStackInSlotOnClosing(j);
 				if (itemstack != null){
 					par1EntityPlayer.dropPlayerItemWithRandomChoice(itemstack, false);
 				}
 			}
-		}
+
 	}
 
 	@Override

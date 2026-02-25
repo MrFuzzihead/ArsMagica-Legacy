@@ -61,25 +61,10 @@ public class BlockMagiciansWorkbench extends AMSpecialRenderBlockContainer{
 	}
 
 	@Override
-	public boolean isOpaqueCube(){
-		return false;
-	}
-
-	@Override
-	public boolean renderAsNormalBlock(){
-		return false;
-	}
-
-	@Override
-	public int getRenderType(){
-		return BlocksCommonProxy.blockRenderID;
-	}
-
-	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int par6, float par7, float par8, float par9){
 
 		TileEntity te = world.getTileEntity(x, y, z);
-		if (te != null && te instanceof TileEntityMagiciansWorkbench){
+		if (te instanceof TileEntityMagiciansWorkbench){
 
 			if (KeystoneUtilities.HandleKeystoneRecovery(player, (IKeystoneLockable)te))
 				return true;
@@ -150,10 +135,7 @@ public class BlockMagiciansWorkbench extends AMSpecialRenderBlockContainer{
 			float f = world.rand.nextFloat() * 0.8F + 0.1F;
 			float f1 = world.rand.nextFloat() * 0.8F + 0.1F;
 			float f2 = world.rand.nextFloat() * 0.8F + 0.1F;
-			do{
-				if (itemstack.stackSize <= 0){
-					break;
-				}
+			while (itemstack.stackSize > 0){
 				int i1 = world.rand.nextInt(21) + 10;
 				if (i1 > itemstack.stackSize){
 					i1 = itemstack.stackSize;
@@ -167,7 +149,7 @@ public class BlockMagiciansWorkbench extends AMSpecialRenderBlockContainer{
 				entityitem.motionY = (float)world.rand.nextGaussian() * f3 + 0.2F;
 				entityitem.motionZ = (float)world.rand.nextGaussian() * f3;
 				world.spawnEntityInWorld(entityitem);
-			}while (true);
+			}
 		}
 
 		if(workbench.getUpgradeStatus(TileEntityMagiciansWorkbench.UPG_CRAFT)){

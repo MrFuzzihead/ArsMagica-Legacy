@@ -1092,7 +1092,7 @@ public class AMEventHandler{
 			if (ent.worldObj.isRemote){
 				int divisor = extendedProperties.getAuraDelay() > 0 ? extendedProperties.getAuraDelay() : 1;
 				if (ent.ticksExisted % divisor == 0)
-					AMCore.instance.proxy.particleManager.spawnAuraParticles(ent);
+					AMCore.proxy.particleManager.spawnAuraParticles(ent);
 				AMCore.proxy.setViewSettings();
 			}
 

@@ -1,5 +1,6 @@
 package am2;
 
+import am2.api.items.armor.IManaGoggle;
 import am2.api.math.AMVector3;
 import am2.api.power.IPowerNode;
 import am2.api.power.PowerTypes;
@@ -61,7 +62,7 @@ public class AMClientEventHandler{
 	public void onBlockHighlight(DrawBlockHighlightEvent event){
 
 		if (AMCore.proxy.getLocalPlayer().getCurrentArmor(3) != null &&
-				(AMCore.proxy.getLocalPlayer().getCurrentArmor(3).getItem() == ItemsCommonProxy.magitechGoggles ||
+				(AMCore.proxy.getLocalPlayer().getCurrentArmor(3).getItem() instanceof IManaGoggle ||
 						ArmorHelper.isInfusionPreset(AMCore.proxy.getLocalPlayer().getCurrentArmor(3), GenericImbuement.magitechGoggleIntegration))
 				){
 

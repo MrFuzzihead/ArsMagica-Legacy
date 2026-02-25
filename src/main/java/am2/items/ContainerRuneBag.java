@@ -1,15 +1,12 @@
 package am2.items;
 
 import am2.containers.slots.SlotLock;
-import am2.items.InventoryRuneBag;
-import am2.items.ItemRuneBag;
-import am2.items.ItemsCommonProxy;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
+
 
 import am2.containers.slots.SlotRuneOnly;
 
@@ -17,7 +14,6 @@ public class ContainerRuneBag extends Container {
 
 	private ItemStack bagStack;
 	private InventoryRuneBag runeBagInventory;
-	private int runeBagSlot;
 	public int specialSlotIndex;
 
 	private static final int mainInventoryStart = 16;
@@ -27,12 +23,10 @@ public class ContainerRuneBag extends Container {
 	public ContainerRuneBag(InventoryPlayer inventoryplayer, ItemStack bagStack, InventoryRuneBag inventoryBag) {
 		this.runeBagInventory = inventoryBag;
 		this.bagStack = bagStack;
-		this.runeBagSlot = inventoryplayer.currentItem;
 
 		int slotIndex = 0;
 
 		// rune slots
-
 		for (int x = 0; x < 8; ++x) {
 			for (int y = 0; y < 2; ++y) {
 				addSlotToContainer(new SlotRuneOnly(runeBagInventory, slotIndex++, 8 + (x * 18), 8 + (y * 18)));

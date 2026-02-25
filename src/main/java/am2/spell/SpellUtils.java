@@ -1,6 +1,7 @@
 package am2.spell;
 
 import am2.AMCore;
+import am2.LogHelper;
 import am2.api.ArsMagicaApi;
 import am2.api.events.AffinityChangingEvent;
 import am2.api.events.ModifierCalculatedEvent;

@@ -1,6 +1,7 @@
 package am2.playerextensions;
 
 import am2.AMCore;
+import am2.LogHelper;
 import am2.api.IAffinityData;
 import am2.api.math.AMVector3;
 import am2.api.spell.enums.Affinity;
@@ -50,6 +51,8 @@ public class AffinityData implements IExtendedEntityProperties, IAffinityData{
 
 	private Affinity[] highestAffinities = new Affinity[2];
 
+	int tick = 0;
+
 	public AffinityData(){
 		setupAffinityDefaults();
 	}
@@ -71,6 +74,7 @@ public class AffinityData implements IExtendedEntityProperties, IAffinityData{
 	}
 
 	public void tickDiminishingReturns(){
+
 		if (this.diminishingReturns < 1.2f){
 			this.diminishingReturns += 0.005f;
 		}

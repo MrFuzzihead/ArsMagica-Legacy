@@ -125,6 +125,8 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 	public float bankedInfusionBoots = 0.0f;
 
 	private Entity inanimateTarget;
+//	private Entity approentity;
+//	private MultiblockStructureDefinition.BlockDec approblock;
 
 	public int[] armorProcCooldowns = new int[4];
 
@@ -550,9 +552,26 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 		return healCooldown <= 0;
 	}
 
+//	public Object getAppro(Object object){
+//		if(object instanceof MultiblockStructureDefinition.BlockDec){
+//			return approblock;
+//		}else if (object instanceof Entity){
+//			return approentity;
+//		}
+//		return null;
+//	}
+
 	//=======================================================================================
 	// Setters
 	//=======================================================================================
+//	public void setAppro(Object object){
+//		if(object instanceof MultiblockStructureDefinition.BlockDec){
+//			approblock = (MultiblockStructureDefinition.BlockDec)object;
+//		}else if(object instanceof Entity){
+//			approentity = (Entity) object;
+//		}
+//	}
+
 	public void setMarkLocation(double x, double y, double z, int dimension){
 		setMarkX(x);
 		setMarkY(y);
@@ -1163,7 +1182,6 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 			compound.setDouble("marklocationz", this.getMarkZ());
 			compound.setInteger("markdimension", this.getMarkDimension());
 		}
-
 		int c = 0;
 		for (Object o : extra_properties.keySet()) {
 			String iS = (String)o;
