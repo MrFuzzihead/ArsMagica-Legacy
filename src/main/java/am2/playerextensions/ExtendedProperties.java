@@ -57,12 +57,12 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 	public static final String identifier = "ArsMagicaExProps";
 	public static final int maxMagicLevel = 99;
 
-	private static float magicRegenPerLevelPerTick = 0.15f;
-	private static float entityMagicPerLevelBase = 0.20f;
-	private static int baseTicksForFullRegen = 2400;
+	private static final float magicRegenPerLevelPerTick = 0.15f;
+	private static final float entityMagicPerLevelBase = 0.20f;
+	private static final int baseTicksForFullRegen = 2400;
 	private int ticksForFullRegen = baseTicksForFullRegen;
 
-	private ArrayList<Integer> summon_ent_ids = new ArrayList<Integer>();
+	private final ArrayList<Integer> summon_ent_ids = new ArrayList<Integer>();
 
 	// I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
 	// I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
@@ -71,9 +71,9 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 	// I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
 	// I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
 	/** I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!*/
-	private Map<String, String> extra_properties = new HashMap<String, String>();
+	private final Map<String, String> extra_properties = new HashMap<String, String>();
 
-	private Map<String, String> compendium_entries = new HashMap<String, String>();
+	private final Map<String, String> compendium_entries = new HashMap<String, String>();
 
 	private double markX;
 	private double markY;
@@ -100,7 +100,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 	private float magicXP;
 
 	private int numSummons;
-	private ArrayList<ManaLinkEntry> manaLinks;
+	private final ArrayList<ManaLinkEntry> manaLinks;
 
 	private byte bitFlag;
 	private boolean hasDoneFullSync;
@@ -112,9 +112,9 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 	private int fallProtection = 0;
 	private int previousBreath = 300;
 
-	private ContingencyTypes[] contingencyTypes = {ContingencyTypes.DAMAGE_TAKEN, ContingencyTypes.DEATH,
+	private final ContingencyTypes[] contingencyTypes = {ContingencyTypes.DAMAGE_TAKEN, ContingencyTypes.DEATH,
 			ContingencyTypes.FALL, ContingencyTypes.ON_FIRE, ContingencyTypes.HEALTH_LOW};
-	private ItemStack[] contingencyStacks = {new ItemStack(Items.snowball), new ItemStack(Items.snowball),
+	private final ItemStack[] contingencyStacks = {new ItemStack(Items.snowball), new ItemStack(Items.snowball),
 			new ItemStack(Items.snowball), new ItemStack(Items.snowball), new ItemStack(Items.snowball)};
 
 	public float TK_Distance = 8;
@@ -363,10 +363,11 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 		try {
 			if (this.entity instanceof EntityPlayer) {
 				if (this.entity.getActivePotionEffect(BuffList.manaBoost) != null) {
-					max *= 1 + (0.25 * (this.entity.getActivePotionEffect(BuffList.manaBoost).getAmplifier() + 1));
+					max *= (float)(1 + (0.25 * (this.entity.getActivePotionEffect(BuffList.manaBoost).getAmplifier() + 1)));
 				}
 			}
-		} catch (NullPointerException npe) {;} // just in case
+		} catch (NullPointerException ignored) {
+		} // just in case
 		try {
 			return (float) (max + this.entity.getAttributeMap().getAttributeInstance(ArsMagicaApi.maxManaBonus).getAttributeValue());
 		} catch (NullPointerException npe) { // fix for entities which crash with the above code
@@ -456,11 +457,10 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
 		NBTTagCompound extra_data = new NBTTagCompound();
 		int c = 0;
-		for (Object o : extra_properties.keySet()) {
-			String iS = (String)o;
-			String iValue = extra_properties.get(iS);
+		for (String o : extra_properties.keySet()) {
+			String iValue = extra_properties.get(o);
 			extra_data.setString("persistentobj" + c, iValue);
-			extra_data.setString("persistentobjname" + c, iS);
+			extra_data.setString("persistentobjname" + c, o);
 			c++;
 		}
 		extra_data.setInteger("persistentobjsize", extra_properties.size());
@@ -493,8 +493,8 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 			return false;
 		}
 		this.ticksToSync--;
-		if (this.ticksToSync <= 0) this.ticksToSync = this.syncTickDelay;
-		return this.updateFlags != 0 && this.ticksToSync == this.syncTickDelay;
+		if (this.ticksToSync <= 0) this.ticksToSync = syncTickDelay;
+		return this.updateFlags != 0 && this.ticksToSync == syncTickDelay;
 	}
 
 	public boolean getCanHaveMoreSummons(){
@@ -639,13 +639,13 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 					}else if (roll == 1){
 						this.deductMana(this.currentMana / 4);
 						if (!this.entity.worldObj.isRemote){
-							List entitiesNear = this.entity.worldObj.getEntitiesWithinAABBExcludingEntity(this.entity, AxisAlignedBB.getBoundingBox(this.entity.posX - 5, this.entity.posY - 5, this.entity.posZ - 5, this.entity.posX + 5, this.entity.posY + 5, this.entity.posZ + 5));
-							for (Object o : entitiesNear){
-								((Entity)o).attackEntityFrom(DamageSource.magic, currentFatigue / 25);
+							List<EntityLivingBase> entitiesNear = this.entity.worldObj.getEntitiesWithinAABBExcludingEntity(this.entity, AxisAlignedBB.getBoundingBox(this.entity.posX - 5, this.entity.posY - 5, this.entity.posZ - 5, this.entity.posX + 5, this.entity.posY + 5, this.entity.posZ + 5));
+							for (Entity o : entitiesNear){
+								o.attackEntityFrom(DamageSource.magic, currentFatigue / 25);
 								float f = (random.nextFloat() - 0.5F) * 0.2F;
 								float f1 = (random.nextFloat() - 0.5F) * 0.2F;
 								float f2 = (random.nextFloat() - 0.5F) * 0.2F;
-								this.entity.worldObj.spawnParticle("reddust", ((Entity)o).posX, ((Entity)o).posY, ((Entity)o).posZ, f, f1, f2);
+								this.entity.worldObj.spawnParticle("reddust", o.posX, o.posY, o.posZ, f, f1, f2);
 							}
 							this.entity.attackEntityFrom(DamageSource.magic, currentFatigue / 25);
 						}
@@ -658,7 +658,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 							if (!this.entity.worldObj.isRemote)
 								this.entity.addPotionEffect(new PotionEffect(Potion.wither.id, random.nextInt(60), 1));
 						}
-					}else if (roll == 3){
+					}else{
 						if (currentFatigue < 500){
 							if (!this.entity.worldObj.isRemote){
 								this.entity.addPotionEffect(new PotionEffect(Potion.digSlowdown.id, random.nextInt(160), 1));
@@ -687,7 +687,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 						}
 					}else if (roll == 1){
 						this.entity.worldObj.addWeatherEffect(new EntityLightningBolt(this.entity.worldObj, this.entity.posX, this.entity.posY, this.entity.posZ));
-					}else if (roll == 2){
+					}else{
 						for (int i = 0; i < 100; i++){
 							double x = this.entity.posX + random.nextInt(10) - 5,
 									y = this.entity.posY + random.nextInt(10) - 5,
@@ -697,7 +697,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 								float f = (random.nextFloat() - 0.5F) * 0.2F;
 								float f1 = (random.nextFloat() - 0.5F) * 0.2F;
 								float f2 = (random.nextFloat() - 0.5F) * 0.2F;
-								this.entity.worldObj.spawnParticle("portal", x, y, z, (double)f, (double)f1, (double)f2);
+								this.entity.worldObj.spawnParticle("portal", x, y, z, f, f1, f2);
 								break;
 							}
 						}
@@ -736,7 +736,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 		if (entity instanceof EntityPlayer)
 			MinecraftForge.EVENT_BUS.post(new PlayerMagicLevelChangeEvent(entity, magicLevel));
 
-		ticksForFullRegen = (int)Math.round(baseTicksForFullRegen * (0.75 - (0.25 * (getMagicLevel() / maxMagicLevel))));
+		ticksForFullRegen = (int)Math.round(baseTicksForFullRegen * (0.75 - (0.25 * ((double)getMagicLevel() / maxMagicLevel))));
 
 		this.magicLevel = magicLevel;
 		this.setUpdateFlag(UPD_MAGIC_LEVEL);
@@ -750,7 +750,6 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 		int num = 0;
 		switch (type) {
 			case DAMAGE_TAKEN:
-				num = 0;
 				break;
 			case DEATH:
 				num = 1;
@@ -903,21 +902,21 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
 		if (isCritical){
 			if (armorProcCooldowns[3] > 0){
-				AMCore.instance.proxy.blackoutArmorPiece((EntityPlayerMP)entity, 3, armorProcCooldowns[3]);
+				AMCore.proxy.blackoutArmorPiece((EntityPlayerMP)entity, 3, armorProcCooldowns[3]);
 			}
 			if (armorProcCooldowns[1] > 0){
-				AMCore.instance.proxy.blackoutArmorPiece((EntityPlayerMP)entity, 1, armorProcCooldowns[1]);
+				AMCore.proxy.blackoutArmorPiece((EntityPlayerMP)entity, 1, armorProcCooldowns[1]);
 			}
 			if (armorProcCooldowns[2] > 0){
-				AMCore.instance.proxy.blackoutArmorPiece((EntityPlayerMP)entity, 2, armorProcCooldowns[2]);
+				AMCore.proxy.blackoutArmorPiece((EntityPlayerMP)entity, 2, armorProcCooldowns[2]);
 			}
 			if (armorProcCooldowns[0] > 0){
-				AMCore.instance.proxy.blackoutArmorPiece((EntityPlayerMP)entity, 0, armorProcCooldowns[0]);
+				AMCore.proxy.blackoutArmorPiece((EntityPlayerMP)entity, 0, armorProcCooldowns[0]);
 			}
 		}
 
 		if (entity.worldObj != null && entity.worldObj.isRemote && entity instanceof EntityPlayer && AMCore.proxy.playerTracker.hasAA((EntityPlayer)entity)){
-			EntityLivingBase localPlayer = AMCore.instance.proxy.getLocalPlayer();
+			EntityLivingBase localPlayer = AMCore.proxy.getLocalPlayer();
 			if (entity != localPlayer)
 				AMNetHandler.INSTANCE.requestAuras((EntityPlayer)entity);
 		}
@@ -928,16 +927,16 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 		if (needsArmorTickCounterSync && entity instanceof EntityPlayerMP){
 			needsArmorTickCounterSync = false;
 			if (armorProcCooldowns[3] > 0){
-				AMCore.instance.proxy.blackoutArmorPiece((EntityPlayerMP)entity, 3, armorProcCooldowns[3]);
+				AMCore.proxy.blackoutArmorPiece((EntityPlayerMP)entity, 3, armorProcCooldowns[3]);
 			}
 			if (armorProcCooldowns[1] > 0){
-				AMCore.instance.proxy.blackoutArmorPiece((EntityPlayerMP)entity, 1, armorProcCooldowns[1]);
+				AMCore.proxy.blackoutArmorPiece((EntityPlayerMP)entity, 1, armorProcCooldowns[1]);
 			}
 			if (armorProcCooldowns[2] > 0){
-				AMCore.instance.proxy.blackoutArmorPiece((EntityPlayerMP)entity, 2, armorProcCooldowns[2]);
+				AMCore.proxy.blackoutArmorPiece((EntityPlayerMP)entity, 2, armorProcCooldowns[2]);
 			}
 			if (armorProcCooldowns[0] > 0){
-				AMCore.instance.proxy.blackoutArmorPiece((EntityPlayerMP)entity, 0, armorProcCooldowns[0]);
+				AMCore.proxy.blackoutArmorPiece((EntityPlayerMP)entity, 0, armorProcCooldowns[0]);
 			}
 		}
 	}
@@ -946,7 +945,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 		for (int i = 0; i < summon_ent_ids.size(); ++i){
 			int id = summon_ent_ids.get(i);
 			Entity e = entity.worldObj.getEntityByID(id);
-			if (e == null || !(e instanceof EntityLivingBase)){
+			if (!(e instanceof EntityLivingBase)){
 				summon_ent_ids.remove(i);
 				i--;
 				removeSummon();
@@ -959,24 +958,22 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 		}
 	}
 
-	public boolean addSummon(EntityLivingBase entity){
+	public void addSummon(EntityLivingBase entity){
 		if (!entity.worldObj.isRemote){
 			summon_ent_ids.add(entity.getEntityId());
 			setNumSummons(getNumSummons() + 1);
 			setUpdateFlag(UPD_NUM_SUMMONS);
 		}
-		return true;
 	}
 
-	public boolean removeSummon(){
+	public void removeSummon(){
 		if (getNumSummons() == 0){
-			return false;
+			return;
 		}
 		if (!entity.worldObj.isRemote){
 			setNumSummons(getNumSummons() - 1);
 			setUpdateFlag(UPD_NUM_SUMMONS);
 		}
-		return true;
 	}
 
 	public void setSyncAuras(){
@@ -1058,7 +1055,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 			int numLinks = rdr.getInt();
 			for (int i = 0; i < numLinks; ++i){
 				Entity e = entity.worldObj.getEntityByID(rdr.getInt());
-				if (e != null && e instanceof EntityLivingBase)
+				if (e instanceof EntityLivingBase)
 					updateManaLink((EntityLivingBase)e);
 			}
 		}
@@ -1183,20 +1180,18 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 			compound.setInteger("markdimension", this.getMarkDimension());
 		}
 		int c = 0;
-		for (Object o : extra_properties.keySet()) {
-			String iS = (String)o;
-			String iValue = extra_properties.get(iS);
+		for (String o : extra_properties.keySet()) {
+			String iValue = extra_properties.get(o);
 			compound.setString("persistentobj" + c, iValue);
-			compound.setString("persistentobjname" + c, iS);
+			compound.setString("persistentobjname" + c, o);
 			c++;
 		}
 		compound.setInteger("persistentobjsize", extra_properties.size());
 
-		for (Object o : compendium_entries.keySet()) {
-			String iS = (String)o;
-			String iValue = compendium_entries.get(iS);
+		for (String o : compendium_entries.keySet()) {
+			String iValue = compendium_entries.get(o);
 			compound.setString("compentry" + c, iValue);
-			compound.setString("compentryname" + c, iS);
+			compound.setString("compentryname" + c, o);
 			c++;
 		}
 		compound.setInteger("compendiumsize", compendium_entries.size());
@@ -1214,9 +1209,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 		else if (armorProcCooldowns.length != 4){
 			int[] tmp = armorProcCooldowns;
 			armorProcCooldowns = new int[4];
-			for (int i = 0; i < Math.min(tmp.length, 4); ++i){
-				armorProcCooldowns[i] = tmp[i];
-			}
+			System.arraycopy(tmp, 0, armorProcCooldowns, 0, Math.min(tmp.length, 4));
 		}
 
 		//setIsFlipped(compound.getBoolean("isFlipped"));
@@ -1292,11 +1285,10 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 		NBTTagCompound compendium_data = new NBTTagCompound();
 		if (name == null && value == null) {
 			int c = 0;
-			for (Object o : compendium_entries.keySet()) {
-				String iS = (String) o;
-				String iValue = compendium_entries.get(iS);
+			for (String o : compendium_entries.keySet()) {
+				String iValue = compendium_entries.get(o);
 				compendium_data.setString("compentry" + c, iValue);
-				compendium_data.setString("compentryname" + c, iS);
+				compendium_data.setString("compentryname" + c, o);
 				c++;
 			}
 			compendium_data.setInteger("compendiumsize", compendium_entries.size());
@@ -1315,9 +1307,9 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 	public void onSyncCompendiumDataPacket(byte[] remaining) {
 		onSyncCompendiumDataPacketServer(remaining);
 
-		Iterator it = this.getCompendiumIterator(); // update the clientside compendium list
+		Iterator<Map.Entry<String, String>> it = this.getCompendiumIterator(); // update the clientside compendium list
 		while (it.hasNext()) {
-			Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
+			Map.Entry<String, String> pair = it.next();
 			CompendiumEntry entry = ArcaneCompendium.instance.getEntryAbsolute(pair.getKey());
 			if (entry == null) continue;
 			entry.isLocked = pair.getValue().contains("L");
@@ -1395,7 +1387,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 	}
 
 	public void register(World world,EntityLivingBase entityLB){
-		if(world == null)return;
+		if(world == null || entityLB == null)return;
 
 		setEntityReference(entityLB);
 
@@ -1474,12 +1466,9 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
 	public void toggleFlipped(){
 		if (entity.worldObj.isRemote){
-			AMNetHandler.INSTANCE.sendExPropCommandToServer(this.BIT_FLIPPED);
+			AMNetHandler.INSTANCE.sendExPropCommandToServer(BIT_FLIPPED);
 		}
-		if (this.getIsFlipped())
-			this.setIsFlipped(false);
-		else
-			this.setIsFlipped(true);
+		this.setIsFlipped(!this.getIsFlipped());
 	}
 
 	public void spawnManaLinkParticles(){
@@ -1701,7 +1690,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 		return false;
 	}
 
-	private class ManaLinkEntry{
+	private static class ManaLinkEntry{
 		private final int entityID;
 		private final int range;
 
@@ -1712,7 +1701,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
 		private EntityLivingBase getEntity(World world){
 			Entity e = world.getEntityByID(entityID);
-			if (e == null || !(e instanceof EntityLivingBase))
+			if (!(e instanceof EntityLivingBase))
 				return null;
 			return (EntityLivingBase)e;
 		}
@@ -1758,11 +1747,9 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 	public void performRemoteOp(int mask){
 		if (entity.worldObj.isRemote)
 			return;
-		switch (mask){
-		case BIT_FLIPPED:
+		if (mask == BIT_FLIPPED){
 			toggleFlipped();
 			forceSync();
-			break;
 		}
 	}
 }

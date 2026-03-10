@@ -1024,22 +1024,11 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 		List<Entity> items = this.worldObj.getEntitiesWithinAABB(EntityItem.class, AxisAlignedBB.getBoundingBox(xCoord - radius, yCoord - 3, zCoord - radius, xCoord + radius, yCoord, zCoord + radius));
 		if (items.size() == 1){
 			EntityItem item = (EntityItem)items.get(0);
-			if (item != null && !item.isDead && item.getEntityItem() != null && item.getEntityItem().getItem() == ItemsCommonProxy.spellParchment){
+			if (item != null && !item.isDead && item.getEntityItem() != null && checkEndItem(item.getEntityItem())){
 				if (!worldObj.isRemote){
 					item.setDead();
 					setCrafting(false);
-					EntityItem craftedItem = new EntityItem(worldObj);
-					craftedItem.setPosition(xCoord + 0.5, yCoord - 1.5, zCoord + 0.5);
-
-					ItemStack craftStack = SpellUtils.instance.createSpellStack(shapeGroups, spellDef);
-					if (!craftStack.hasTagCompound())
-						craftStack.stackTagCompound = new NBTTagCompound();
-					AddSpecialMetadata(craftStack);
-
-					craftStack.stackTagCompound.setString("suggestedName", currentSpellName != null ? currentSpellName : "");
-					craftedItem.setEntityItemStack(craftStack);
-					worldObj.spawnEntityInWorld(craftedItem);
-
+					createSpellItem();
 					allAddedItems.clear();
 					currentAddedItems.clear();
 				}else{
@@ -1047,6 +1036,25 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 				}
 			}
 		}
+	}
+
+	private boolean checkEndItem(ItemStack item){
+		if(item.getItem() == ItemsCommonProxy.spellParchment){
+			return true;
+		}return false;
+	}
+	private void createSpellItem(){
+		EntityItem craftedItem = new EntityItem(worldObj);
+		craftedItem.setPosition(xCoord + 0.5, yCoord - 1.5, zCoord + 0.5);
+
+		ItemStack craftStack = SpellUtils.instance.createSpellStack(shapeGroups, spellDef);
+		if (!craftStack.hasTagCompound())
+			craftStack.stackTagCompound = new NBTTagCompound();
+		AddSpecialMetadata(craftStack);
+
+		craftStack.stackTagCompound.setString("suggestedName", currentSpellName != null ? currentSpellName : "");
+		craftedItem.setEntityItemStack(craftStack);
+		worldObj.spawnEntityInWorld(craftedItem);
 	}
 
 	private void AddSpecialMetadata(ItemStack craftStack){

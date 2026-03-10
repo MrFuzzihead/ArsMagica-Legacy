@@ -5,6 +5,7 @@ import am2.api.spell.component.interfaces.ISpellShape;
 import am2.api.spell.enums.Affinity;
 import am2.api.spell.enums.SpellCastResult;
 import am2.items.ItemBindingCatalyst;
+import am2.items.ItemOre;
 import am2.items.ItemsCommonProxy;
 import am2.spell.SpellUtils;
 import am2.utility.InventoryUtilities;
@@ -66,8 +67,8 @@ public class Binding implements ISpellShape{
 	@Override
 	public Object[] getRecipeItems(){
 		return new Object[]{
-				new ItemStack(ItemsCommonProxy.itemOre, 1, ItemsCommonProxy.itemOre.META_CHIMERITE),
-				new ItemStack(ItemsCommonProxy.itemOre, 1, ItemsCommonProxy.itemOre.META_COGNITIVEDUST),
+				new ItemStack(ItemsCommonProxy.itemOre, 1, ItemOre.META_CHIMERITE),
+				new ItemStack(ItemsCommonProxy.itemOre, 1, ItemOre.META_COGNITIVEDUST),
 				Items.wooden_sword,
 				Items.stone_shovel,
 				Items.iron_hoe,

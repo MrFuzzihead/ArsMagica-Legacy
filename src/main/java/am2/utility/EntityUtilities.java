@@ -37,8 +37,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class EntityUtilities{
-	private static final HashMap<Integer, ArrayList> storedTasks = new HashMap<Integer, ArrayList>();
-	private static final HashMap<Integer, ArrayList> storedAITasks = new HashMap<Integer, ArrayList>();
+	private static final HashMap<Integer, ArrayList> storedTasks = new HashMap<>();
+	private static final HashMap<Integer, ArrayList> storedAITasks = new HashMap<>();
 	private static final String isSummonKey = "AM2_Entity_Is_Made_Summon";
 	private static final String summonEntityIDs = "AM2_Summon_Entity_IDs";
 	private static final String summonDurationKey = "AM2_Summon_Duration";
@@ -150,11 +150,11 @@ public class EntityUtilities{
 		}
 	}
 
-	public static boolean revertAI(EntityCreature entityliving){
+	public static void revertAI(EntityCreature entityliving){
 
 		int ownerID = getOwner(entityliving);
 		Entity owner = entityliving.worldObj.getEntityByID(ownerID);
-		if (owner != null && owner instanceof EntityLivingBase){
+		if (owner instanceof EntityLivingBase){
 			ExtendedProperties.For((EntityLivingBase)owner).removeSummon();
 			if (ExtendedProperties.For((EntityLivingBase)owner).isManaLinkedTo(entityliving)){
 				ExtendedProperties.For((EntityLivingBase)owner).updateManaLink(entityliving);
@@ -189,10 +189,8 @@ public class EntityUtilities{
 			if (entityliving instanceof EntityTameable){
 				((EntityTameable)entityliving).setTamed(false);
 			}
-			return true;
 		}
 
-		return false;
 	}
 
 	public static boolean isSummon(EntityLivingBase entityliving){
@@ -220,14 +218,13 @@ public class EntityUtilities{
 	}
 
 	public static boolean isTileSpawnedAndValid(EntityLivingBase entityliving){
-		Integer tileX = entityliving.getEntityData().getInteger(summonTileXKey);
-		Integer tileY = entityliving.getEntityData().getInteger(summonTileYKey);
-		Integer tileZ = entityliving.getEntityData().getInteger(summonTileZKey);
-		if (tileX == null || tileY == null || tileZ == null) return false;
+		int tileX = entityliving.getEntityData().getInteger(summonTileXKey);
+		int tileY = entityliving.getEntityData().getInteger(summonTileYKey);
+		int tileZ = entityliving.getEntityData().getInteger(summonTileZKey);
 
 		TileEntity te = entityliving.worldObj.getTileEntity(tileX, tileY, tileZ);
 
-		return te != null && te instanceof TileEntitySummoner;
+		return te instanceof TileEntitySummoner;
 	}
 
 	public static void setGuardSpawnLocation(EntityCreature entity, double x, double y, double z){
@@ -238,8 +235,7 @@ public class EntityUtilities{
 
 	public static int getOwner(EntityLivingBase entityliving){
 		if (!isSummon(entityliving)) return -1;
-		Integer ownerID = entityliving.getEntityData().getInteger(summonOwnerKey);
-		return ownerID == null ? -1 : ownerID;
+		return entityliving.getEntityData().getInteger(summonOwnerKey);
 	}
 
 	public static float[] getSize(EntityLivingBase entityliving){
@@ -347,7 +343,7 @@ public class EntityUtilities{
 		// since we already calculate the player's total XP here,
 		// we may as well do the zero check and pass the result (how much was actually deducted) back
 		// there's no sense in duplicating work
-		int removedXP = effectiveTotal >= amount ? amount : effectiveTotal;
+		int removedXP = Math.min(effectiveTotal, amount);
 		
 		int newTotal = effectiveTotal - amount;
 		if(newTotal < 0)

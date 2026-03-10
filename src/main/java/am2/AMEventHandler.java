@@ -23,6 +23,7 @@ import am2.enchantments.AMEnchantments;
 import am2.entities.EntityFlicker;
 import am2.entities.EntityHallucination;
 import am2.entities.EntitySpecificHallucinations;
+import am2.items.ItemOre;
 import am2.items.ItemSoulspike;
 import am2.items.ItemsCommonProxy;
 import am2.network.AMNetHandler;
@@ -64,7 +65,6 @@ import net.minecraft.item.*;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.stats.AchievementList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
@@ -86,11 +86,8 @@ import net.minecraftforge.event.world.BlockEvent;
 import net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixesMagicka;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-
-import static am2.blocks.liquid.BlockLiquidEssence.liquidEssenceMaterial;
 
 public class AMEventHandler{
 
@@ -100,8 +97,12 @@ public class AMEventHandler{
 	static boolean enabled_shield = true;
 	static boolean enable_spatialVortex = true;
 
+	private static final Random rand = new Random();
+	private static final Map<ExtendedProperties, Integer> tempFlipped = new HashMap<ExtendedProperties, Integer>();
+
 
 	@SubscribeEvent
+	@SuppressWarnings("deprecation")
 	public void onPotionBrewed(PotionBrewedEvent brewEvent){
 		for (ItemStack stack : brewEvent.brewingStacks){
 			if (stack == null) continue;
@@ -331,7 +332,7 @@ public class AMEventHandler{
 					}
 					if (rareCount >= 5) {
 						EntityItem fragment = new EntityItem(player.worldObj);
-						ItemStack stack = new ItemStack(ItemsCommonProxy.itemOre, 1, ItemsCommonProxy.itemOre.META_SOULFRAGMENT);
+						ItemStack stack = new ItemStack(ItemsCommonProxy.itemOre, 1, ItemOre.META_SOULFRAGMENT);
 						fragment.setPosition(player.posX+rand.nextInt(5)-2, player.posY + 10, player.posZ+rand.nextInt(5)-2);
 						fragment.setEntityItemStack(stack);
 						player.worldObj.spawnEntityInWorld(fragment);
@@ -426,7 +427,7 @@ public class AMEventHandler{
 		}
 		if (!event.entityLiving.worldObj.isRemote && event.entityLiving instanceof EntityPig && event.entityLiving.getRNG().nextDouble() < 0.3f){
 			EntityItem animalFat = new EntityItem(event.entityLiving.worldObj);
-			ItemStack stack = new ItemStack(ItemsCommonProxy.itemOre, 1, ItemsCommonProxy.itemOre.META_ANIMALFAT);
+			ItemStack stack = new ItemStack(ItemsCommonProxy.itemOre, 1, ItemOre.META_ANIMALFAT);
 			animalFat.setPosition(event.entity.posX, event.entity.posY, event.entity.posZ);
 			animalFat.setEntityItemStack(stack);
 			event.drops.add(animalFat);
@@ -511,7 +512,7 @@ public class AMEventHandler{
 			}
 		}
 		if (ExtendedProperties.For(event.entityLiving).getFlipRotation() > 0)
-			((EntityPlayer)event.entityLiving).addVelocity(0, -2 * event.entityLiving.motionY, 0);
+			event.entityLiving.addVelocity(0, -2 * event.entityLiving.motionY, 0);
 
 	}
 
@@ -587,7 +588,7 @@ public class AMEventHandler{
 	@SubscribeEvent
 	public void connect(PlayerEvent.PlayerLoggedInEvent event) {
 		if(FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER) {
-			float tickrate = 1000L / MysteriumPatchesFixesMagicka.servertickrate; // 1000/50 = 20 ticks, etc
+			float tickrate = (float)1000L / MysteriumPatchesFixesMagicka.servertickrate; // 1000/50 = 20 ticks, etc
 			MysteriumPatchesFixesMagicka.changeClientTickratePublic(event.player, tickrate);
 		}
 	}
@@ -646,7 +647,7 @@ public class AMEventHandler{
 		extendedProperties.manaBurnoutTick();
 
 		if (ent instanceof EntityPlayer && extendedProperties.hasExtraVariable("ethereal")) { // ethereal form handling
-			int durationLeft = Integer.valueOf(extendedProperties.getExtraVariable("ethereal"));
+			int durationLeft = Integer.parseInt(extendedProperties.getExtraVariable("ethereal"));
 			EntityPlayer player = (EntityPlayer) ent;
 			if (durationLeft < 3) {
 				// deactivate form
@@ -669,16 +670,16 @@ public class AMEventHandler{
 			// accelerated blocks and entities are done outside the 5-tick performance optimisation to make them smooth
 			acceleratedBlocks = extendedProperties.getExtraVariablesContains("accelerated_fast_tile_");
 			for (Map.Entry<String, String> entry : acceleratedBlocks.entrySet()){
-				if (Integer.valueOf(entry.getValue()) < 3){
+				if (Integer.parseInt(entry.getValue()) < 3){
 					extendedProperties.removeFromExtraVariables(entry.getKey());
 				}else{
-					extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(Integer.valueOf(entry.getValue()) - 1));
+					extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(Integer.parseInt(entry.getValue()) - 1));
 					String[] entryvalues = entry.getKey().split("_");
-					int x = Integer.valueOf(entryvalues[3]);
-					int y = Integer.valueOf(entryvalues[4]);
-					int z = Integer.valueOf(entryvalues[5]);
-					int dim = Integer.valueOf(entryvalues[6]);
-					int power = Integer.valueOf(entryvalues[7]);
+					int x = Integer.parseInt(entryvalues[3]);
+					int y = Integer.parseInt(entryvalues[4]);
+					int z = Integer.parseInt(entryvalues[5]);
+					int dim = Integer.parseInt(entryvalues[6]);
+					int power = Integer.parseInt(entryvalues[7]);
 					World wrld = DimensionManager.getWorld(dim);
 					if (wrld != null){
 						for (int i = 0; i < power; i++){
@@ -695,13 +696,12 @@ public class AMEventHandler{
 				WorldServer[] worlds = DimensionManager.getWorlds();
 				int s1 = worlds.length;
 				try{
-					for (int l = 0; l < s1; l++){ // do this outside of for loop to save performance
-						if (l >= worlds.length) break;
-						int s2 = worlds[l].loadedEntityList.size();
+					for (WorldServer worldServer : worlds){ // do this outside of for loop to save performance
+						int s2 = worldServer.loadedEntityList.size();
 						for (int f = 0; f < s2; f++){
-							if (f >= worlds[l].loadedEntityList.size())
+							if (f >= worldServer.loadedEntityList.size())
 								break; // fix for the most obscene bug ever, where it doesn't respect indexes, or arbitrarily chooses to delete entities while I'm iterating over them
-							Object entityobj = worlds[l].loadedEntityList.get(f);
+							Object entityobj = worldServer.loadedEntityList.get(f);
 							if (entityobj instanceof EntityLivingBase){
 								String UUID = ((EntityLivingBase)entityobj).getUniqueID().toString();
 								if (acceleratedEntitiesUUIDs.containsKey(UUID)){
@@ -768,14 +768,14 @@ public class AMEventHandler{
 
 						for (Map.Entry<String, String> entry : slowedBlocks.entrySet()){
 							String[] entryvalues = entry.getKey().split("_");
-							if (Integer.valueOf(entry.getValue()) < 3){
+							if (Integer.parseInt(entry.getValue()) < 3){
 								extendedProperties.removeFromExtraVariables(entry.getKey());
 								slowedTiles.remove(entryvalues[3] + "_" + entryvalues[4] + "_" + entryvalues[5] + "_" + entryvalues[6]);
 							}else{
 								String represent = Integer.valueOf(entryvalues[3]) + "_" + Integer.valueOf(entryvalues[4]) + "_" + Integer.valueOf(entryvalues[5]) + "_" + Integer.valueOf(entryvalues[6]);
 								if (!(slowedTiles.containsKey(represent)))
 									slowedTiles.put(represent, Integer.valueOf(entryvalues[7])); // 7 is power
-								extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(Integer.valueOf(entry.getValue()) - 5));
+								extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(Integer.parseInt(entry.getValue()) - 5));
 							}
 						}
 					}
@@ -783,7 +783,7 @@ public class AMEventHandler{
 
 					if (enable_spatialVortex){
 						Map<String, String> spatialVortices = extendedProperties.getExtraVariablesContains("spatialvortex_");
-						if (spatialVortices.size() > 0){
+						if (!spatialVortices.isEmpty()){
 							int[] totalenergy = new int[spatialVortices.size()];
 							int[] totalenergyExternallyLimited = new int[spatialVortices.size()];
 							int[] totaletheriumdark = new int[spatialVortices.size()];
@@ -792,10 +792,10 @@ public class AMEventHandler{
 							int vIndex = 0;
 							for (Map.Entry<String, String> entry : spatialVortices.entrySet()){
 								String[] entryvalues = entry.getKey().split("_");
-								int x = Integer.valueOf(entryvalues[1]);
-								int y = Integer.valueOf(entryvalues[2]);
-								int z = Integer.valueOf(entryvalues[3]);
-								World thisdim = DimensionManager.getWorld(Integer.valueOf(entryvalues[4]));
+								int x = Integer.parseInt(entryvalues[1]);
+								int y = Integer.parseInt(entryvalues[2]);
+								int z = Integer.parseInt(entryvalues[3]);
+								World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
 								totalenergy[vIndex] = 0;
 								totaletheriumdark[vIndex] = 0;
 								totaletheriumlight[vIndex] = 0;
@@ -808,8 +808,8 @@ public class AMEventHandler{
 												totalenergyExternallyLimited[vIndex] += ((IEnergyHandler)te).extractEnergy(ForgeDirection.UNKNOWN, 50000, true); // sim only
 											}
 											if (te instanceof IPowerNode){
-												totaletheriumdark[vIndex] += PowerNodeRegistry.For(thisdim).getPower((IPowerNode)te, PowerTypes.DARK);
-												totaletheriumlight[vIndex] += PowerNodeRegistry.For(thisdim).getPower((IPowerNode)te, PowerTypes.LIGHT);
+												totaletheriumdark[vIndex] += (int)PowerNodeRegistry.For(thisdim).getPower((IPowerNode)te, PowerTypes.DARK);
+												totaletheriumlight[vIndex] += (int)PowerNodeRegistry.For(thisdim).getPower((IPowerNode)te, PowerTypes.LIGHT);
 											}
 										}
 									}
@@ -865,10 +865,10 @@ public class AMEventHandler{
 									}
 									if (tIndex == minE[0]){
 										String[] entryvalues = entry.getKey().split("_");
-										int x = Integer.valueOf(entryvalues[1]);
-										int y = Integer.valueOf(entryvalues[2]);
-										int z = Integer.valueOf(entryvalues[3]);
-										World thisdim = DimensionManager.getWorld(Integer.valueOf(entryvalues[4]));
+										int x = Integer.parseInt(entryvalues[1]);
+										int y = Integer.parseInt(entryvalues[2]);
+										int z = Integer.parseInt(entryvalues[3]);
+										World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
 										for (int xadd = -1; xadd <= 1; xadd += 2){
 											for (int zadd = -1; zadd <= 1; zadd += 2){
 												TileEntity te = thisdim.getTileEntity(x + xadd, y, z + zadd);
@@ -904,10 +904,10 @@ public class AMEventHandler{
 								for (Map.Entry<String, String> entry : spatialVortices.entrySet()){
 									if (localIndex == maxE[0]){
 										String[] entryvalues = entry.getKey().split("_");
-										int x = Integer.valueOf(entryvalues[1]);
-										int y = Integer.valueOf(entryvalues[2]);
-										int z = Integer.valueOf(entryvalues[3]);
-										World thisdim = DimensionManager.getWorld(Integer.valueOf(entryvalues[4]));
+										int x = Integer.parseInt(entryvalues[1]);
+										int y = Integer.parseInt(entryvalues[2]);
+										int z = Integer.parseInt(entryvalues[3]);
+										World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
 										for (int xadd = -1; xadd <= 1; xadd += 2){
 											for (int zadd = -1; zadd <= 1; zadd += 2){
 												TileEntity te = thisdim.getTileEntity(x + xadd, y, z + zadd);
@@ -929,17 +929,17 @@ public class AMEventHandler{
 								for (Map.Entry<String, String> entry : spatialVortices.entrySet()){
 									if (localIndex == maxD[0]){
 										String[] entryvalues = entry.getKey().split("_");
-										int x = Integer.valueOf(entryvalues[1]);
-										int y = Integer.valueOf(entryvalues[2]);
-										int z = Integer.valueOf(entryvalues[3]);
-										World thisdim = DimensionManager.getWorld(Integer.valueOf(entryvalues[4]));
+										int x = Integer.parseInt(entryvalues[1]);
+										int y = Integer.parseInt(entryvalues[2]);
+										int z = Integer.parseInt(entryvalues[3]);
+										World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
 										for (int xadd = -1; xadd <= 1; xadd += 2){
 											for (int zadd = -1; zadd <= 1; zadd += 2){
 												TileEntity te = thisdim.getTileEntity(x + xadd, y, z + zadd);
 												if (te != null){
 													if (te instanceof IPowerNode){
 														if (toSubtractD > 0)
-															toSubtractD -= PowerNodeRegistry.For(thisdim).consumePower((IPowerNode)te, PowerTypes.DARK, toSubtractD); // real
+															toSubtractD -= (int)PowerNodeRegistry.For(thisdim).consumePower((IPowerNode)te, PowerTypes.DARK, toSubtractD); // real
 													}
 												}
 											}
@@ -954,17 +954,17 @@ public class AMEventHandler{
 								for (Map.Entry<String, String> entry : spatialVortices.entrySet()){
 									if (localIndex == maxL[0]){
 										String[] entryvalues = entry.getKey().split("_");
-										int x = Integer.valueOf(entryvalues[1]);
-										int y = Integer.valueOf(entryvalues[2]);
-										int z = Integer.valueOf(entryvalues[3]);
-										World thisdim = DimensionManager.getWorld(Integer.valueOf(entryvalues[4]));
+										int x = Integer.parseInt(entryvalues[1]);
+										int y = Integer.parseInt(entryvalues[2]);
+										int z = Integer.parseInt(entryvalues[3]);
+										World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
 										for (int xadd = -1; xadd <= 1; xadd += 2){
 											for (int zadd = -1; zadd <= 1; zadd += 2){
 												TileEntity te = thisdim.getTileEntity(x + xadd, y, z + zadd);
 												if (te != null){
 													if (te instanceof IPowerNode){
 														if (toSubtractL > 0)
-															toSubtractL -= PowerNodeRegistry.For(thisdim).consumePower((IPowerNode)te, PowerTypes.LIGHT, toSubtractL); // real
+															toSubtractL -= (int)PowerNodeRegistry.For(thisdim).consumePower((IPowerNode)te, PowerTypes.LIGHT, toSubtractL); // real
 													}
 												}
 											}
@@ -980,10 +980,10 @@ public class AMEventHandler{
 								for (Map.Entry<String, String> entry : spatialVortices.entrySet()){
 									if (fIndex == minE[0] && ELeft){
 										String[] entryvalues = entry.getKey().split("_");
-										int x = Integer.valueOf(entryvalues[1]);
-										int y = Integer.valueOf(entryvalues[2]);
-										int z = Integer.valueOf(entryvalues[3]);
-										World thisdim = DimensionManager.getWorld(Integer.valueOf(entryvalues[4]));
+										int x = Integer.parseInt(entryvalues[1]);
+										int y = Integer.parseInt(entryvalues[2]);
+										int z = Integer.parseInt(entryvalues[3]);
+										World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
 										for (int xadd = -1; xadd <= 1; xadd += 2){
 											for (int zadd = -1; zadd <= 1; zadd += 2){
 												TileEntity te = thisdim.getTileEntity(x + xadd, y, z + zadd);
@@ -1002,17 +1002,17 @@ public class AMEventHandler{
 											System.out.println(fIndex + " fIndex when minD");
 										}
 										String[] entryvalues = entry.getKey().split("_");
-										int x = Integer.valueOf(entryvalues[1]);
-										int y = Integer.valueOf(entryvalues[2]);
-										int z = Integer.valueOf(entryvalues[3]);
-										World thisdim = DimensionManager.getWorld(Integer.valueOf(entryvalues[4]));
+										int x = Integer.parseInt(entryvalues[1]);
+										int y = Integer.parseInt(entryvalues[2]);
+										int z = Integer.parseInt(entryvalues[3]);
+										World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
 										for (int xadd = -1; xadd <= 1; xadd += 2){
 											for (int zadd = -1; zadd <= 1; zadd += 2){
 												TileEntity te = thisdim.getTileEntity(x + xadd, y, z + zadd);
 												if (te != null){
 													if (te instanceof IPowerNode){
 														if (toTransferD > 0)
-															toTransferD -= PowerNodeRegistry.For(thisdim).insertPower((IPowerNode)te, PowerTypes.DARK, toTransferD);
+															toTransferD -= (int)PowerNodeRegistry.For(thisdim).insertPower((IPowerNode)te, PowerTypes.DARK, toTransferD);
 														else DLeft = false;
 													}
 												}
@@ -1024,17 +1024,17 @@ public class AMEventHandler{
 											System.out.println(fIndex + " fIndex when minL");
 										}
 										String[] entryvalues = entry.getKey().split("_");
-										int x = Integer.valueOf(entryvalues[1]);
-										int y = Integer.valueOf(entryvalues[2]);
-										int z = Integer.valueOf(entryvalues[3]);
-										World thisdim = DimensionManager.getWorld(Integer.valueOf(entryvalues[4]));
+										int x = Integer.parseInt(entryvalues[1]);
+										int y = Integer.parseInt(entryvalues[2]);
+										int z = Integer.parseInt(entryvalues[3]);
+										World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
 										for (int xadd = -1; xadd <= 1; xadd += 2){
 											for (int zadd = -1; zadd <= 1; zadd += 2){
 												TileEntity te = thisdim.getTileEntity(x + xadd, y, z + zadd);
 												if (te != null){
 													if (te instanceof IPowerNode){
 														if (toTransferL > 0)
-															toTransferL -= PowerNodeRegistry.For(thisdim).insertPower((IPowerNode)te, PowerTypes.LIGHT, toTransferL);
+															toTransferL -= (int)PowerNodeRegistry.For(thisdim).insertPower((IPowerNode)te, PowerTypes.LIGHT, toTransferL);
 														else LLeft = false;
 													}
 												}
@@ -1051,19 +1051,19 @@ public class AMEventHandler{
 						Map<String, String> loadedBlocks = extendedProperties.getExtraVariablesContains("timefortified_tile_");
 
 						for (Map.Entry<String, String> entry : loadedBlocks.entrySet()){
-							if (Integer.valueOf(entry.getValue()) < 3){
+							if (Integer.parseInt(entry.getValue()) < 3){
 								extendedProperties.removeFromExtraVariables(entry.getKey());
 								if (!world.isRemote){
 									String[] entryvalues = entry.getKey().split("_");
-									int x = Integer.valueOf(entryvalues[2]);
-									int y = Integer.valueOf(entryvalues[3]);
-									int z = Integer.valueOf(entryvalues[4]);
-									int dim = Integer.valueOf(entryvalues[5]);
+									int x = Integer.parseInt(entryvalues[2]);
+									int y = Integer.parseInt(entryvalues[3]);
+									int z = Integer.parseInt(entryvalues[4]);
+									int dim = Integer.parseInt(entryvalues[5]);
 									if (DimensionManager.getWorld(dim) != null)
 										AMChunkLoader.INSTANCE.releaseStaticChunkLoad(DimensionManager.getWorld(dim).getTileEntity(x, y, z).getClass(), x, y, z, DimensionManager.getWorld(dim));
 								}
 							}else{
-								extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(Integer.valueOf(entry.getValue()) - 5));
+								extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(Integer.parseInt(entry.getValue()) - 5));
 							}
 						}
 					}
@@ -1071,21 +1071,21 @@ public class AMEventHandler{
 						Map<String, String> shieldedBlocks = extendedProperties.getExtraVariablesContains("shielded_tile_");
 
 						for (Map.Entry<String, String> entry : shieldedBlocks.entrySet()){
-							if (Integer.valueOf(entry.getValue()) < 3){
+							if (Integer.parseInt(entry.getValue()) < 3){
 								extendedProperties.removeFromExtraVariables(entry.getKey());
 								if (!world.isRemote){
 									String[] entryvalues = entry.getKey().split("_");
-									int x = Integer.valueOf(entryvalues[2]);
-									int y = Integer.valueOf(entryvalues[3]);
-									int z = Integer.valueOf(entryvalues[4]);
-									int dim = Integer.valueOf(entryvalues[5]);
+									int x = Integer.parseInt(entryvalues[2]);
+									int y = Integer.parseInt(entryvalues[3]);
+									int z = Integer.parseInt(entryvalues[4]);
+									int dim = Integer.parseInt(entryvalues[5]);
 									forceShielded.remove(x + "_" + y + "_" + z + "_" + dim);
 								}
 							}else{
 								String[] entryvalues = entry.getKey().split("_");
 								String represent = Integer.valueOf(entryvalues[2]) + "_" + Integer.valueOf(entryvalues[3]) + "_" + Integer.valueOf(entryvalues[4]) + "_" + Integer.valueOf(entryvalues[5]);
 								if (!(forceShielded.contains(represent))) forceShielded.add(represent);
-								extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(Integer.valueOf(entry.getValue()) - 5));
+								extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(Integer.parseInt(entry.getValue()) - 5));
 							}
 						}
 					}
@@ -1130,9 +1130,9 @@ public class AMEventHandler{
 				if (event.entityLiving instanceof EntityPlayer){
 					if (ent.motionY > 0){
 						if (world.isRemote)
-							ent.fallDistance += ent.posY - ent.prevPosY;
+							ent.fallDistance += (float)(ent.posY - ent.prevPosY);
 						else
-							ent.fallDistance += (((EntityPlayer)ent).field_71095_bQ - ((EntityPlayer)ent).field_71096_bN) * 2;
+							ent.fallDistance += (float)((((EntityPlayer)ent).field_71095_bQ - ((EntityPlayer)ent).field_71096_bN) * 2);
 					}
 				}
 				ent.onGround = false;
@@ -1225,7 +1225,7 @@ public class AMEventHandler{
 				ent.attackEntityFrom(DamageSources.unsummon, 5000);
 			}
 			if (owner == -1 || ownerEnt == null || ownerEnt.isDead || ownerEnt.getDistanceSqToEntity(ent) > 900){
-				if (ent instanceof EntityLiving && !((EntityLiving)ent).getCustomNameTag().equals("")){
+				if (ent instanceof EntityLiving && !((EntityLiving)ent).getCustomNameTag().isEmpty()){
 					EntityUtilities.setOwner(ent, null);
 					EntityUtilities.setSummonDuration(ent, -1);
 					EntityUtilities.revertAI((EntityCreature)ent);
@@ -1361,12 +1361,8 @@ public class AMEventHandler{
 		int y = MathHelper.floor_double(player.posY);
 		int z = MathHelper.floor_double(player.posZ);
 		if(player.worldObj.rand.nextInt(550) == 0) {
-			Class halclass = null;
+			Class<? extends EntityHallucination> halclass = null;
 			switch (player.worldObj.rand.nextInt(5)) {
-				case 0:
-				default:
-					halclass = EntitySpecificHallucinations.EntityHallucinationCreeper.class;
-					break;
 				case 1:
 					halclass = EntitySpecificHallucinations.EntityHallucinationZombie.class;
 					break;
@@ -1379,22 +1375,21 @@ public class AMEventHandler{
 				case 4:
 					halclass = EntitySpecificHallucinations.EntityHallucinationMagmacube.class;
 					break;
+				default:
+					halclass = EntitySpecificHallucinations.EntityHallucinationCreeper.class;
+					break;
 			}
 
 			EntityCreature summoned = summonCreature(player.worldObj, halclass, x, y, z, player, 4, 9);
-			if (hallucinationMap.get(player) == null) {
-				hallucinationMap.put(player, new ArrayList<EntityCreature>());
-			}
+			hallucinationMap.computeIfAbsent(player, k -> new ArrayList<>());
 			hallucinationMap.get(player).add(summoned);
 		}
 		if(player.worldObj.rand.nextInt(100) == 0) { // dust
 			EntityItem item = new EntityItem(player.worldObj);
 			item.setPosition((x-15) + player.worldObj.rand.nextInt(16), y + player.worldObj.rand.nextInt(6), (z-15) + player.worldObj.rand.nextInt(16));
-			item.setEntityItemStack(new ItemStack(ItemsCommonProxy.itemOre, 1, ItemsCommonProxy.itemOre.META_COGNITIVEDUST));
+			item.setEntityItemStack(new ItemStack(ItemsCommonProxy.itemOre, 1, ItemOre.META_COGNITIVEDUST));
 			player.worldObj.spawnEntityInWorld(item);
-			if (dustMap.get(player) == null) {
-				dustMap.put(player, new ArrayList<EntityItem>());
-			}
+			dustMap.computeIfAbsent(player, k -> new ArrayList<EntityItem>());
 			dustMap.get(player).add(item);
 		}
 	}
@@ -1410,10 +1405,6 @@ public class AMEventHandler{
 		if(player.worldObj.rand.nextInt(80) == 0) { // random noises
 			String soundString = null;
 			switch (player.worldObj.rand.nextInt(8)) {
-				case 0:
-				default:
-					soundString = "mob.zombie.say";
-					break;
 				case 1:
 					soundString = "mob.skeleton.say";
 					break;
@@ -1434,6 +1425,9 @@ public class AMEventHandler{
 					break;
 				case 7:
 					soundString = "random.fuse";
+					break;
+				default:
+					soundString = "mob.zombie.say";
 					break;
 			}
 			player.worldObj.playSoundAtEntity(player, soundString,1F, 1F);
@@ -1463,12 +1457,8 @@ public class AMEventHandler{
 			player.setPositionAndRotation(player.posX + cx, player.posY + cy, player.posZ + cz, player.rotationYaw * (rand.nextFloat() + rand.nextFloat()), player.rotationPitch * (rand.nextFloat() + rand.nextFloat()));
 		}
 		if(player.worldObj.rand.nextInt(750) == 0) { // even more hallucinations + ones specific to end
-			Class halclass = null;
+			Class<? extends EntityHallucination> halclass = null;
 			switch (player.worldObj.rand.nextInt(8)) {
-				case 0:
-				default:
-					halclass = EntitySpecificHallucinations.EntityHallucinationCreeper.class;
-					break;
 				case 1:
 					halclass = EntitySpecificHallucinations.EntityHallucinationZombie.class;
 					break;
@@ -1486,17 +1476,18 @@ public class AMEventHandler{
 				case 7:
 					halclass = EntitySpecificHallucinations.EntityHallucinationEndermite.class;
 					break;
+				default:
+					halclass = EntitySpecificHallucinations.EntityHallucinationCreeper.class;
+					break;
 			}
 
 			EntityCreature summoned = summonCreature(player.worldObj, halclass, x, y, z, player, 5, 13);
-			if (hallucinationMap.get(player) == null) {
-				hallucinationMap.put(player, new ArrayList<EntityCreature>());
-			}
+			hallucinationMap.computeIfAbsent(player, k -> new ArrayList<>());
 			hallucinationMap.get(player).add(summoned);
 		}
 	}
 
-	public static EntityCreature summonCreature(World world, Class creatureClass, int x, int y, int z, EntityLivingBase target, int minRange, int maxRange) {
+	public static EntityCreature summonCreature(World world, Class<? extends EntityHallucination> creatureClass, int x, int y, int z, EntityLivingBase target, int minRange, int maxRange) {
 		if(!world.isRemote) {
 			int activeRadius = maxRange - minRange;
 			int ax = world.rand.nextInt(activeRadius * 2 + 1);
@@ -1510,46 +1501,38 @@ public class AMEventHandler{
 			}
 			int nz = z - maxRange + az;
 			int ny;
-			for(ny = y; !world.isAirBlock(nx, ny, nz) && ny < y + 8; ++ny) {
-				;
+			for(ny = y; ny < y + 8; ++ny) {
+				if(world.isAirBlock(nx, ny, nz)) break;
 			}
 			while(world.isAirBlock(nx, ny, nz) && ny > 0) {
 				--ny;
 			}
 			int hy;
-			for(hy = 0; world.isAirBlock(nx, ny + hy + 1, nz) && hy < 6; ++hy) {
-				;
+			for(hy = 0;hy < 6; ++hy) {
+				if(!world.isAirBlock(nx, ny + hy + 1, nz)) break;
 			}
 			if(hy >= 2) {
 				try {
-					Constructor ex = creatureClass.getConstructor(new Class[]{World.class});
-					EntityCreature creature = (EntityCreature)ex.newInstance(new Object[]{world});
+					Constructor<? extends EntityHallucination> ex = creatureClass.getConstructor(World.class);
+					EntityHallucination creature = ex.newInstance(world);
 					if(target instanceof EntityPlayer) {
 						EntityPlayer player = (EntityPlayer)target;
-						if(creature instanceof EntityHallucination) {
-							((EntityHallucination)creature).setTarget(player.getCommandSenderName());
-						}
+						creature.setTarget(player.getCommandSenderName());
 					}
 
 					creature.setLocationAndAngles(0.5D + (double)nx, 0.05D + (double)ny + 1.0D, 0.5D + (double)nz, 0.0F, 0.0F);
 					world.spawnEntityInWorld(creature);
 
 					return creature;
-				} catch (NoSuchMethodException var20) {
-					;
-				} catch (InvocationTargetException var21) {
-					;
-				} catch (InstantiationException var22) {
-					;
-				} catch (IllegalAccessException var23) {
-					;
+				} catch (ReflectiveOperationException | RuntimeException ignored) {
+
 				}
 			}
 		}
 		return null;
 	}
 
-	private static Random rand = new Random();
+
 	
 	@SubscribeEvent
 	public void onBucketFill(FillBucketEvent event){
@@ -1657,7 +1640,7 @@ public class AMEventHandler{
 		PotionEffect magicShield = event.entityLiving.getActivePotionEffect(BuffList.magicShield);
 		if (magicShield != null){
 			event.ammount *= 0.5f;
-			event.ammount *= (1 / (magicShield.getAmplifier() + 1));
+			event.ammount *= (1f / (magicShield.getAmplifier() + 1f));
 		}
 
 		if (event.entityLiving.isPotionActive(BuffList.manaShield)){
@@ -1755,7 +1738,7 @@ public class AMEventHandler{
 			event.ammount /= 2;
 	}
 
-	private static Map<ExtendedProperties, Integer> tempFlipped = new HashMap<ExtendedProperties, Integer>();
+
 
 	@SubscribeEvent
 	public void onBlockOverlay(RenderBlockOverlayEvent event) {
@@ -1764,7 +1747,7 @@ public class AMEventHandler{
 				event.setCanceled(true);
 			}
 		} else if (event.overlayType == RenderBlockOverlayEvent.OverlayType.FIRE) {
-			if (event.player instanceof EntityPlayer && ((EntityPlayer)event.player).inventory.armorInventory[3] != null && ((EntityPlayer)event.player).inventory.armorInventory[3].getItem() == ItemsCommonProxy.archmageHood) {
+			if (event.player != null && ((EntityPlayer)event.player).inventory.armorInventory[3] != null && ((EntityPlayer)event.player).inventory.armorInventory[3].getItem() == ItemsCommonProxy.archmageHood) {
 				event.setCanceled(true);
 			}
 		}

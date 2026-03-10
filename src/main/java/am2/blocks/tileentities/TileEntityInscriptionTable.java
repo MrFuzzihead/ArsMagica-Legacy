@@ -278,9 +278,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 
 	private ItemStack[] getCraftingGridContents(){
 		ItemStack[] contents = new ItemStack[10];
-		for (int i = 0; i < 10; ++i){
-			contents[i] = inscriptionTableItemStacks[i];
-		}
+		System.arraycopy(inscriptionTableItemStacks, 0, contents, 0, 10);
 
 		return contents;
 	}

@@ -405,7 +405,7 @@ public class SpellHelper{
 				}else if (source instanceof EntityPlayer && target instanceof EntityPlayer && !target.worldObj.isRemote && (!MinecraftServer.getServer().isPVPEnabled() || ((EntityPlayer)target).capabilities.isCreativeMode)){
 					return false;
 				}
-
+				magnitude = modifyDamage(source, magnitude);
 				if (source.isPotionActive(BuffList.fury))
 					magnitude += 4;
 			}
@@ -459,6 +459,18 @@ public class SpellHelper{
 		}
 
 		return success;
+	}
+
+	/**
+	 * Modifies the damage based on the caster's magic level
+	 *
+	 * @return
+	 */
+	public float modifyDamage(EntityLivingBase caster, float damage){
+		float factor = (float)(ExtendedProperties.For(caster).getMagicLevel() < 20 ?
+				0.5 + (0.5 * ExtendedProperties.For(caster).getMagicLevel() / 19) :
+				1.0 + (1.0 * (ExtendedProperties.For(caster).getMagicLevel() - 20) / 79));
+		return damage * factor;
 	}
 
 	private void dropHead(Entity target, World world){
