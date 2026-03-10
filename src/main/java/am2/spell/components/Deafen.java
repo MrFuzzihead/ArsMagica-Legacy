@@ -15,15 +15,12 @@ import am2.network.AMNetHandler;
 import am2.network.AMPacketIDs;
 import am2.particles.AMParticle;
 import am2.particles.ParticleOrbitEntity;
-import am2.playerextensions.ExtendedProperties;
 import am2.spell.SpellUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
 import net.minecraft.world.World;
 
 import java.util.EnumSet;

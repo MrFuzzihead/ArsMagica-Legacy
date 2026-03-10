@@ -3,8 +3,6 @@ package am2.items;
 import am2.AMCore;
 import am2.api.spell.ItemSpellBase;
 import am2.containers.InventorySpellBook;
-import am2.enchantments.AMEnchantmentHelper;
-import am2.enchantments.AMEnchantments;
 import am2.guis.ArsMagicaGuiIdList;
 import am2.playerextensions.SkillData;
 import am2.spell.SkillManager;
@@ -25,7 +23,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
 
 import java.util.List;
 import java.util.Map;

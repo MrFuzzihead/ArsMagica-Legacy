@@ -1,18 +1,12 @@
 package am2.items;
 
-import am2.AMEventHandler;
 import am2.armor.ItemEnderBoots;
 import am2.playerextensions.ExtendedProperties;
-import am2.utility.DummyEntityPlayer;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentFireAspect;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.StatCollector;

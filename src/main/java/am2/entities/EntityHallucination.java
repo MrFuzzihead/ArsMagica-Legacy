@@ -2,14 +2,11 @@ package am2.entities;
 
 import am2.items.ItemEssence;
 import am2.items.ItemsCommonProxy;
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.*;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;

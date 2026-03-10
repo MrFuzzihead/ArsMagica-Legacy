@@ -1,8 +1,6 @@
 package am2.enchantments;
 
-import am2.items.ItemSpellBook;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentProtection;
 import net.minecraft.enchantment.EnumEnchantmentType;
 import net.minecraft.item.ItemStack;
 

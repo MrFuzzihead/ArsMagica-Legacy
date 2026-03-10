@@ -1,6 +1,5 @@
 package am2.containers;
 
-import am2.api.spell.ItemSpellBase;
 import am2.containers.slots.SlotLock;
 import am2.containers.slots.SlotSpell;
 import am2.items.ItemSpellBook;

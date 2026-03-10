@@ -13,8 +13,6 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.BlockSnapshot;
-import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.world.BlockEvent;
 
 import java.util.EnumSet;

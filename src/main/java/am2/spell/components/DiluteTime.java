@@ -10,7 +10,6 @@ import am2.particles.AMParticle;
 import am2.particles.ParticleOrbitEntity;
 import am2.playerextensions.ExtendedProperties;
 import am2.spell.SpellUtils;
-import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;

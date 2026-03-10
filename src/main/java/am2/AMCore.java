@@ -1,8 +1,6 @@
 package am2;
 
 import am2.api.ArsMagicaApi;
-import am2.api.power.Mana;
-import am2.api.power.ManaRegistry;
 import am2.api.spell.enums.Affinity;
 import am2.armor.infusions.ImbuementRegistry;
 import am2.blocks.RecipesEssenceRefiner;
@@ -60,8 +58,6 @@ import net.minecraftforge.fluids.FluidContainerRegistry.FluidContainerData;
 import net.minecraftforge.fluids.FluidRegistry;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
 
 //@Mod(modid = "arsmagica2", modLanguage = "java", name = "Ars Magica 2", version = "1.6.7", dependencies = "required-after:AnimationAPI")
 @Mod(modid = "arsmagica2", modLanguage = "java", name = "Ars Magica 2", version = "1.8", dependencies = "required-after:AnimationAPI;after:CoFHCore")

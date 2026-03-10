@@ -20,8 +20,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
-import java.util.Random;
-
 public class BlockMagiciansWorkbench extends AMSpecialRenderBlockContainer{
 
 	protected BlockMagiciansWorkbench(){

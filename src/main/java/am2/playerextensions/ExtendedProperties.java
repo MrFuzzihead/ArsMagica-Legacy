@@ -25,7 +25,6 @@ import am2.network.AMDataWriter;
 import am2.network.AMNetHandler;
 import am2.network.AMPacketIDs;
 import am2.particles.AMLineArc;
-
 import am2.spell.SkillManager;
 import am2.spell.SkillTreeManager;
 import am2.spell.SpellHelper;

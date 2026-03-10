@@ -9,7 +9,6 @@ import am2.api.spell.component.interfaces.ISpellShape;
 import am2.items.ItemsCommonProxy;
 import am2.playerextensions.ExtendedProperties;
 import am2.proxy.tick.ClientTickHandler;
-import am2.utility.WebRequestUtils;
 import cpw.mods.fml.relauncher.ReflectionHelper;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -26,14 +25,14 @@ import net.minecraft.stats.Achievement;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
-import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 @SideOnly(Side.CLIENT)

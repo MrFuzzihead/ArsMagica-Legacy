@@ -8,7 +8,6 @@ import am2.blocks.BlocksCommonProxy;
 import am2.blocks.tileentities.TileEntityEverstone;
 import am2.blocks.tileentities.TileEntityManaBattery;
 import am2.guis.GuiBlockAccess;
-import am2.items.ItemsCommonProxy;
 import am2.models.ModelCandle;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import net.minecraft.block.Block;

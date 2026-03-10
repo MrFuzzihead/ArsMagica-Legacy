@@ -16,7 +16,6 @@ import am2.particles.AMParticle;
 import am2.particles.ParticleHoldPosition;
 import am2.playerextensions.ExtendedProperties;
 import am2.playerextensions.SkillData;
-
 import am2.spell.SkillManager;
 import am2.spell.SkillTreeManager;
 import am2.spell.SpellHelper;

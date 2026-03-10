@@ -10,7 +10,6 @@ import am2.blocks.BlocksCommonProxy;
 import am2.blocks.tileentities.flickers.FlickerOperatorRegistry;
 import am2.enchantments.AMEnchantmentHelper;
 import cpw.mods.fml.common.registry.GameRegistry;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;

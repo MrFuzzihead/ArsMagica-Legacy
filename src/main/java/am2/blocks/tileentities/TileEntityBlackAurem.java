@@ -15,7 +15,6 @@ import am2.multiblock.IMultiblockStructureController;
 import am2.particles.AMLineArc;
 import am2.power.PowerNodeRegistry;
 import am2.utility.EntityUtilities;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.boss.IBossDisplayData;
 import net.minecraft.entity.player.EntityPlayer;

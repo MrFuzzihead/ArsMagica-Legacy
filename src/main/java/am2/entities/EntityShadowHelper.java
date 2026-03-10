@@ -3,7 +3,6 @@ package am2.entities;
 import am2.AMCore;
 import am2.api.math.AMVector3;
 import am2.blocks.tileentities.TileEntityCraftingAltar;
-import am2.damage.DamageSourceUnsummon;
 import am2.damage.DamageSources;
 import am2.entities.ai.EntityAISpellmaking;
 import am2.particles.AMParticle;

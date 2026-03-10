@@ -1,22 +1,15 @@
 package am2.spell.components;
 
-import am2.AMChunkLoader;
 import am2.AMCore;
 import am2.api.spell.component.interfaces.ISpellComponent;
 import am2.api.spell.enums.Affinity;
-import am2.api.spell.enums.SpellModifiers;
-import am2.buffs.BuffList;
 import am2.items.ItemsCommonProxy;
 import am2.particles.AMParticle;
 import am2.particles.ParticleOrbitEntity;
-import am2.playerextensions.ExtendedProperties;
-import am2.spell.SpellUtils;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;

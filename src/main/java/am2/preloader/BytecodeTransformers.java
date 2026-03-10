@@ -2,7 +2,6 @@ package am2.preloader;
 
 import am2.LogHelper;
 import net.minecraft.launchwrapper.IClassTransformer;
-
 import net.tclproject.mysteriumlib.asm.common.CustomLoadingPlugin;
 import net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixLoaderMagicka;
 import org.apache.logging.log4j.Level;
@@ -10,12 +9,12 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
-import java.lang.reflect.Field;
-import java.util.Iterator;
 
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.lang.reflect.Field;
+import java.util.Iterator;
 import java.util.function.Consumer;
 
 public class BytecodeTransformers implements IClassTransformer{

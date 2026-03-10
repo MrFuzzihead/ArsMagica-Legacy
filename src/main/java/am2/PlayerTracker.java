@@ -1,32 +1,21 @@
 package am2;
 
-import am2.armor.ArmorHelper;
-import am2.armor.infusions.GenericImbuement;
 import am2.customdata.CustomWorldData;
-import am2.enchantments.AMEnchantments;
 import am2.network.AMDataWriter;
 import am2.network.AMNetHandler;
 import am2.playerextensions.AffinityData;
 import am2.playerextensions.ExtendedProperties;
-import am2.playerextensions.RiftStorage;
 import am2.playerextensions.SkillData;
 import am2.proxy.tick.ServerTickHandler;
 import am2.spell.SkillTreeManager;
 import am2.utility.EntityUtilities;
-import am2.utility.WebRequestUtils;
-import cpw.mods.fml.common.FMLLog;
-import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
-import net.minecraft.client.Minecraft;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.HashMap;

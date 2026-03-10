@@ -11,7 +11,6 @@ import am2.network.AMPacketIDs;
 import am2.spell.SpellHelper;
 import am2.utility.DimensionUtilities;
 import am2.worldgen.RetroactiveWorldgenerator;
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.entity.EntityCreature;

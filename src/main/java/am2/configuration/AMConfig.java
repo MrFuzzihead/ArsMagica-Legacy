@@ -5,10 +5,7 @@ import am2.api.math.AMVector2;
 import am2.particles.AMParticle;
 import am2.particles.ParticleController;
 import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.registry.EntityRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
 import net.minecraft.potion.Potion;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
@@ -103,7 +100,7 @@ public class AMConfig extends Configuration{
 	private final String KEY_ChimeriteMax = "ChimeriteMaxHeight";
 	private final String KEY_ChimeriteVein = "ChimeriteVeinSize";
 	private final String KEY_ChimeriteFreq = "ChimeriteFrequency";
-	
+
 	private final String KEY_TopazMin = "TopazMinHeight";
 	private final String KEY_TopazMax = "TopazMaxHeight";
 	private final String KEY_TopazVein = "TopazVeinSize";
@@ -468,7 +465,7 @@ public class AMConfig extends Configuration{
 		worldgenWhitelist = new int[asplit.length];
 		int count1 = 0;
 		for (String s : asplit){
-			if (s.equals("")) continue;
+			if (s.isEmpty()) continue;
 			try{
 				worldgenWhitelist[count1] = Integer.parseInt(s.trim());
 			}catch (Throwable t){
@@ -485,7 +482,7 @@ public class AMConfig extends Configuration{
 		worldgenBlacklist = new int[split.length];
 		int count = 0;
 		for (String s : split){
-			if (s.equals("")) continue;
+			if (s.isEmpty()) continue;
 			try{
 				worldgenBlacklist[count] = Integer.parseInt(s.trim());
 			}catch (Throwable t){
@@ -508,7 +505,7 @@ public class AMConfig extends Configuration{
 		mobBlacklist = new int[split2.length];
 		int count2 = 0;
 		for (String s : split2){
-			if (s.equals("")) continue;
+			if (s.isEmpty()) continue;
 			try{
 				mobBlacklist[count2] = Integer.parseInt(s.trim());
 			}catch (Throwable t){
@@ -528,7 +525,7 @@ public class AMConfig extends Configuration{
 		appropriationMobBlacklist = new Class[split.length];
 		count = 0;
 		for (String s : split){
-			if (s.equals("")) continue;
+			if (s.isEmpty()) continue;
 			try{
 				appropriationMobBlacklist[count] = Class.forName(s);
 			}catch (Throwable t){

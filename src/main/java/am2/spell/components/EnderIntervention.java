@@ -8,7 +8,6 @@ import am2.buffs.BuffList;
 import am2.items.ItemsCommonProxy;
 import am2.particles.AMParticle;
 import am2.particles.ParticleFloatUpward;
-import am2.utility.DimensionUtilities;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;

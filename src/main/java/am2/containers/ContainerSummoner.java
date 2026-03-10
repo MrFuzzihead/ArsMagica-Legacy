@@ -2,7 +2,10 @@ package am2.containers;
 
 import am2.api.spell.ItemSpellBase;
 import am2.blocks.tileentities.TileEntitySummoner;
-import am2.containers.slots.*;
+import am2.containers.slots.AM2Container;
+import am2.containers.slots.SlotFocusOnly;
+import am2.containers.slots.SlotGhostRune;
+import am2.containers.slots.SlotSpell;
 import am2.items.ItemFocus;
 import am2.items.ItemFocusCharge;
 import am2.items.ItemFocusMana;

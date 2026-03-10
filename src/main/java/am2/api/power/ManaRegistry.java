@@ -1,10 +1,12 @@
 package am2.api.power;
 
-import com.google.common.collect.*;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import cpw.mods.fml.common.eventhandler.Event;
 import cpw.mods.fml.common.registry.RegistryDelegate;
 import net.minecraftforge.common.MinecraftForge;
-
 
 import java.util.Map;
 

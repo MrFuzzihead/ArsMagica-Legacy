@@ -1,7 +1,6 @@
 package am2.playerextensions;
 
 import am2.AMCore;
-import am2.LogHelper;
 import am2.api.IAffinityData;
 import am2.api.math.AMVector3;
 import am2.api.spell.enums.Affinity;

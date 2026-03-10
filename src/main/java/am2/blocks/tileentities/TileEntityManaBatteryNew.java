@@ -1,7 +1,6 @@
 package am2.blocks.tileentities;
 
 
-import am2.api.power.PowerTypes;
 import am2.api.power.TileManaHandler;
 
 

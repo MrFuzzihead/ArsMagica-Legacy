@@ -8,7 +8,6 @@ import am2.bosses.renderers.*;
 import am2.entities.models.ModelBattleChicken;
 import am2.entities.models.ModelHecate;
 import am2.entities.renderers.*;
-import am2.worldgen.BiomeWitchwoodForest;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.relauncher.Side;
@@ -20,8 +19,6 @@ import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.biome.BiomeGenBase.SpawnListEntry;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
-
-import static net.minecraft.world.biome.BiomeGenBase.*;
 
 public class EntityManager implements IEntityManager{
 

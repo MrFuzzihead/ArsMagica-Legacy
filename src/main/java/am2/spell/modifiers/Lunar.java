@@ -4,8 +4,6 @@ import am2.api.spell.component.interfaces.ISpellModifier;
 import am2.api.spell.enums.SpellModifiers;
 import am2.items.ItemsCommonProxy;
 import am2.playerextensions.ExtendedProperties;
-import am2.spell.SpellHelper;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;

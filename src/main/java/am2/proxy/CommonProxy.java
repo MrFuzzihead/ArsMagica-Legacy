@@ -58,8 +58,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import static am2.blocks.BlocksCommonProxy.AMOres;
-import static net.minecraft.item.Item.getItemById;
-import static net.minecraft.item.Item.getItemFromBlock;
 
 public class CommonProxy{
 	private ArrayList<AMVector3> pendingFlickerLinks;
