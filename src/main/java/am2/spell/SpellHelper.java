@@ -295,7 +295,7 @@ public class SpellHelper{
 		if (consumeMBR){
 			checkEvent = preSpellCast(parsedStack, caster, false);
 			if (checkEvent.castResult != SpellCastResult.SUCCESS){
-				if (checkEvent.castResult == SpellCastResult.NOT_ENOUGH_MANA && caster.worldObj.isRemote && caster instanceof EntityPlayer){
+				if (checkEvent.castResult == SpellCastResult.NOT_ENOUGH_MANA && caster.worldObj.isRemote){
 					AMCore.proxy.flashManaBar();
 				}
 				SpellCastingEvent.Post event = new SpellCastingEvent().new Post(parsedStack, (ItemSpellBase)parsedStack.getItem(), caster, checkEvent.manaCost, checkEvent.burnout, false, checkEvent.castResult);
@@ -361,8 +361,6 @@ public class SpellHelper{
 				if (sfx != null){
 					if (!shape.isChanneled()){
 						world.playSound(caster.posX, caster.posY, caster.posZ, sfx, 0.4f, world.rand.nextFloat() * 0.1F + 0.9F, false);
-					}else{
-						//SoundHelper.instance.loopSound(world, (float)x, (float)y, (float)z, sfx, 0.6f);
 					}
 				}
 			}

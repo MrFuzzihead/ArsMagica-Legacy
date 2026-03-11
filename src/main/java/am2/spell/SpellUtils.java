@@ -824,10 +824,12 @@ public class SpellUtils implements ISpellUtils{
 			}
 			if (xp > 0){
 				xp *= (float)caster.getAttributeMap().getAttributeInstance(ArsMagicaApi.xpGainModifier).getAttributeValue();
-				float levelscaled = (((float)ExtendedProperties.For(caster).getMagicLevel() / 99) + 1F);
-				float burnoutscaled = (float)((ExtendedProperties.For(caster).getCurrentFatigue() /  ExtendedProperties.For(caster).getMaxFatigue()) + 0.1);
-				float manascaled = mana / ExtendedProperties.For(caster).getMaxMana() + 1;
-				xp *= (float)Math.pow(Math.pow(manascaled * manascaled, 1 / burnoutscaled),levelscaled) ;
+//				float level = (float)ExtendedProperties.For(caster).getMagicLevel();
+//				float burnoutscaled = (ExtendedProperties.For(caster).getCurrentFatigue() /  ExtendedProperties.For(caster).getMaxFatigue());
+//				float manascaled = mana / ExtendedProperties.For(caster).getMaxMana();
+				//xp *= (float)Math.pow(Math.pow(manascaled * manascaled, 1 / burnoutscaled),levelscaled);
+				//xp *= (float)((Math.pow(manascaled,burnoutscaled) * (level/10)));
+				xp *= mana / 300;
 				ExtendedProperties.For(caster).addMagicXP(xp);
 			}
 		}
