@@ -18,6 +18,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -114,12 +115,12 @@ public class SpellBase extends ItemSpellBase{
 
 		manaCost = mce.manaCost;
 
-		list.add(String.format("\2477Mana Cost: %.2f", manaCost));
+		list.add(I18n.format("Mana Cost: %s", (int)manaCost));
 
 		if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
 			HashMap<Affinity, Float> affinityData = SpellUtils.instance.AffinityFor(legacySpell);
 			for (Affinity aff : affinityData.keySet()){
-				list.add(String.format("%s (%.2f%%)", aff.toString(), affinityData.get(aff) * 100));
+				list.add(String.format("%s (%.2f%%)",aff.getColor() + aff.toString(), affinityData.get(aff) * 100));
 			}
 
 			if (stack.stackTagCompound.hasKey("Lore")){
@@ -164,9 +165,6 @@ public class SpellBase extends ItemSpellBase{
 		if (shape != null){
 			if (!shape.isChanneled())
 				SpellHelper.instance.applyStackStage(stack, player, null, player.posX, player.posY, player.posZ, 0, world, true, true, 0);
-			if (world.isRemote && shape.isChanneled()){
-				//SoundHelper.instance.stopSound(shape.getSoundForAffinity(SpellUtils.instance.mainAffinityFor(stack), stack, null));
-			}
 		}
 	}
 

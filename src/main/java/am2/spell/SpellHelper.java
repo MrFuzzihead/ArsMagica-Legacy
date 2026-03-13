@@ -19,6 +19,7 @@ import am2.entities.EntityDarkMage;
 import am2.entities.EntityLightMage;
 import am2.entities.EntitySpellEffect;
 import am2.items.ItemKeystone;
+import am2.items.ItemOre;
 import am2.items.ItemsCommonProxy;
 import am2.network.AMDataWriter;
 import am2.network.AMNetHandler;
@@ -37,6 +38,7 @@ import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.monster.EntityZombie;
+import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
@@ -445,11 +447,12 @@ public class SpellHelper{
 
 		if (dmgSrcPlayer != null){
 			if (spellStack != null && target instanceof EntityLivingBase){
-				if (!target.worldObj.isRemote &&
-						((EntityLivingBase)target).getHealth() <= 0 &&
-						SpellUtils.instance.modifierIsPresent(SpellModifiers.DISMEMBERING_LEVEL, spellStack, 0)){
+				if (!target.worldObj.isRemote && ((EntityLivingBase)target).getHealth() <= 0 && SpellUtils.instance.modifierIsPresent(SpellModifiers.DISMEMBERING_LEVEL, spellStack, 0)){
 					double chance = SpellUtils.instance.getModifiedDouble_Add(0, spellStack, dmgSrcPlayer, target, dmgSrcPlayer.worldObj, 0, SpellModifiers.DISMEMBERING_LEVEL);
 					if (dmgSrcPlayer.worldObj.rand.nextDouble() <= chance){
+						if(target instanceof EntityPlayer || target instanceof EntityVillager){
+							dropSoulFragment(target, dmgSrcPlayer.worldObj);
+						}
 						dropHead(target, dmgSrcPlayer.worldObj);
 					}
 				}
@@ -470,6 +473,15 @@ public class SpellHelper{
 				1.0 + (1.0 * (ExtendedProperties.For(caster).getMagicLevel() - 20) / 79));
 		return damage * factor;
 	}
+	private void dropSoulFragment(Entity target, World world){
+		EntityItem item = new EntityItem(world);
+		ItemStack itemStack = new ItemStack(ItemsCommonProxy.itemOre, 1, ItemOre.META_SOULFRAGMENT);
+		item.setEntityItemStack(itemStack);
+		item.setPosition(target.posX,target.posY,target.posZ);
+		world.spawnEntityInWorld(item);
+		target.worldObj.playSoundAtEntity(target, "ambient.weather.thunder",2F, 2F);
+	}
+
 
 	private void dropHead(Entity target, World world){
 		if (target.getClass() == EntitySkeleton.class){

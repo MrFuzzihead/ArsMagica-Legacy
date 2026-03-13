@@ -447,65 +447,63 @@ public class MysteriumPatchesFixesMagicka{
 		}
 	}
 
-	private static final MethodHandle isDrawingGet = createIsDrawingGet();
-
-	private static MethodHandle createIsDrawingGet() {
-		try {
-			Minecraft.getMinecraft(); // roundabout way to check for client
-			return createIsDrawingGetDelegate();
-		} catch (RuntimeException e) {
-		} catch (NoClassDefFoundError e) {
-		} catch (Exception e) {
-		}
-		return null;
-	}
-
-	@SideOnly(Side.CLIENT)
-	private static MethodHandle createIsDrawingGetDelegate() {
-		try {
-			Field field = CustomLoadingPlugin.isObfuscated() ? Tessellator.class.getDeclaredField("field_78415_z") : Tessellator.class.getDeclaredField("isDrawing");
-			field.setAccessible(true);
-			return MethodHandles.publicLookup().unreflectGetter(field);
-		} catch (Exception e) {
-			LogHelper.error("Did not find tesselator isDrawing field! Only report this error if you're seeing it on a client!");
-			return null;
-		}
-	}
-
-	// Completely removes the "already tessellating" error
-	@SideOnly(Side.CLIENT)
-	@Fix(returnSetting = EnumReturnSetting.ON_TRUE)
-	public static boolean startDrawing(Tessellator tsl, int p_78371_1_)
-	{
-		boolean isDrawing = false;
-		try {
-			isDrawing = (boolean) isDrawingGet.invokeExact((Tessellator) tsl);
-		} catch (Throwable e) {
-			throw new RuntimeException("Could not invoke isDrawing field! Only report this error if you're seeing it on a client!", e);
-		}
-		if (isDrawing)
-		{
-			return true;
-		}
-		return false;
-	}
-
-	// Completely removes the "already tessellating" error - part 2, electric boogaloo
-	@SideOnly(Side.CLIENT)
-	@Fix(returnSetting = EnumReturnSetting.ON_TRUE)
-	public static boolean draw(Tessellator tsl) {
-		boolean isDrawing = false;
-		try {
-			isDrawing = (boolean) isDrawingGet.invokeExact((Tessellator) tsl);
-		} catch (Throwable e) {
-			throw new RuntimeException("Could not invoke isDrawing field! Only report this error if you're seeing it on a client!", e);
-		}
-		if (!isDrawing)
-		{
-			return true;
-		}
-		return false;
-	}
+//	private static final MethodHandle isDrawingGet = createIsDrawingGet();
+//
+//	private static MethodHandle createIsDrawingGet(){
+//		try {
+//			Minecraft.getMinecraft(); // roundabout way to check for client
+//			return createIsDrawingGetDelegate();
+//		} catch (NoClassDefFoundError | Exception ignored) {
+//		}
+//		return null;
+//	}
+//
+//	@SideOnly(Side.CLIENT)
+//	private static MethodHandle createIsDrawingGetDelegate() {
+//		try {
+//			Field field = CustomLoadingPlugin.isObfuscated() ? Tessellator.class.getDeclaredField("field_78415_z") : Tessellator.class.getDeclaredField("isDrawing");
+//			field.setAccessible(true);
+//			return MethodHandles.publicLookup().unreflectGetter(field);
+//		} catch (Exception e) {
+//			LogHelper.error("Did not find tesselator isDrawing field! Only report this error if you're seeing it on a client!");
+//			return null;
+//		}
+//	}
+//
+//	// Completely removes the "already tessellating" error
+//	@SideOnly(Side.CLIENT)
+//	@Fix(returnSetting = EnumReturnSetting.ON_TRUE)
+//	public static boolean startDrawing(Tessellator tsl, int p_78371_1_)
+//	{
+//		boolean isDrawing = false;
+//		try {
+//			isDrawing = (boolean) isDrawingGet.invokeExact((Tessellator) tsl);
+//		} catch (Throwable e) {
+//			throw new RuntimeException("Could not invoke isDrawing field! Only report this error if you're seeing it on a client!", e);
+//		}
+//		if (isDrawing)
+//		{
+//			return true;
+//		}
+//		return false;
+//	}
+//
+//	// Completely removes the "already tessellating" error - part 2, electric boogaloo
+//	@SideOnly(Side.CLIENT)
+//	@Fix(returnSetting = EnumReturnSetting.ON_TRUE)
+//	public static boolean draw(Tessellator tsl) {
+//		boolean isDrawing = false;
+//		try {
+//			isDrawing = (boolean) isDrawingGet.invokeExact((Tessellator) tsl);
+//		} catch (Throwable e) {
+//			throw new RuntimeException("Could not invoke isDrawing field! Only report this error if you're seeing it on a client!", e);
+//		}
+//		if (!isDrawing)
+//		{
+//			return true;
+//		}
+//		return false;
+//	}
 
 	private static Field timerField = null;
 	@SideOnly(Side.CLIENT)

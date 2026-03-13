@@ -299,49 +299,49 @@ public class AMEventHandler{
 		}
 	}
 
-	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public void onEntityDeathHighPriority(LivingDeathEvent event){
-
-		EntityLivingBase soonToBeDead = event.entityLiving;
-
-		if (soonToBeDead instanceof EntityPlayer) {
-			// soul fragments: die with at least 5 rare items
-			if (soonToBeDead.isPotionActive(BuffList.psychedelic)){
-				if (soonToBeDead.worldObj.provider.dimensionId == 1 && soonToBeDead.getActivePotionEffect(BuffList.psychedelic).getAmplifier() == 1) {
-					EntityPlayer player = (EntityPlayer)soonToBeDead;
-					int slotCount = 0;
-					int rareCount = 0;
-					for (ItemStack stack : player.inventory.mainInventory){
-						if (stack != null) {
-							if (stack.getRarity() != EnumRarity.common) {
-								player.inventory.setInventorySlotContents(slotCount, null);
-								rareCount++;
-							}
-						}
-						slotCount++;
-					}
-					slotCount = 0;
-					for (ItemStack stack : player.inventory.armorInventory){
-						if (stack != null) {
-							if (stack.getRarity() != EnumRarity.common) {
-								player.inventory.setInventorySlotContents(slotCount + player.inventory.mainInventory.length, null);
-								rareCount++;
-							}
-						}
-						slotCount++;
-					}
-					if (rareCount >= 5) {
-						EntityItem fragment = new EntityItem(player.worldObj);
-						ItemStack stack = new ItemStack(ItemsCommonProxy.itemOre, 1, ItemOre.META_SOULFRAGMENT);
-						fragment.setPosition(player.posX+rand.nextInt(5)-2, player.posY + 10, player.posZ+rand.nextInt(5)-2);
-						fragment.setEntityItemStack(stack);
-						player.worldObj.spawnEntityInWorld(fragment);
-						player.worldObj.playSoundAtEntity(player, "ambient.weather.thunder",2F, 2F);
-					}
-				}
-			}
-		}
-	}
+//	@SubscribeEvent(priority = EventPriority.HIGHEST)
+//	public void onEntityDeathHighPriority(LivingDeathEvent event){
+//
+//		EntityLivingBase soonToBeDead = event.entityLiving;
+//
+//		if (soonToBeDead instanceof EntityPlayer) {
+//			// soul fragments: die with at least 5 rare items
+//			if (soonToBeDead.isPotionActive(BuffList.psychedelic)){
+//				if (soonToBeDead.worldObj.provider.dimensionId == 1 && soonToBeDead.getActivePotionEffect(BuffList.psychedelic).getAmplifier() == 1) {
+//					EntityPlayer player = (EntityPlayer)soonToBeDead;
+//					int slotCount = 0;
+//					int rareCount = 0;
+//					for (ItemStack stack : player.inventory.mainInventory){
+//						if (stack != null) {
+//							if (stack.getRarity() != EnumRarity.common) {
+//								player.inventory.setInventorySlotContents(slotCount, null);
+//								rareCount++;
+//							}
+//						}
+//						slotCount++;
+//					}
+//					slotCount = 0;
+//					for (ItemStack stack : player.inventory.armorInventory){
+//						if (stack != null) {
+//							if (stack.getRarity() != EnumRarity.common) {
+//								player.inventory.setInventorySlotContents(slotCount + player.inventory.mainInventory.length, null);
+//								rareCount++;
+//							}
+//						}
+//						slotCount++;
+//					}
+//					if (rareCount >= 5) {
+//						EntityItem fragment = new EntityItem(player.worldObj);
+//						ItemStack stack = new ItemStack(ItemsCommonProxy.itemOre, 1, ItemOre.META_SOULFRAGMENT);
+//						fragment.setPosition(player.posX+rand.nextInt(5)-2, player.posY + 10, player.posZ+rand.nextInt(5)-2);
+//						fragment.setEntityItemStack(stack);
+//						player.worldObj.spawnEntityInWorld(fragment);
+//						player.worldObj.playSoundAtEntity(player, "ambient.weather.thunder",2F, 2F);
+//					}
+//				}
+//			}
+//		}
+//	}
 
 	@SubscribeEvent
 	public void onAttack(AttackEntityEvent event) {
@@ -694,23 +694,20 @@ public class AMEventHandler{
 				}
 			}
 				WorldServer[] worlds = DimensionManager.getWorlds();
-				int s1 = worlds.length;
-				try{
-					for (WorldServer worldServer : worlds){ // do this outside of for loop to save performance
-						int s2 = worldServer.loadedEntityList.size();
-						for (int f = 0; f < s2; f++){
-							if (f >= worldServer.loadedEntityList.size())
-								break; // fix for the most obscene bug ever, where it doesn't respect indexes, or arbitrarily chooses to delete entities while I'm iterating over them
-							Object entityobj = worldServer.loadedEntityList.get(f);
+				try{						// do this outside of for loop to save performance
+					for (WorldServer worldServer : worlds){
+						List<Entity> entitylist = worldServer.loadedEntityList;
+						for(Entity entityobj : entitylist){
 							if (entityobj instanceof EntityLivingBase){
-								String UUID = ((EntityLivingBase)entityobj).getUniqueID().toString();
+								String UUID = entityobj.getUniqueID().toString();
 								if (acceleratedEntitiesUUIDs.containsKey(UUID)){
 									for (int i = 0; i < acceleratedEntitiesUUIDs.get(UUID); i++){
-										((EntityLivingBase)entityobj).onUpdate();
+										entityobj.onUpdate();
 									}
 								}
 							}
 						}
+
 					}
 				}catch (IndexOutOfBoundsException e){
 					; // sometimes it's just unavoidable

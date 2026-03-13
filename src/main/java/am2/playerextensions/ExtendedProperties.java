@@ -1617,18 +1617,22 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 				int numArmorPieces = 0;
 				if (entity instanceof EntityPlayer){
 					EntityPlayer player = (EntityPlayer)entity;
-					for (int i = 0; i < 4; ++i){
-						ItemStack stack = player.inventory.armorItemInSlot(i);
-						if (ImbuementRegistry.instance.isImbuementPresent(stack, GenericImbuement.burnoutReduction))
-							numArmorPieces++;
+					if (player.capabilities.isCreativeMode){
+						setCurrentFatigue(0);
+					}else{
+						for (int i = 0; i < 4; ++i){
+							ItemStack stack = player.inventory.armorItemInSlot(i);
+							if (ImbuementRegistry.instance.isImbuementPresent(stack, GenericImbuement.burnoutReduction))
+								numArmorPieces++;
+						}
+						float factor = (float)((0.01f + (0.015f * numArmorPieces)) * entity.getAttributeMap().getAttributeInstance(ArsMagicaApi.burnoutReductionRate).getAttributeValue());
+						float decreaseamt = (factor * getMagicLevel()) * ticksSinceLastRegen;
+						//actual fatigue decrease
+						setCurrentFatigue(getCurrentFatigue() - decreaseamt);
+						if (getCurrentFatigue() < 0){
+							setCurrentFatigue(0);
+						}
 					}
-				}
-				float factor = (float)((0.01f + (0.015f * numArmorPieces)) * entity.getAttributeMap().getAttributeInstance(ArsMagicaApi.burnoutReductionRate).getAttributeValue());
-				float decreaseamt = (factor * getMagicLevel()) * ticksSinceLastRegen;
-				//actual fatigue decrease
-				setCurrentFatigue(getCurrentFatigue() - decreaseamt);
-				if (getCurrentFatigue() < 0){
-					setCurrentFatigue(0);
 				}
 			}
 
