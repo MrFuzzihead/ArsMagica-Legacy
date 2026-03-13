@@ -696,7 +696,7 @@ public class AMEventHandler{
 				WorldServer[] worlds = DimensionManager.getWorlds();
 				try{						// do this outside of for loop to save performance
 					for (WorldServer worldServer : worlds){
-						List<Entity> entitylist = worldServer.loadedEntityList;
+						List<Entity> entitylist = new ArrayList<>(worldServer.loadedEntityList);
 						for(Entity entityobj : entitylist){
 							if (entityobj instanceof EntityLivingBase){
 								String UUID = entityobj.getUniqueID().toString();

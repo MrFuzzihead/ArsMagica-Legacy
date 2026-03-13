@@ -11,6 +11,7 @@ import am2.api.power.PowerTypes;
 import am2.api.spell.component.interfaces.ISkillTreeEntry;
 import am2.api.spell.component.interfaces.ISpellModifier;
 import am2.api.spell.component.interfaces.ISpellPart;
+import am2.blocks.BlockAMOre;
 import am2.blocks.BlockWizardsChalk;
 import am2.blocks.BlocksCommonProxy;
 import am2.blocks.liquid.BlockLiquidEssence;
@@ -20,6 +21,7 @@ import am2.entities.EntityFireElemental;
 import am2.entities.EntityManaElemental;
 import am2.entities.EntityWaterElemental;
 import am2.items.ItemEssence;
+import am2.items.ItemRune;
 import am2.items.ItemsCommonProxy;
 import am2.multiblock.IMultiblockStructureController;
 import am2.network.AMDataReader;
@@ -68,7 +70,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 
 	private final ArrayList<KeyValuePair<ISpellPart, byte[]>> spellDef;
 	private final ArrayList<ArrayList<KeyValuePair<ISpellPart, byte[]>>> shapeGroups;
-	private boolean allShapeGroupsAdded = false;
+	private final boolean allShapeGroupsAdded = false;
 
 	private int currentKey = -1;
 	private int checkCounter;
@@ -123,8 +125,8 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 	public TileEntityCraftingAltar(){
 		super(500);
 		setupMultiblock();
-		allAddedItems = new ArrayList<ItemStack>();
-		currentAddedItems = new ArrayList<ItemStack>();
+		allAddedItems = new ArrayList<>();
+		currentAddedItems = new ArrayList<>();
 		isCrafting = false;
 		structureValid = false;
 		checkCounter = 0;
@@ -132,11 +134,11 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 		maxEffects = 2;
 		stability = 1F;
 
-		spellDef = new ArrayList<KeyValuePair<ISpellPart, byte[]>>();
-		shapeGroups = new ArrayList<ArrayList<KeyValuePair<ISpellPart, byte[]>>>();
+		spellDef = new ArrayList<>();
+		shapeGroups = new ArrayList<>();
 
 		for (int i = 0; i < 5; ++i){
-			shapeGroups.add(new ArrayList<KeyValuePair<ISpellPart, byte[]>>());
+			shapeGroups.add(new ArrayList<>());
 		}
 	}
 
@@ -165,8 +167,8 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 				0, //gold
 				0, //diamond
 				0,  //emerald
-				BlocksCommonProxy.AMOres.META_MOONSTONE_BLOCK,
-				BlocksCommonProxy.AMOres.META_SUNSTONE_BLOCK
+				BlockAMOre.META_MOONSTONE_BLOCK,
+				BlockAMOre.META_SUNSTONE_BLOCK
 		};
 
 		lecternGroup_primary = new StructureGroup[4];
@@ -433,8 +435,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 				int guide_id = spellGuide[(this.allAddedItems.size()) * 3];
 				int guide_qty = spellGuide[((this.allAddedItems.size()) * 3) + 1];
 				int guide_meta = spellGuide[((this.allAddedItems.size()) * 3) + 2];
-				ItemStack stack = new ItemStack(Item.getItemById(guide_id), guide_qty, guide_meta);
-				return stack;
+				return new ItemStack(Item.getItemById(guide_id), guide_qty, guide_meta);
 			}else{
 				return new ItemStack(ItemsCommonProxy.spellParchment);
 			}
@@ -448,9 +449,9 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 			parts = outputCombo.length;
 
 		if (shapeGroupGuide != null){
-			for (int i = 0; i < shapeGroupGuide.length; ++i){
-				if (shapeGroupGuide[i] != null)
-					parts += shapeGroupGuide[i].length;
+			for (int[] ints : shapeGroupGuide){
+				if (ints != null)
+					parts += ints.length;
 			}
 		}
 		return parts;
@@ -558,11 +559,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 				}else{
 					lectern.setTooltipStack(null);
 				}
-				if (spellGuideIsWithinStructurePower()){
-					lectern.setOverpowered(false);
-				}else{
-					lectern.setOverpowered(true);
-				}
+				lectern.setOverpowered(!spellGuideIsWithinStructurePower());
 			}else{
 				if (isCrafting){
 					lectern.setNeedsBook(true);
@@ -582,7 +579,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 		boolean b = false;
 		if (block == Blocks.lever){
 			for (int i = 0; i < 6; ++i){
-				b |= (Blocks.lever.isProvidingStrongPower(worldObj, xCoord + switchLocation.getX(), yCoord + switchLocation.getY(), zCoord + switchLocation.getZ(), i) > 0);
+				b = (Blocks.lever.isProvidingStrongPower(worldObj, xCoord + switchLocation.getX(), yCoord + switchLocation.getY(), zCoord + switchLocation.getZ(), i) > 0);
 				if (b) break;
 			}
 		}
@@ -605,7 +602,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 				setPowerRequests();
 				pickPowerType(stack);
 				if (this.currentMainPowerTypes != PowerTypes.NONE && PowerNodeRegistry.For(this.worldObj).checkPower(this, this.currentMainPowerTypes, 100)){
-					currentConsumedPower += PowerNodeRegistry.For(worldObj).consumePower(this, this.currentMainPowerTypes, Math.min(100, stack.stackSize - currentConsumedPower));
+					currentConsumedPower += (int)PowerNodeRegistry.For(worldObj).consumePower(this, this.currentMainPowerTypes, Math.min(100, stack.stackSize - currentConsumedPower));
 				}
 				if (currentConsumedPower >= stack.stackSize){
 					PowerNodeRegistry.For(this.worldObj).setPower(this, this.currentMainPowerTypes, 0);
@@ -676,7 +673,6 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 
 		if (matchCurrentRecipe()){
 			currentAddedItems.clear();
-			return;
 		}
 	}
 
@@ -693,7 +689,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 
 		if (worldObj.getWorldInfo().isThundering()) instability += 1F;
 
-		instability += (this.getNumPartsInSpell() / 2); // half of number of spell components
+		instability += ((float)this.getNumPartsInSpell() / 2); // half of number of spell components
 		if (outputCombo != null){
 			Set<Integer> unique = new HashSet<>();
 			Set<Integer> duplicate = new HashSet<>(); // Stacking 3 solar? bad boy
@@ -743,7 +739,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 		if (worldObj.canBlockSeeTheSky(this.xCoord, this.yCoord, this.zCoord)) instability -= 0.5F;
 		if (!worldObj.isDaytime()) instability -= 0.5F;
 
-		ArrayList<Block> blockList = new ArrayList();
+		ArrayList<Block> blockList = new ArrayList<>();
 		for (int x = -5; x <= 5; x++) {
 			for (int z = -5; z <= 5; z++) {
 				for (int y = -6; y < -2; y++) {
@@ -887,9 +883,9 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 		//if this is null, then we have already completed all of the shape groups that the book identifies
 		//we're now creating the body of the spell
 		if (currentShapeGroupList == null){
-			spellDef.add(new KeyValuePair<ISpellPart, byte[]>(part, metaData));
+			spellDef.add(new KeyValuePair<>(part, metaData));
 		}else{
-			currentShapeGroupList.add(new KeyValuePair<ISpellPart, byte[]>(part, metaData));
+			currentShapeGroupList.add(new KeyValuePair<>(part, metaData));
 		}
 		return true;
 	}
@@ -918,8 +914,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 	private List<EntityItem> lookForValidItems(){
 		if (!isCrafting) return new ArrayList<EntityItem>();
 		double radius = worldObj.isRemote ? 2.1 : 2;
-		List<EntityItem> items = this.worldObj.getEntitiesWithinAABB(EntityItem.class, AxisAlignedBB.getBoundingBox(xCoord - radius, yCoord - 3, zCoord - radius, xCoord + radius, yCoord, zCoord + radius));
-		return items;
+		return (List<EntityItem>)this.worldObj.getEntitiesWithinAABB(EntityItem.class, AxisAlignedBB.getBoundingBox(xCoord - radius, yCoord - 3, zCoord - radius, xCoord + radius, yCoord, zCoord + radius));
 	}
 
 	private void checkStructure(){
@@ -946,12 +941,12 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 				lecternGroups = primary.getMatchedGroups(lectern_mutex, worldObj, xCoord, yCoord, zCoord);
 				augmatlGroups = primary.getMatchedGroups(augmatl_mutex, worldObj, xCoord, yCoord, zCoord);
 				mainmatlGroups = primary.getMatchedGroups(MultiblockStructureDefinition.MAINGROUP_MUTEX, worldObj, xCoord, yCoord, zCoord);
-			}else if (secondaryvalid){
+			}else{
 				lecternGroups = secondary.getMatchedGroups(lectern_mutex, worldObj, xCoord, yCoord, zCoord);
 				augmatlGroups = secondary.getMatchedGroups(augmatl_mutex, worldObj, xCoord, yCoord, zCoord);
 				mainmatlGroups = secondary.getMatchedGroups(MultiblockStructureDefinition.MAINGROUP_MUTEX, worldObj, xCoord, yCoord, zCoord);
 			}
-			if (lecternGroups != null && lecternGroups.size() > 0){
+			if (lecternGroups != null && !lecternGroups.isEmpty()){
 				StructureGroup group = lecternGroups.get(0);
 				HashMap<BlockCoord, ArrayList<BlockDec>> blocks = group.getAllowedBlocks();
 
@@ -1007,7 +1002,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 		List<Entity> items = this.worldObj.getEntitiesWithinAABB(EntityItem.class, AxisAlignedBB.getBoundingBox(xCoord - 2, yCoord - 3, zCoord - 2, xCoord + 2, yCoord, zCoord + 2));
 		if (items.size() == 1){
 			EntityItem item = (EntityItem)items.get(0);
-			if (item != null && !item.isDead && item.getEntityItem().getItem() == ItemsCommonProxy.rune && item.getEntityItem().getItemDamage() == ItemsCommonProxy.rune.META_BLANK){
+			if (item != null && !item.isDead && item.getEntityItem().getItem() == ItemsCommonProxy.rune && item.getEntityItem().getItemDamage() == ItemRune.META_BLANK){
 				item.setDead();
 				setCrafting(true);
 			}
@@ -1037,9 +1032,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 	}
 
 	private boolean checkEndItem(ItemStack item){
-		if(item.getItem() == ItemsCommonProxy.spellParchment){
-			return true;
-		}return false;
+		return item.getItem() == ItemsCommonProxy.spellParchment;
 	}
 	private void createSpellItem(){
 		EntityItem craftedItem = new EntityItem(worldObj);
@@ -1108,7 +1101,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 		if (!worldObj.isRemote){
 			this.setCrafting(false);
 			for (ItemStack stack : allAddedItems){
-				if (stack.getItem() == ItemsCommonProxy.essence && stack.getItemDamage() > ItemsCommonProxy.essence.META_MAX)
+				if (stack.getItem() == ItemsCommonProxy.essence && stack.getItemDamage() > ItemEssence.META_MAX)
 					continue;
 				EntityItem eItem = new EntityItem(worldObj);
 				eItem.setPosition(xCoord, yCoord - 1, zCoord);
@@ -1117,11 +1110,6 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 			}
 			allAddedItems.clear();
 		}
-	}
-
-	@Override
-	public boolean canProvidePower(PowerTypes type){
-		return false;
 	}
 
 	private boolean compareItemStacks(ItemStack target, ItemStack input){
@@ -1241,7 +1229,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 
 		this.allAddedItems.clear();
 		for (int i = 0; i < allAddedItems.tagCount(); ++i){
-			NBTTagCompound addedItem = (NBTTagCompound)allAddedItems.getCompoundTagAt(i);
+			NBTTagCompound addedItem = allAddedItems.getCompoundTagAt(i);
 			if (addedItem == null)
 				continue;
 			ItemStack stack = ItemStack.loadItemStackFromNBT(addedItem);
@@ -1252,7 +1240,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 
 		this.currentAddedItems.clear();
 		for (int i = 0; i < currentAddedItems.tagCount(); ++i){
-			NBTTagCompound addedItem = (NBTTagCompound)currentAddedItems.getCompoundTagAt(i);
+			NBTTagCompound addedItem = currentAddedItems.getCompoundTagAt(i);
 			if (addedItem == null)
 				continue;
 			ItemStack stack = ItemStack.loadItemStackFromNBT(addedItem);
@@ -1271,7 +1259,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 		NBTTagList currentShapeGroups = altarCompound.getTagList("shapeGroups", Constants.NBT.TAG_COMPOUND);
 
 		for (int i = 0; i < currentShapeGroups.tagCount(); ++i){
-			NBTTagCompound compound = (NBTTagCompound)currentShapeGroups.getCompoundTagAt(i);
+			NBTTagCompound compound = currentShapeGroups.getCompoundTagAt(i);
 			shapeGroups.get(i).addAll(NBTToISpellPartList(compound));
 		}
 	}
@@ -1315,8 +1303,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 	public Packet getDescriptionPacket(){
 		NBTTagCompound compound = new NBTTagCompound();
 		this.writeToNBT(compound);
-		S35PacketUpdateTileEntity packet = new S35PacketUpdateTileEntity(xCoord, yCoord, zCoord, worldObj.getBlockMetadata(xCoord, yCoord, zCoord), compound);
-		return packet;
+		return new S35PacketUpdateTileEntity(xCoord, yCoord, zCoord, worldObj.getBlockMetadata(xCoord, yCoord, zCoord), compound);
 	}
 
 	@Override
