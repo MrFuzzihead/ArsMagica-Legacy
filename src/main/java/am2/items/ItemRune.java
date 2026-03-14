@@ -281,7 +281,7 @@ public class ItemRune extends ArsMagicaItem{
 	//===========================================
 
 	public void doCurrentDebugOperation(ItemStack stack, World world, EntityPlayer player){
-		displaymana(player);
+		//spawnMoonstoneMeteor(stack,world,player);
 	}
 
 	public void displayBlockMeta(ItemStack stack, World world, EntityPlayer player){

@@ -77,7 +77,7 @@ public class ArcaneCompendium implements ILoreHelper{
 			if(player != null){
 				ExtendedProperties props = ExtendedProperties.For(player);
 				if (props != null){
-					System.out.println("Saving Unlock Data!");
+					LogHelper.debug("Saving Unlock Data!");
 					for (CompendiumEntry entry : compendium.values()){
 						String id = "U";
 						if (entry.isLocked)
@@ -106,7 +106,7 @@ public class ArcaneCompendium implements ILoreHelper{
 		try{
 			if (Minecraft.getMinecraft().thePlayer != null && ExtendedProperties.For(Minecraft.getMinecraft().thePlayer) != null) {
 				hasLoaded = true;
-				System.out.println("Loading Unlock Data!");
+				LogHelper.debug("Loading Unlock Data!");
 				ExtendedProperties.For(Minecraft.getMinecraft().thePlayer).requestEntriesUpdateFromServer();
 			}
 		}catch (Exception e){
@@ -243,14 +243,14 @@ public class ArcaneCompendium implements ILoreHelper{
 		IResource resource = null;
 		try{
 			resource = Minecraft.getMinecraft().getResourceManager().getResource(rLoc);
-		}catch (IOException e){
+		}catch (IOException ignored){
 		}finally{
 			if (resource == null){
 				LogHelper.info("Unable to find localized compendium.  Defaulting to en_US");
 				rLoc = new ResourceLocation("arsmagica2", "docs/ArcaneCompendium_en_US.xml");
 				try{
 					resource = Minecraft.getMinecraft().getResourceManager().getResource(rLoc);
-				}catch (IOException e){
+				}catch (IOException ignored){
 				}
 			}
 		}
@@ -262,11 +262,7 @@ public class ArcaneCompendium implements ILoreHelper{
 	}
 
 	public LinkedHashSet<CompendiumEntryType> getCategories(){
-		LinkedHashSet<CompendiumEntryType> toReturn = new LinkedHashSet();
-		for (CompendiumEntryType type : CompendiumEntryTypes.categoryList()){
-			toReturn.add(type);
-		}
-		return toReturn;
+		return new LinkedHashSet<>(Arrays.asList(CompendiumEntryTypes.categoryList()));
 	}
 
 	public ArrayList<CompendiumEntry> getEntriesForCategory(String category){

@@ -270,6 +270,7 @@ tile.arsmagica2:spell_sealed_door.name=Spell-Sealed Door
 tile.arsmagica2:stairsWitchwood.name=Witchwood Stairs
 tile.arsmagica2:summoner.name=Summoner
 tile.arsmagica2:spellReplicator.name=Spell Replicator
+tile.arsmagica2:cosmicRock.name=Cosmic Rock
 tile.arsmagica2:tarmaroot.name=Tarma Root
 tile.arsmagica2:sanguineAmaryllis.name=Sanguine Amaryllis
 tile.arsmagica2:effervescentSnowdrop.name=Effervescent Snowdrop
@@ -777,7 +778,6 @@ am2.affinity.waterweakness=Weakness to Water
 ##fire
 am2.affinity.firepunch=Fire Punch
 am2.affinity.fireresistance=Resistant to Fire
-am2.affinity.waterweakness=Weakness to Water
 
 ##ice
 am2.affinity.coldblooded=Cold Blooded

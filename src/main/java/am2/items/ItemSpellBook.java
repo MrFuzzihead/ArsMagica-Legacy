@@ -3,6 +3,7 @@ package am2.items;
 import am2.AMCore;
 import am2.api.spell.ItemSpellBase;
 import am2.containers.InventorySpellBook;
+import am2.enchantments.AMEnchantments;
 import am2.guis.ArsMagicaGuiIdList;
 import am2.playerextensions.SkillData;
 import am2.spell.SkillManager;
@@ -198,9 +199,7 @@ public class ItemSpellBook extends ArsMagicaItem{
 	public ItemStack[] getActiveScrollInventory(ItemStack bookStack){
 		ItemStack[] inventoryItems = getMyInventory(bookStack);
 		ItemStack[] returnArray = new ItemStack[8];
-		for (int i = 0; i < 8; ++i){
-			returnArray[i] = inventoryItems[i];
-		}
+		System.arraycopy(inventoryItems, 0, returnArray, 0, 8);
 		return returnArray;
 	}
 
@@ -229,7 +228,7 @@ public class ItemSpellBook extends ArsMagicaItem{
 
 	@Override
 	public void onPlayerStoppedUsing(ItemStack itemstack, World world, EntityPlayer entityplayer, int i){
-		if (entityplayer.isSneaking()){
+		if (entityplayer.isSneaking() && !world.isRemote){
 			FMLNetworkHandler.openGui(entityplayer, AMCore.instance, ArsMagicaGuiIdList.GUI_SPELL_BOOK, world, (int)entityplayer.posX, (int)entityplayer.posY, (int)entityplayer.posZ);
 		}else{
 			ItemStack currentSpellStack = GetActiveItemStack(itemstack);
@@ -315,11 +314,6 @@ public class ItemSpellBook extends ArsMagicaItem{
 		return isb;
 	}
 
-	@Override
-	public boolean getShareTag(){
-		return true;
-	}
-
 	public String GetActiveSpellName(ItemStack bookStack){
 		ItemStack stack = GetActiveItemStack(bookStack);
 		if (stack == null){
@@ -334,7 +328,7 @@ public class ItemSpellBook extends ArsMagicaItem{
 		ItemStack stack = GetActiveItemStack(par1ItemStack);
 
 		String s = StatCollector.translateToLocal("am2.tooltip.open");
-		par3List.add((new StringBuilder()).append("\2477").append(s).toString());
+		par3List.add("\2477" + s);
 
 		if (activeScroll != null){
 			activeScroll.addInformation(stack, par2EntityPlayer, par3List, par4);
@@ -357,7 +351,7 @@ public class ItemSpellBook extends ArsMagicaItem{
 		Map enchantMap = EnchantmentHelper.getEnchantments(enchantBook);
 		for (Object o : enchantMap.keySet()){
 			if (o instanceof Integer){
-				if ((Integer)o == AMCore.proxy.enchantments.soulbound.effectId){
+				if ((Integer)o == AMEnchantments.soulbound.effectId){
 					return true;
 				}
 			}
