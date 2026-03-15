@@ -90,7 +90,7 @@ public class AMKeyBindings{
 				AMNetHandler.INSTANCE.sendSpellbookSlotChange(player, player.inventory.currentItem, ItemSpellBook.ID_PREV_SPELL);
 			}
 		}else if (AuraCustomizationKey.isPressed()){
-			if (AMCore.proxy.playerTracker.hasAA(clientPlayer)){
+			if (PlayerTracker.hasAA(clientPlayer)){
 				Minecraft.getMinecraft().displayGuiScreen(new AuraCustomizationMenu());
 			}
 		}else if (AffinityActivationKey.isPressed()){

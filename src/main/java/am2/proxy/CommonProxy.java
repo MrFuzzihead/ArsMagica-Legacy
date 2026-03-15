@@ -64,7 +64,6 @@ public class CommonProxy{
 
 	public BlocksCommonProxy blocks;
 	public ItemsCommonProxy items;
-	public PlayerTracker playerTracker;
 	public static HashMap<String, String> teamHostility;
 	public ParticleManagerServer particleManager;
 	public NBTTagCompound cwCopyLoc;
@@ -78,17 +77,16 @@ public class CommonProxy{
 
 	private ServerTickHandler serverTickHandler;
 
-	private HashMap<EntityLivingBase, ArrayList<PotionEffect>> deferredPotionEffects = new HashMap<EntityLivingBase, ArrayList<PotionEffect>>();
-	private HashMap<EntityLivingBase, Integer> deferredDimensionTransfers = new HashMap<EntityLivingBase, Integer>();
+	private final HashMap<EntityLivingBase, ArrayList<PotionEffect>> deferredPotionEffects = new HashMap<EntityLivingBase, ArrayList<PotionEffect>>();
+	private final HashMap<EntityLivingBase, Integer> deferredDimensionTransfers = new HashMap<EntityLivingBase, Integer>();
 
 	private int totalFlickerCount = 0;
 
 	public CommonProxy(){
-		teamHostility = new HashMap<String, String>();
-		playerTracker = new PlayerTracker();
+		teamHostility = new HashMap<>();
 		particleManager = new ParticleManagerServer();
 		itemFrameWatcher = new ItemFrameWatcher();
-		pendingFlickerLinks = new ArrayList<AMVector3>();
+		pendingFlickerLinks = new ArrayList<>();
 		cwCopyLoc = null;
 	}
 
@@ -96,8 +94,6 @@ public class CommonProxy{
 
 		blocks.setupSpellConstraints();
 		items.postInit();
-
-		playerTracker.postInit();
 		
 		BuffList.postInit();
 
@@ -117,7 +113,7 @@ public class CommonProxy{
 		MinecraftForge.EVENT_BUS.register(particleManager);
 		FMLCommonHandler.instance().bus().register(particleManager);
 
-		FMLCommonHandler.instance().bus().register(playerTracker);
+		FMLCommonHandler.instance().bus().register(new PlayerTracker());
 	}
 
 	public void preinit(){
@@ -214,7 +210,7 @@ public class CommonProxy{
 		}
 
 		chunks.add(pair);
-		RetroactiveWorldgenerator.instance.deferredChunkGeneration.put(dimensionID, chunks);
+		RetroactiveWorldgenerator.deferredChunkGeneration.put(dimensionID, chunks);
 	}
 
 	public void flashManaBar(){

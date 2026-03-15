@@ -1,6 +1,7 @@
 package am2.playerextensions;
 
 import am2.AMCore;
+import am2.PlayerTracker;
 import am2.api.ArsMagicaApi;
 import am2.api.IExtendedProperties;
 import am2.api.events.PlayerMagicLevelChangeEvent;
@@ -423,7 +424,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 		if ((this.updateFlags & UPD_NUM_SUMMONS) == UPD_NUM_SUMMONS){
 			writer.add(this.numSummons);
 		}
-		if ((this.updateFlags & UPD_BETA_PARTICLES) == UPD_BETA_PARTICLES && entity instanceof EntityPlayer && AMCore.proxy.playerTracker.hasAA((EntityPlayer)entity)){
+		if ((this.updateFlags & UPD_BETA_PARTICLES) == UPD_BETA_PARTICLES && entity instanceof EntityPlayer && PlayerTracker.hasAA((EntityPlayer)entity)){
 			writer.add(this.getAuraIndex());
 			writer.add(this.getAuraBehaviour());
 			writer.add(this.getAuraScale());
@@ -895,7 +896,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 			}
 		}
 
-		if (entity.worldObj != null && entity.worldObj.isRemote && entity instanceof EntityPlayer && AMCore.proxy.playerTracker.hasAA((EntityPlayer)entity)){
+		if (entity.worldObj != null && entity.worldObj.isRemote && entity instanceof EntityPlayer && PlayerTracker.hasAA((EntityPlayer)entity)){
 			EntityLivingBase localPlayer = AMCore.proxy.getLocalPlayer();
 			if (entity != localPlayer)
 				AMNetHandler.INSTANCE.requestAuras((EntityPlayer)entity);
@@ -957,7 +958,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 	}
 
 	public void setSyncAuras(){
-		if (entity instanceof EntityPlayer && AMCore.proxy.playerTracker.hasAA((EntityPlayer)entity))
+		if (entity instanceof EntityPlayer && PlayerTracker.hasAA((EntityPlayer)entity))
 			this.setUpdateFlag(UPD_BETA_PARTICLES);
 	}
 
@@ -1010,7 +1011,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 		if ((flags & UPD_NUM_SUMMONS) == UPD_NUM_SUMMONS){
 			this.numSummons = rdr.getInt();
 		}
-		if ((flags & UPD_BETA_PARTICLES) == UPD_BETA_PARTICLES && entity instanceof EntityPlayer && AMCore.proxy.playerTracker.hasAA((EntityPlayer)entity)){
+		if ((flags & UPD_BETA_PARTICLES) == UPD_BETA_PARTICLES && entity instanceof EntityPlayer && PlayerTracker.hasAA((EntityPlayer)entity)){
 			this.AuraIndex = rdr.getInt();
 			this.AuraBehaviour = rdr.getInt();
 			this.AuraScale = rdr.getFloat();

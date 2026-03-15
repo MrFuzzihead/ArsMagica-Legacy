@@ -3,7 +3,7 @@ package am2.bosses;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.boss.IBossDisplayData;
 
-public interface IArsMagicaBoss<T extends EntityLiving> extends IBossDisplayData{
+public interface IArsMagicaBoss extends IBossDisplayData{
 	/**
 	 * Should simply return the current action
 	 */

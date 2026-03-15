@@ -67,13 +67,11 @@ public class RitualShapeHelper{
 
 		ArrayList<ItemStack> itemList = new ArrayList<ItemStack>(Arrays.asList(check));
 
-		Iterator it = itemList.iterator();
-		while (it.hasNext()){
-			ItemStack stack = (ItemStack)it.next();
-			Iterator eIt = items.iterator();
+		for (ItemStack stack : itemList){
+			Iterator<EntityItem> eIt = items.iterator();
 			boolean found = false;
 			while (eIt.hasNext()){
-				EntityItem eItem = (EntityItem)eIt.next();
+				EntityItem eItem = eIt.next();
 				if (InventoryUtilities.compareItemStacks(eItem.getEntityItem(), stack, true, false, true, true)){
 					found = true;
 					eIt.remove();

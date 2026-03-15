@@ -24,32 +24,7 @@ import java.util.UUID;
 
 public class PlayerTracker{
 
-	public static HashMap<UUID, NBTTagCompound> storedExtProps_death;
-	public static HashMap<UUID, NBTTagCompound> riftStorage_death;
-	public static HashMap<UUID, NBTTagCompound> affinityStorage_death;
-	public static HashMap<UUID, NBTTagCompound> spellKnowledgeStorage_death;
 
-	public static HashMap<UUID, NBTTagCompound> storedExtProps_dimension;
-	public static HashMap<UUID, NBTTagCompound> riftStorage_dimension;
-	public static HashMap<UUID, NBTTagCompound> affinityStorage_dimension;
-	public static HashMap<UUID, NBTTagCompound> spellKnowledgeStorage_dimension;
-
-
-	public PlayerTracker(){
-		storedExtProps_death = new HashMap<UUID, NBTTagCompound>();
-		storedExtProps_dimension = new HashMap<UUID, NBTTagCompound>();
-		affinityStorage_death = new HashMap<UUID, NBTTagCompound>();
-		spellKnowledgeStorage_death = new HashMap<UUID, NBTTagCompound>();
-
-		riftStorage_death = new HashMap<UUID, NBTTagCompound>();
-		riftStorage_dimension = new HashMap<UUID, NBTTagCompound>();
-		affinityStorage_dimension = new HashMap<UUID, NBTTagCompound>();
-		spellKnowledgeStorage_dimension = new HashMap<UUID, NBTTagCompound>();
-
-	}
-
-	public void postInit(){
-	}
 
 	@SubscribeEvent
 	public void onPlayerLogin(PlayerLoggedInEvent event){
@@ -102,17 +77,12 @@ public class PlayerTracker{
 
 
 
-	public boolean hasAA(EntityPlayer entity){
-		return getAAL(entity) > 0;
+	public static boolean hasAA(EntityPlayer entity){
+		return getAAL(entity);
 	}
 
-	public int getAAL(EntityPlayer thePlayer){
-		if (thePlayer == null) return 0;
-		try{
-			thePlayer.getDisplayName();
-		}catch (Throwable t){
-			return 0;
-		}
-		return thePlayer.getDisplayName().equalsIgnoreCase("Nlghtwing") ? 5 : 0;
+	public static boolean getAAL(EntityPlayer thePlayer){
+		if (thePlayer == null) return false;
+		return thePlayer.getDisplayName().equalsIgnoreCase("Nlghtwing");
 	}
 }
