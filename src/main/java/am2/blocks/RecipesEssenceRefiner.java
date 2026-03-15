@@ -1,14 +1,11 @@
 package am2.blocks;
 
-import am2.items.ItemEssence;
-import am2.items.ItemOre;
-import am2.items.ItemsCommonProxy;
-import am2.items.RecipesArsMagica;
+import am2.items.*;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 
 public class RecipesEssenceRefiner extends RecipesArsMagica{
 	private static final RecipesEssenceRefiner essenceExtractorRecipesBase = new RecipesEssenceRefiner();
@@ -18,7 +15,7 @@ public class RecipesEssenceRefiner extends RecipesArsMagica{
 	}
 
 	private RecipesEssenceRefiner(){
-		RecipeList = new HashMap<>();
+		RecipeList = new ArrayList<>();
 		InitRecipes();
 	}
 

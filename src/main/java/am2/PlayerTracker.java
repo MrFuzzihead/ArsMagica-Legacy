@@ -83,6 +83,12 @@ public class PlayerTracker{
 
 	public static boolean getAAL(EntityPlayer thePlayer){
 		if (thePlayer == null) return false;
-		return thePlayer.getDisplayName().equalsIgnoreCase("Nlghtwing");
+		String name = "";
+		try{
+			 name = thePlayer.getDisplayName();
+		}catch (Exception ignored){
+			
+		}
+		return name.equalsIgnoreCase("Nlghtwing");
 	}
 }
