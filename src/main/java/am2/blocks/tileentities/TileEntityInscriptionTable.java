@@ -797,7 +797,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 
 			bookstack.stackTagCompound.setBoolean("spellFinalized", true);
 
-			worldObj.playSound(xCoord, yCoord, zCoord, "arsmagica2:misc.inscriptiontable.takebook", 1.0f, 1.0f, true);
+			worldObj.playSound(xCoord, yCoord, zCoord, "arsmagica2:misc.inscriptiontable.take_book", 1.0f, 1.0f, true);
 
 			worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 		}

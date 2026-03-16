@@ -205,9 +205,9 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 			primary.addAllowedBlock(augMatl_primary[i], -1, 0, 2, augMatls[i], augMetas[i]);
 
 		primary.addAllowedBlock(0, 0, -2, Blocks.stone_brick_stairs, 2);
-		primary.addAllowedBlock(0, 0, -1, Blocks.stonebrick, 0);
+		primary.addAllowedBlock(0, 0, -1, Blocks.stonebrick);
 		primary.addAllowedBlock(0, 0, 0, BlocksCommonProxy.craftingAltar);
-		primary.addAllowedBlock(0, 0, 1, Blocks.stonebrick, 0);
+		primary.addAllowedBlock(0, 0, 1, Blocks.stonebrick);
 		primary.addAllowedBlock(0, 0, 2, Blocks.stone_brick_stairs, 3);
 
 		for (int i = 0; i < augMatls.length; ++i)
@@ -221,39 +221,39 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 			primary.addAllowedBlock(augMatl_primary[i], 1, 0, 2, augMatls[i], augMetas[i]);
 
 		//row 1
-		primary.addAllowedBlock(1, -1, -2, Blocks.stonebrick, 0);
+		primary.addAllowedBlock(1, -1, -2, Blocks.stonebrick);
 		primary.addAllowedBlock(1, -1, -1, Blocks.stone_brick_stairs, 7);
 		primary.addAllowedBlock(1, -1, 1, Blocks.stone_brick_stairs, 6);
-		primary.addAllowedBlock(1, -1, 2, Blocks.stonebrick, 0);
+		primary.addAllowedBlock(1, -1, 2, Blocks.stonebrick);
 
 		primary.addAllowedBlock(0, -1, -2, BlocksCommonProxy.magicWall, 0);
 		primary.addAllowedBlock(0, -1, 2, BlocksCommonProxy.magicWall, 0);
 
-		primary.addAllowedBlock(-1, -1, -2, Blocks.stonebrick, 0);
+		primary.addAllowedBlock(-1, -1, -2, Blocks.stonebrick);
 		primary.addAllowedBlock(-1, -1, -1, Blocks.stone_brick_stairs, 7);
 		primary.addAllowedBlock(-1, -1, 1, Blocks.stone_brick_stairs, 6);
-		primary.addAllowedBlock(-1, -1, 2, Blocks.stonebrick, 0);
+		primary.addAllowedBlock(-1, -1, 2, Blocks.stonebrick);
 
 		//row 2
-		primary.addAllowedBlock(1, -2, -2, Blocks.stonebrick, 0);
-		primary.addAllowedBlock(1, -2, 2, Blocks.stonebrick, 0);
+		primary.addAllowedBlock(1, -2, -2, Blocks.stonebrick);
+		primary.addAllowedBlock(1, -2, 2, Blocks.stonebrick);
 
 		primary.addAllowedBlock(0, -2, -2, BlocksCommonProxy.magicWall, 0);
 		primary.addAllowedBlock(0, -2, 2, BlocksCommonProxy.magicWall, 0);
 
-		primary.addAllowedBlock(-1, -2, -2, Blocks.stonebrick, 0);
-		primary.addAllowedBlock(-1, -2, 2, Blocks.stonebrick, 0);
+		primary.addAllowedBlock(-1, -2, -2, Blocks.stonebrick);
+		primary.addAllowedBlock(-1, -2, 2, Blocks.stonebrick);
 
 
 		//row 3
-		primary.addAllowedBlock(1, -3, -2, Blocks.stonebrick, 0);
-		primary.addAllowedBlock(1, -3, 2, Blocks.stonebrick, 0);
+		primary.addAllowedBlock(1, -3, -2, Blocks.stonebrick);
+		primary.addAllowedBlock(1, -3, 2, Blocks.stonebrick);
 
 		primary.addAllowedBlock(0, -3, -2, BlocksCommonProxy.magicWall, 0);
 		primary.addAllowedBlock(0, -3, 2, BlocksCommonProxy.magicWall, 0);
 
-		primary.addAllowedBlock(-1, -3, -2, Blocks.stonebrick, 0);
-		primary.addAllowedBlock(-1, -3, 2, Blocks.stonebrick, 0);
+		primary.addAllowedBlock(-1, -3, -2, Blocks.stonebrick);
+		primary.addAllowedBlock(-1, -3, 2, Blocks.stonebrick);
 
 		//row 4
 		for (int i = -2; i <= 2; ++i){
@@ -262,7 +262,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 					for (int n = 0; n < augMatls.length; ++n)
 						primary.addAllowedBlock(augMatl_primary[n], i, -4, j, augMatls[n], augMetas[n]);
 				}else{
-					primary.addAllowedBlock(i, -4, j, Blocks.stonebrick, 0);
+					primary.addAllowedBlock(i, -4, j, Blocks.stonebrick);
 				}
 			}
 		}
@@ -332,9 +332,9 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 			secondary.addAllowedBlock(augMatl_secondary[i], 2, 0, -1, augMatls[i], augMetas[i]);
 
 		secondary.addAllowedBlock(-2, 0, 0, Blocks.stone_brick_stairs, 0);
-		secondary.addAllowedBlock(-1, 0, 0, Blocks.stonebrick, 0);
+		secondary.addAllowedBlock(-1, 0, 0, Blocks.stonebrick);
 		secondary.addAllowedBlock(0, 0, 0, BlocksCommonProxy.craftingAltar);
-		secondary.addAllowedBlock(1, 0, 0, Blocks.stonebrick, 0);
+		secondary.addAllowedBlock(1, 0, 0, Blocks.stonebrick);
 		secondary.addAllowedBlock(2, 0, 0, Blocks.stone_brick_stairs, 1);
 
 		for (int i = 0; i < augMatls.length; ++i)
@@ -348,39 +348,39 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 			secondary.addAllowedBlock(augMatl_secondary[i], 2, 0, 1, augMatls[i], augMetas[i]);
 
 		//row 1
-		secondary.addAllowedBlock(-2, -1, 1, Blocks.stonebrick, 0);
+		secondary.addAllowedBlock(-2, -1, 1, Blocks.stonebrick);
 		secondary.addAllowedBlock(-1, -1, 1, Blocks.stone_brick_stairs, 5);
 		secondary.addAllowedBlock(1, -1, 1, Blocks.stone_brick_stairs, 4);
-		secondary.addAllowedBlock(2, -1, 1, Blocks.stonebrick, 0);
+		secondary.addAllowedBlock(2, -1, 1, Blocks.stonebrick);
 
 		secondary.addAllowedBlock(-2, -1, 0, BlocksCommonProxy.magicWall, 0);
 		secondary.addAllowedBlock(2, -1, 0, BlocksCommonProxy.magicWall, 0);
 
-		secondary.addAllowedBlock(-2, -1, -1, Blocks.stonebrick, 0);
+		secondary.addAllowedBlock(-2, -1, -1, Blocks.stonebrick);
 		secondary.addAllowedBlock(-1, -1, -1, Blocks.stone_brick_stairs, 5);
 		secondary.addAllowedBlock(1, -1, -1, Blocks.stone_brick_stairs, 4);
-		secondary.addAllowedBlock(2, -1, -1, Blocks.stonebrick, 0);
+		secondary.addAllowedBlock(2, -1, -1, Blocks.stonebrick);
 
 		//row 2
-		secondary.addAllowedBlock(-2, -2, 1, Blocks.stonebrick, 0);
-		secondary.addAllowedBlock(2, -2, 1, Blocks.stonebrick, 0);
+		secondary.addAllowedBlock(-2, -2, 1, Blocks.stonebrick);
+		secondary.addAllowedBlock(2, -2, 1, Blocks.stonebrick);
 
 		secondary.addAllowedBlock(-2, -2, 0, BlocksCommonProxy.magicWall, 0);
 		secondary.addAllowedBlock(2, -2, 0, BlocksCommonProxy.magicWall, 0);
 
-		secondary.addAllowedBlock(-2, -2, -1, Blocks.stonebrick, 0);
-		secondary.addAllowedBlock(2, -2, -1, Blocks.stonebrick, 0);
+		secondary.addAllowedBlock(-2, -2, -1, Blocks.stonebrick);
+		secondary.addAllowedBlock(2, -2, -1, Blocks.stonebrick);
 
 
 		//row 3
-		secondary.addAllowedBlock(-2, -3, 1, Blocks.stonebrick, 0);
-		secondary.addAllowedBlock(2, -3, 1, Blocks.stonebrick, 0);
+		secondary.addAllowedBlock(-2, -3, 1, Blocks.stonebrick);
+		secondary.addAllowedBlock(2, -3, 1, Blocks.stonebrick);
 
-		secondary.addAllowedBlock(-2, -3, 0, BlocksCommonProxy.magicWall, 0);
-		secondary.addAllowedBlock(2, -3, 0, BlocksCommonProxy.magicWall, 0);
+		secondary.addAllowedBlock(-2, -3, 0, BlocksCommonProxy.magicWall);
+		secondary.addAllowedBlock(2, -3, 0, BlocksCommonProxy.magicWall);
 
-		secondary.addAllowedBlock(-2, -3, -1, Blocks.stonebrick, 0);
-		secondary.addAllowedBlock(2, -3, -1, Blocks.stonebrick, 0);
+		secondary.addAllowedBlock(-2, -3, -1, Blocks.stonebrick);
+		secondary.addAllowedBlock(2, -3, -1, Blocks.stonebrick);
 
 		//row 4
 		for (int i = -2; i <= 2; ++i){
@@ -389,7 +389,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 					for (int n = 0; n < augMatls.length; ++n)
 						secondary.addAllowedBlock(augMatl_secondary[n], i, -4, j, augMatls[n], augMetas[n]);
 				}else{
-					secondary.addAllowedBlock(i, -4, j, Blocks.stonebrick, 0);
+					secondary.addAllowedBlock(i, -4, j, Blocks.stonebrick);
 				}
 			}
 		}

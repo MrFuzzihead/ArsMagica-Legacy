@@ -1,10 +1,14 @@
 package am2.api.blocks;
 
 import net.minecraft.block.Block;
+import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import static net.minecraftforge.oredict.OreDictionary.WILDCARD_VALUE;
 
 public class MultiblockStructureDefinition{
 	public static class BlockDec{
@@ -38,7 +42,7 @@ public class MultiblockStructureDefinition{
 		@Override
 		public boolean equals(Object obj){
 			if (obj instanceof BlockDec){
-				return this.block == ((BlockDec)obj).block && (this.meta == -1 || ((BlockDec)obj).meta == -1 || this.meta == ((BlockDec)obj).meta);
+				return this.block == ((BlockDec)obj).block && (this.meta == WILDCARD_VALUE || ((BlockDec)obj).meta == WILDCARD_VALUE || this.meta == ((BlockDec)obj).meta);
 			}
 			return false;
 		}
@@ -49,7 +53,7 @@ public class MultiblockStructureDefinition{
 		}
 	}
 
-	public class BlockCoord implements Comparable<BlockCoord>{
+	public static class BlockCoord implements Comparable<BlockCoord>{
 		public int x;
 		public int y;
 		public int z;
@@ -93,7 +97,7 @@ public class MultiblockStructureDefinition{
 
 		@Override
 		public int compareTo(BlockCoord o){
-			return this.z > o.z ? 1 : this.z < o.z ? -1 : this.x > o.x ? 1 : this.x < o.x ? -1 : this.y > o.y ? 1 : this.y < o.y ? -1 : 0;
+			return this.z > o.z ? 1 : this.z < o.z ? -1 : this.x > o.x ? 1 : this.x < o.x ? -1 : Integer.compare(this.y, o.y);
 		}
 	}
 
@@ -105,13 +109,13 @@ public class MultiblockStructureDefinition{
 		public StructureGroup(String name, int mutex){
 			this.name = name;
 			this.mutex = mutex;
-			allowedBlocks = new HashMap<BlockCoord, ArrayList<BlockDec>>();
+			allowedBlocks = new HashMap<>();
 		}
 
 		void addAllowedBlock(int offsetX, int offsetY, int offsetZ, Block block, int meta){
 			BlockCoord originOffset = new BlockCoord(offsetX, offsetY, offsetZ);
 			if (!allowedBlocks.containsKey(originOffset)){
-				allowedBlocks.put(originOffset, new ArrayList<BlockDec>());
+				allowedBlocks.put(originOffset, new ArrayList<>());
 			}
 			ArrayList<BlockDec> positionReplacements = allowedBlocks.get(originOffset);
 			positionReplacements.add(new BlockDec(block, meta));
@@ -128,8 +132,9 @@ public class MultiblockStructureDefinition{
 				ArrayList<BlockDec> positionReplacements = allowedBlocks.get(offset);
 				boolean valid = false;
 				for (BlockDec bd : positionReplacements){
-					if (bd.block == block && (bd.meta == -1 || bd.meta == meta)){
+					if (bd.block == block && (bd.meta == WILDCARD_VALUE || bd.meta == meta)){
 						valid = true;
+						break;
 					}
 				}
 				if (!valid) return false;
@@ -153,16 +158,16 @@ public class MultiblockStructureDefinition{
 		}
 
 		public void replaceAllBlocksOfType(Block originalBlock, Block newBlock){
-			replaceAllBlocksOfType(originalBlock, -1, newBlock, -1);
+			replaceAllBlocksOfType(originalBlock, WILDCARD_VALUE, newBlock, WILDCARD_VALUE);
 		}
 
 		public void replaceAllBlocksOfType(Block originalBlock, int originalMeta, Block newBlock, int newMeta){
 			for (BlockCoord bc : allowedBlocks.keySet()){
 				for (BlockDec bd : allowedBlocks.get(bc)){
 					if (bd.block == originalBlock){
-						if (bd.meta == originalMeta || originalMeta == -1){
+						if (bd.meta == originalMeta || originalMeta == WILDCARD_VALUE){
 							bd.block = newBlock;
-							if (newMeta != -1){
+							if (newMeta != WILDCARD_VALUE){
 								bd.meta = newMeta;
 							}
 						}
@@ -182,13 +187,13 @@ public class MultiblockStructureDefinition{
 		}
 	}
 
-	private StructureGroup mainGroup;
-	private ArrayList<StructureGroup> blockGroups;
-	private ArrayList<Integer> mutexCache;
+	private final StructureGroup mainGroup;
+	private final ArrayList<StructureGroup> blockGroups;
+	private final ArrayList<Integer> mutexCache;
 
 	public static final int MAINGROUP_MUTEX = 1;
 
-	private String id;
+	private final String id;
 
 	private int maxX = 0;
 	private int minX = 0;
@@ -198,8 +203,8 @@ public class MultiblockStructureDefinition{
 	private int minZ = 0;
 
 	public MultiblockStructureDefinition(String id){
-		blockGroups = new ArrayList<StructureGroup>();
-		mutexCache = new ArrayList<Integer>();
+		blockGroups = new ArrayList<>();
+		mutexCache = new ArrayList<>();
 		this.id = id;
 
 		//default group
@@ -258,7 +263,7 @@ public class MultiblockStructureDefinition{
 	}
 
 	public void addAllowedBlock(int offsetX, int offsetY, int offsetZ, Block block){
-		addAllowedBlock(offsetX, offsetY, offsetZ, block, -1);
+		addAllowedBlock(offsetX, offsetY, offsetZ, block, WILDCARD_VALUE);
 	}
 
 	public void addAllowedBlock(StructureGroup group, int offsetX, int offsetY, int offsetZ, Block block, int meta){
@@ -288,7 +293,7 @@ public class MultiblockStructureDefinition{
 	}
 
 	public void addAllowedBlock(StructureGroup group, int offsetX, int offsetY, int offsetZ, Block block){
-		addAllowedBlock(group, offsetX, offsetY, offsetZ, block, -1);
+		addAllowedBlock(group, offsetX, offsetY, offsetZ, block, WILDCARD_VALUE);
 	}
 
 	public StructureGroup createGroup(String name, int mutex){
@@ -360,7 +365,7 @@ public class MultiblockStructureDefinition{
 	public boolean checkStructure(World world, int originX, int originY, int originZ){
 		boolean valid = true;
 		for (int i : mutexCache){
-			valid &= matchMutex(i, world, originX, originY, originZ);
+			valid = matchMutex(i, world, originX, originY, originZ);
 			if (!valid) break;
 		}
 		return valid;

@@ -1711,42 +1711,42 @@
       <desc>
 			Harnessing the forces of creation, the crafting altar allows mages to work miracles of magic.  This is where you will create all of your spells in Ars Magica.  The structure is upgradeable by 2 main groups, the caps and the main material.  Both groups individually increase the available power of the altar and allow it to make more powerful spells.  The main blocks, in order of power, are as follows:
 			!l
-			Wood Planks (+1 Effect)
+			Wood Planks (#9+1 Effect#0)
 			!l
-			Stone Brick (+1 Effect)
+			Stone Brick (#9+1 Effect#0)
 			!l
-			Sandstone (+1 Effect)
+			Sandstone (#9+1 Effect#0)
 			!l
-			Bricks (+2 Effects)
+			Bricks (#9+2 Effect#0)
 			!l
-			Witchwood (not drained) (+2 Effects)
+			Witchwood (not drained) (#9+2 Effect#0)
 			!l
-			Nether Bricks (+3 Effects)
+			Nether Bricks (#9+3 Effect#0)
 			!l
-			Nether Quartz (+3 Effects)
+			Nether Quartz (#9+3 Effect#0)
 			!l
 			!l
 			For the caps (grand total of 5 in the structure), the progression is as follows:
 			!l
-			Glass (+1 Effect)
+			Glass (#9+1 Effect#0)
 			!l
-			Coal Blocks (+2 Effects)
+			Coal Blocks (#9+2 Effect#0)
 			!l
-			Redstone Blocks (+3 Effects)
+			Redstone Blocks (#9+3 Effect#0)
 			!l
-			Iron Blocks (+4 Effects)
+			Iron Blocks (#9+4 Effect#0)
 			!l
-			Lapis Blocks (+5 Effects)
+			Lapis Blocks (#9+5 Effect#0)
 			!l
-			Gold Blocks (+6 Effects)
+			Gold Blocks (#9+6 Effect#0)
 			!l
-			Diamond Blocks (+7 Effects)
+			Diamond Blocks (#9+7 Effect#0)
 			!l
-			Emerald Blocks (+8 Effects)
+			Emerald Blocks (#9+8 Effect#0)
 			!l
-			Moonstone Blocks (+9 Effects)
+			Moonstone Blocks (#9+9 Effect#0)
 			!l
-			Sunstone Blocks (+10 Effects)
+			Sunstone Blocks (#9+10 Effect#0)
 			!l
 			!l
 			These stack cumulatively, so for example wood planks with glass caps would equal a maximum of 2 effects, whereas stone bricks with redstone caps would have a maximum of 4 effects in a spell.  The maximum number of effects you can currently have on a spell is 13.

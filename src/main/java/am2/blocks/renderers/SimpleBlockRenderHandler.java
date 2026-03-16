@@ -43,13 +43,13 @@ public class SimpleBlockRenderHandler implements ISimpleBlockRenderingHandler{
 
 		try{
 			tessellator.startDrawingQuads();
-		}catch (Throwable t){
+		}catch (Throwable ignored){
 		}
 		tessellator.setNormal(0.0F, 1.0F, 0.0F);
 		renderer.renderFaceYPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 1, metadata));
 		try{
 			tessellator.draw();
-		}catch (Throwable t){
+		}catch (Throwable ignored){
 		}
 
 		if (!isInlay){
@@ -69,63 +69,63 @@ public class SimpleBlockRenderHandler implements ISimpleBlockRenderingHandler{
 		Tessellator tessellator = Tessellator.instance;
 		try{
 			tessellator.startDrawingQuads();
-		}catch (Throwable t){
+		}catch (Throwable ignored){
 		}
 		tessellator.setNormal(0.0F, -1.0F, 0.0F);
 		renderer.renderFaceYNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 0, metadata));
 		try{
 			tessellator.draw();
-		}catch (Throwable t){
+		}catch (Throwable ignored){
 		}
 		try{
 			tessellator.startDrawingQuads();
-		}catch (Throwable t){
+		}catch (Throwable ignored){
 		}
 		tessellator.setNormal(0.0F, 1.0F, 0.0F);
 		renderer.renderFaceYPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 1, metadata));
 		try{
 			tessellator.draw();
-		}catch (Throwable t){
+		}catch (Throwable ignored){
 		}
 		try{
 			tessellator.startDrawingQuads();
-		}catch (Throwable t){
+		}catch (Throwable ignored){
 		}
 		tessellator.setNormal(0.0F, 0.0F, -1.0F);
 		renderer.renderFaceZNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 2, metadata));
 		try{
 			tessellator.draw();
-		}catch (Throwable t){
+		}catch (Throwable ignored){
 		}
 		try{
 			tessellator.startDrawingQuads();
-		}catch (Throwable t){
+		}catch (Throwable ignored){
 		}
 		tessellator.setNormal(0.0F, 0.0F, 1.0F);
 		renderer.renderFaceZPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 3, metadata));
 		try{
 			tessellator.draw();
-		}catch (Throwable t){
+		}catch (Throwable ignored){
 		}
 		try{
 			tessellator.startDrawingQuads();
-		}catch (Throwable t){
+		}catch (Throwable ignored){
 		}
 		tessellator.setNormal(-1.0F, 0.0F, 0.0F);
 		renderer.renderFaceXNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 4, metadata));
 		try{
 			tessellator.draw();
-		}catch (Throwable t){
+		}catch (Throwable ignored){
 		}
 		try{
 			tessellator.startDrawingQuads();
-		}catch (Throwable t){
+		}catch (Throwable ignored){
 		}
 		tessellator.setNormal(1.0F, 0.0F, 0.0F);
 		renderer.renderFaceXPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 5, metadata));
 		try{
 			tessellator.draw();
-		}catch (Throwable t){
+		}catch (Throwable ignored){
 		}
 	}
 
@@ -147,10 +147,6 @@ public class SimpleBlockRenderHandler implements ISimpleBlockRenderingHandler{
 		double d4 = par8Icon.getInterpolatedU(renderer.renderMaxX * 16.0D);
 		double d5 = par8Icon.getInterpolatedV(renderer.renderMinZ * 16.0D);
 		double d6 = par8Icon.getInterpolatedV(renderer.renderMaxZ * 16.0D);
-		double d7 = d4;
-		double d8 = d3;
-		double d9 = d5;
-		double d10 = d6;
 
 		double d11 = x + renderer.renderMinX;
 		double d12 = x + renderer.renderMaxX;
@@ -159,9 +155,9 @@ public class SimpleBlockRenderHandler implements ISimpleBlockRenderingHandler{
 		double d15 = z + renderer.renderMaxZ;
 
 		tessellator.addVertexWithUV(d12, d13, d15, d4, d6);
-		tessellator.addVertexWithUV(d12, d13, d14, d7, d9);
+		tessellator.addVertexWithUV(d12, d13, d14, d4, d5);
 		tessellator.addVertexWithUV(d11, d13, d14, d3, d5);
-		tessellator.addVertexWithUV(d11, d13, d15, d8, d10);
+		tessellator.addVertexWithUV(d11, d13, d15, d3, d6);
 	}
 
 	private void renderCraftingAltar(Block block, Block mimic, int x, int y, int z, int metadata, RenderBlocks renderer){
