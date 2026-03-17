@@ -1,6 +1,6 @@
 package am2.spell.components;
 
-import am2.api.blocks.MultiblockStructureDefinition.BlockDec;
+import am2.api.blocks.BlockDec;
 import am2.api.spell.component.interfaces.ISpellComponent;
 import am2.api.spell.enums.Affinity;
 import am2.items.ItemsCommonProxy;

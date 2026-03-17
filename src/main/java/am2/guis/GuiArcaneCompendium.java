@@ -1,8 +1,8 @@
 package am2.guis;
 
+import am2.api.blocks.BlockDec;
 import am2.api.blocks.MultiblockStructureDefinition;
 import am2.api.blocks.MultiblockStructureDefinition.BlockCoord;
-import am2.api.blocks.MultiblockStructureDefinition.BlockDec;
 import am2.api.blocks.MultiblockStructureDefinition.StructureGroup;
 import am2.api.events.SpellRecipeItemsEvent;
 import am2.api.spell.component.interfaces.IRitualInteraction;
@@ -1035,7 +1035,7 @@ public class GuiArcaneCompendium extends GuiScreen{
 	}
 
 	private TreeMap<BlockCoord, ArrayList<BlockDec>> getMultiblockLayer(int layer){
-		TreeMap<BlockCoord, ArrayList<BlockDec>> layerBlocksSorted = new TreeMap<BlockCoord, ArrayList<BlockDec>>();
+		TreeMap<BlockCoord, ArrayList<BlockDec>> layerBlocksSorted = new TreeMap<>();
 
 		for (int mutex : entryMultiblock.getMutexList()){
 			ArrayList<StructureGroup> groups = entryMultiblock.getGroupsForMutex(mutex);

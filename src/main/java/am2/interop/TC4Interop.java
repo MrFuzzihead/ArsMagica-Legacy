@@ -6,15 +6,18 @@ import am2.blocks.BlocksCommonProxy;
 import am2.entities.EntityManager;
 import am2.items.*;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.oredict.OreDictionary;
 import thaumcraft.api.ThaumcraftApi;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
+import thaumcraft.common.config.ConfigBlocks;
 
 public class TC4Interop{
 	public static void initialize(){
 		LogHelper.info("Initializing Thaumcraft Compatibility");
 		initTCAspects();
 		initPortableHoleBlacklists();
+		initOreDict();
 	}
 
 	private static void initTCAspects(){
@@ -270,5 +273,11 @@ public class TC4Interop{
 
 	private static void initPortableHoleBlacklists(){
 		ThaumcraftApi.portableHoleBlackList.add(BlocksCommonProxy.everstone);
+	}
+	private static void initOreDict(){
+		OreDictionary.registerOre("plankMagical", new ItemStack(ConfigBlocks.blockWoodenDevice,1,6));
+		OreDictionary.registerOre("plankMagical", new ItemStack(ConfigBlocks.blockWoodenDevice,1,7));
+		OreDictionary.registerOre("stairMagical", ConfigBlocks.blockStairsGreatwood);
+		OreDictionary.registerOre("stairMagical", ConfigBlocks.blockStairsSilverwood);
 	}
 }

@@ -855,6 +855,9 @@ public class BlocksCommonProxy{
 		OreDictionary.registerOre("stairWood", witchwoodStairs);
 		OreDictionary.registerOre("plankWood", witchwoodPlanks);
 		OreDictionary.registerOre("slabWood", witchwoodSingleSlab);
+		OreDictionary.registerOre("plankMagical",witchwoodPlanks);
+		OreDictionary.registerOre("stairMagical",witchwoodStairs);
+		OreDictionary.registerOre("slabMagical",witchwoodSingleSlab);
 		OreDictionary.registerOre("plankWitchwood", witchwoodPlanks);
 		OreDictionary.registerOre("witchwoodLog", witchwoodLog);
 		OreDictionary.registerOre("stairWitchwood", witchwoodStairs);

@@ -1,9 +1,7 @@
 package am2.api.blocks;
 
 import net.minecraft.block.Block;
-import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
-import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,48 +9,6 @@ import java.util.HashMap;
 import static net.minecraftforge.oredict.OreDictionary.WILDCARD_VALUE;
 
 public class MultiblockStructureDefinition{
-	public static class BlockDec{
-		Block block;
-		int meta;
-
-		public BlockDec(Block block, int meta){
-			this.block = block;
-			this.meta = meta;
-		}
-
-		public Block getBlock(){
-			return block;
-		}
-
-		public int getMeta(){
-			return meta;
-		}
-
-		@Override
-		public String toString(){
-			String blockName = "";
-			if (block != null){
-				blockName = block.getLocalizedName();
-			}else{
-				blockName = "Unknown";
-			}
-			return String.format("Block: %s, meta: %d", blockName, meta);
-		}
-
-		@Override
-		public boolean equals(Object obj){
-			if (obj instanceof BlockDec){
-				return this.block == ((BlockDec)obj).block && (this.meta == WILDCARD_VALUE || ((BlockDec)obj).meta == WILDCARD_VALUE || this.meta == ((BlockDec)obj).meta);
-			}
-			return false;
-		}
-
-		@Override
-		public int hashCode(){
-			return Block.getIdFromBlock(block);
-		}
-	}
-
 	public static class BlockCoord implements Comparable<BlockCoord>{
 		public int x;
 		public int y;
@@ -143,7 +99,7 @@ public class MultiblockStructureDefinition{
 		}
 
 		HashMap<BlockCoord, ArrayList<BlockDec>> getStructureLayer(int layer){
-			HashMap<BlockCoord, ArrayList<BlockDec>> toReturn = new HashMap<MultiblockStructureDefinition.BlockCoord, ArrayList<BlockDec>>();
+			HashMap<BlockCoord, ArrayList<BlockDec>> toReturn = new HashMap<>();
 
 			if (layer > getMaxLayer() || layer < getMinLayer()){
 				return toReturn;
@@ -187,7 +143,7 @@ public class MultiblockStructureDefinition{
 		}
 	}
 
-	private final StructureGroup mainGroup;
+	public final StructureGroup mainGroup;
 	private final ArrayList<StructureGroup> blockGroups;
 	private final ArrayList<Integer> mutexCache;
 
@@ -340,7 +296,7 @@ public class MultiblockStructureDefinition{
 	}
 
 	public ArrayList<StructureGroup> getMatchedGroups(int mutex, World world, int originX, int originY, int originZ){
-		ArrayList<StructureGroup> toReturn = new ArrayList<StructureGroup>();
+		ArrayList<StructureGroup> toReturn = new ArrayList<>();
 		for (StructureGroup group : blockGroups){
 			if ((group.mutex & mutex) == group.mutex){
 				if (group.matchGroup(world, originX, originY, originZ)){
