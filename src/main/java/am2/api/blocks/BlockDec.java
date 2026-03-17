@@ -43,7 +43,7 @@ public class BlockDec{
 
 		@Override
 		public int hashCode(){
-			return super.hashCode() * Block.getIdFromBlock(block);
+			return Block.getIdFromBlock(block);
 		}
 
 }

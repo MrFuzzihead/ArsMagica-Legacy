@@ -5,6 +5,7 @@ import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static net.minecraftforge.oredict.OreDictionary.WILDCARD_VALUE;
 
@@ -56,25 +57,53 @@ public class MultiblockStructureDefinition{
 			return this.z > o.z ? 1 : this.z < o.z ? -1 : this.x > o.x ? 1 : this.x < o.x ? -1 : Integer.compare(this.y, o.y);
 		}
 	}
+	public static class StructureComponent{
+		private final List<BlockDec> validblocks;
+		private final BlockCoord coord;
 
+		public StructureComponent(BlockCoord coord,List<BlockDec> dec){
+			validblocks = dec;
+			this.coord = coord;
+		}
+		public StructureComponent(BlockCoord coord,Block block,short meta){
+			this.coord = coord;
+			validblocks = new ArrayList<>();
+			validblocks.add(new BlockDec(block,meta));
+		}
+		public BlockCoord getCoord(){
+			return coord;
+		}
+		public List<BlockDec> getValidblocks(){
+			return validblocks;
+		}
+		public boolean match(BlockDec dec){
+			for(BlockDec pair : validblocks){
+				if(pair.getBlock() == dec.block && (pair.getMeta() == dec.meta || pair.meta == WILDCARD_VALUE))
+					return true;
+			}
+			return false;
+		}
+	}
 	public class StructureGroup{
 		String name;
 		int mutex;
 		HashMap<BlockCoord, ArrayList<BlockDec>> allowedBlocks;
+		List<StructureComponent> components;
 
 		public StructureGroup(String name, int mutex){
 			this.name = name;
 			this.mutex = mutex;
 			allowedBlocks = new HashMap<>();
+			components = new ArrayList<>();
 		}
 
 		void addAllowedBlock(int offsetX, int offsetY, int offsetZ, Block block, int meta){
 			BlockCoord originOffset = new BlockCoord(offsetX, offsetY, offsetZ);
-			if (!allowedBlocks.containsKey(originOffset)){
-				allowedBlocks.put(originOffset, new ArrayList<>());
-			}
-			ArrayList<BlockDec> positionReplacements = allowedBlocks.get(originOffset);
-			positionReplacements.add(new BlockDec(block, meta));
+			allowedBlocks.computeIfAbsent(originOffset, k -> new ArrayList<>()).add(new BlockDec(block, meta));
+		}
+		void addAllowedBlocks(int offsetX, int offsetY, int offsetZ, List<BlockDec> decs){
+			BlockCoord originOffset = new BlockCoord(offsetX, offsetY, offsetZ);
+			allowedBlocks.computeIfAbsent(originOffset, k -> new ArrayList<>()).addAll(decs);
 		}
 
 		ArrayList<BlockDec> getAllowedBlocksAt(BlockCoord coord){
@@ -246,6 +275,31 @@ public class MultiblockStructureDefinition{
 		}
 
 		group.addAllowedBlock(offsetX, offsetY, offsetZ, block, meta);
+	}
+	public void addAllowedBlocks(StructureGroup group, int offsetX, int offsetY, int offsetZ, List<BlockDec> decs){
+		if (!blockGroups.contains(group)){
+			blockGroups.add(group);
+		}
+
+		if (offsetY > maxY){
+			maxY = offsetY;
+		}else if (offsetY < minY){
+			minY = offsetY;
+		}
+
+		if (offsetX > maxX){
+			maxX = offsetX;
+		}else if (offsetX < minX){
+			minX = offsetX;
+		}
+
+		if (offsetZ > maxZ){
+			maxZ = offsetZ;
+		}else if (offsetZ < minZ){
+			minZ = offsetZ;
+		}
+
+		group.addAllowedBlocks(offsetX, offsetY, offsetZ, decs);
 	}
 
 	public void addAllowedBlock(StructureGroup group, int offsetX, int offsetY, int offsetZ, Block block){

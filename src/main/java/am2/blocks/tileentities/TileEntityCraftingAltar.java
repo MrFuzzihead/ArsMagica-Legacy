@@ -40,7 +40,6 @@ import am2.spell.components.Summon;
 import am2.spell.shapes.Binding;
 import am2.utility.KeyValuePair;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockDaylightDetector;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.item.EntityItem;
@@ -212,12 +211,12 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 
 		}
 		generateStructureSecondary(secondary,secondary.mainGroup, Blocks.stonebrick);
-		generateStairsSecondary(secondary,secondary.mainGroup, Blocks.stonebrick);
+		generateStairsSecondary(secondary,secondary.mainGroup, Blocks.stone_brick_stairs);
 		generateLecternSecondary(secondary);
 		generateAugmentSecondary(secondary);
 
 
-		tier1_secondary = secondary.copyGroup("main","tier1");
+		tier1_secondary = secondary.copyGroup("main","tier1s");
 		tier1_secondary.replaceAllBlocksOfType(Blocks.stonebrick, Blocks.planks);
 		tier1_secondary.replaceAllBlocksOfType(Blocks.stone_brick_stairs, Blocks.oak_stairs);
 		for(ItemStack stack : OreDictionary.getOres("stairWood")){
@@ -233,7 +232,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 
 
 
-		tier2_secondary = secondary.copyGroup("main","tier2");
+		tier2_secondary = secondary.copyGroup("main","tier2s");
 		tier2_secondary.replaceAllBlocksOfType(Blocks.stonebrick, Blocks.brick_block);
 		tier2_secondary.replaceAllBlocksOfType(Blocks.stone_brick_stairs, Blocks.brick_stairs);
 		for(ItemStack stack : OreDictionary.getOres("stairMagical")){
@@ -243,7 +242,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 			generateStructureSecondary(secondary,tier2_secondary,Block.getBlockFromItem(stack.getItem()));
 		}
 
-		tier3_secondary = secondary.copyGroup("main","tier3");
+		tier3_secondary = secondary.copyGroup("main","tier3s");
 		tier3_secondary.replaceAllBlocksOfType(Blocks.stonebrick, Blocks.quartz_block);
 		tier3_secondary.replaceAllBlocksOfType(Blocks.stone_brick_stairs, Blocks.quartz_stairs);
 		generateStructureSecondary(secondary, tier3_secondary, Blocks.nether_brick);
@@ -276,6 +275,33 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 			}
 		}
 	}
+	void generateStructureSecondary(MultiblockStructureDefinition definition,StructureGroup group,Block block){
+
+		// Center row y=0
+		definition.addAllowedBlock(group,-1, 0, 0, block);
+		definition.addAllowedBlock(group,1, 0, 0, block);
+
+		// ===== Row 1 (y = -1) =====
+		for (int z : new int[]{-1, 1}) {
+			definition.addAllowedBlock(group,-2, -1, z, block);
+			definition.addAllowedBlock(group,2, -1,  z, block);
+		}
+		// ===== Rows 2 & 3 (y = -2, -3) =====
+		for (int y = -2; y >= -3; y--) {
+			for (int z : new int[]{-1, 1}) {
+				definition.addAllowedBlock(group,-2, y, z, block);
+				definition.addAllowedBlock(group, 2, y, z, block);
+			}
+		}
+		// ===== Row 4 (y = -4) =====
+		for (int i = -2; i <= 2; ++i){
+			for (int j = -2; j <= 2; ++j){
+				if (!(i == 0 && j == 0)){
+					definition.addAllowedBlock(group,i, -4, j, block);
+				}
+			}
+		}
+	}
 	void generateStairsPrimary(MultiblockStructureDefinition definition,StructureGroup group,Block block){
 		// side stairs
 		for (int z = -1; z <= 1; z++) {
@@ -292,44 +318,16 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 	void generateStairsSecondary(MultiblockStructureDefinition definition,StructureGroup group,Block block){
 		// side stairs
 		for (int x = -1; x <= 1; x++) {
-			definition.addAllowedBlock(x, 0, -1, Blocks.stone_brick_stairs, 2);
-			definition.addAllowedBlock(x, 0,  1, Blocks.stone_brick_stairs, 3);
+			definition.addAllowedBlock(group,x, 0, -1, block, 2);
+			definition.addAllowedBlock(group,x, 0,  1, block, 3);
 		}
-		definition.addAllowedBlock(-2, 0, 0, Blocks.stone_brick_stairs, 0);
-		definition.addAllowedBlock(2, 0, 0, Blocks.stone_brick_stairs, 1);
+		definition.addAllowedBlock(group,-2, 0, 0, block, 0);
+		definition.addAllowedBlock(group,2, 0, 0, block, 1);
 		for (int z : new int[]{-1, 1}){
-			definition.addAllowedBlock(-1, -1, z, Blocks.stone_brick_stairs, 5);
-			definition.addAllowedBlock(1, -1,  z, Blocks.stone_brick_stairs, 4);
+			definition.addAllowedBlock(group,-1, -1, z, block, 5);
+			definition.addAllowedBlock(group,1, -1,  z, block, 4);
 		}
 	}
-	void generateStructureSecondary(MultiblockStructureDefinition definition,StructureGroup group,Block block){
-
-		// Center row y=0
-		definition.addAllowedBlock(-1, 0, 0, Blocks.stonebrick);
-		definition.addAllowedBlock(1, 0, 0, Blocks.stonebrick);
-
-		// ===== Row 1 (y = -1) =====
-		for (int z : new int[]{-1, 1}) {
-			definition.addAllowedBlock(-2, -1, z, Blocks.stonebrick);
-			definition.addAllowedBlock(2, -1,  z, Blocks.stonebrick);
-		}
-		// ===== Rows 2 & 3 (y = -2, -3) =====
-		for (int y = -2; y >= -3; y--) {
-			for (int z : new int[]{-1, 1}) {
-				definition.addAllowedBlock(-2, y, z, Blocks.stonebrick);
-				definition.addAllowedBlock( 2, y, z, Blocks.stonebrick);
-			}
-		}
-		// ===== Row 4 (y = -4) =====
-		for (int i = -2; i <= 2; ++i){
-			for (int j = -2; j <= 2; ++j){
-				if (!(i == 0 && j == 0)){
-					definition.addAllowedBlock(i, -4, j, Blocks.stonebrick);
-				}
-			}
-		}
-	}
-
 
 	void generateAugmentSecondary(MultiblockStructureDefinition definition){
 		augMatl_secondary = new StructureGroup[augMaterials.length];
