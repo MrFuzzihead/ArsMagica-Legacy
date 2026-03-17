@@ -310,16 +310,11 @@ public class RitualShapeHelper{
 		purification.addAllowedBlock(2, 0, -2, BlocksCommonProxy.candle);
 	}
 
-	private class EntityItemComparator implements Comparator<EntityItem>{
+	private static class EntityItemComparator implements Comparator<EntityItem>{
 
 		@Override
 		public int compare(EntityItem o1, EntityItem o2){
-			if (o1.ticksExisted == o2.ticksExisted)
-				return 0;
-			else if (o1.ticksExisted > o2.ticksExisted)
-				return -1;
-			else
-				return 1;
+			return Integer.compare(o2.ticksExisted, o1.ticksExisted);
 		}
 
 	}
