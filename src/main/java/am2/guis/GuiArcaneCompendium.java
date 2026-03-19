@@ -2,7 +2,7 @@ package am2.guis;
 
 import am2.api.blocks.BlockDec;
 import am2.api.blocks.MultiblockStructureDefinition;
-import am2.api.blocks.MultiblockStructureDefinition.BlockCoord;
+import am2.api.blocks.BlockCoord;
 import am2.api.blocks.MultiblockStructureDefinition.StructureGroup;
 import am2.api.events.SpellRecipeItemsEvent;
 import am2.api.spell.component.interfaces.IRitualInteraction;
@@ -191,7 +191,7 @@ public class GuiArcaneCompendium extends GuiScreen{
 		this.entryMultiblock = multi;
 		this.blockAccess = new GuiBlockAccess();
 		this.blockAccess.setControllingTileEntity(controllingTileEntity);
-		ReflectionHelper.setPrivateValue(RenderBlocks.class, blockRenderer, this.blockAccess, 0);
+		blockRenderer.blockAccess = this.blockAccess;
 	}
 
 	public GuiArcaneCompendium(String id, MultiblockStructureDefinition multi, IRitualInteraction ritualController){
@@ -201,8 +201,8 @@ public class GuiArcaneCompendium extends GuiScreen{
 
 		this.ritualController = ritualController;
 		setupRitualPage();
+		blockRenderer.blockAccess = this.blockAccess;
 
-		ReflectionHelper.setPrivateValue(RenderBlocks.class, blockRenderer, this.blockAccess, 0);
 	}
 
 	private void setupRitualPage(){
@@ -222,7 +222,7 @@ public class GuiArcaneCompendium extends GuiScreen{
 				this.entryMultiblock = (MultiblockStructureDefinition)breadcrumb.refData[0];
 				this.blockAccess = new GuiBlockAccess();
 				this.blockAccess.setControllingTileEntity((TileEntity)breadcrumb.refData[1]);
-				ReflectionHelper.setPrivateValue(RenderBlocks.class, blockRenderer, this.blockAccess, 0);
+				blockRenderer.blockAccess = this.blockAccess;
 
 				this.ritualController = (IRitualInteraction)breadcrumb.refData[2];
 				setupRitualPage();
@@ -244,7 +244,7 @@ public class GuiArcaneCompendium extends GuiScreen{
 				this.entryMultiblock = (MultiblockStructureDefinition)breadcrumb.refData[0];
 				this.blockAccess = new GuiBlockAccess();
 				this.blockAccess.setControllingTileEntity((TileEntity)breadcrumb.refData[1]);
-				ReflectionHelper.setPrivateValue(RenderBlocks.class, blockRenderer, this.blockAccess, 0);
+				blockRenderer.blockAccess = this.blockAccess;
 			}
 		}else if (breadcrumb.refData.length == 1){
 			if (breadcrumb.refData[0] instanceof Entity){
@@ -327,6 +327,7 @@ public class GuiArcaneCompendium extends GuiScreen{
 					craftingComponents = ((ShapedRecipes)recipe).recipeItems;
 				}else if (recipe instanceof ShapedOreRecipe){
 					recipeWidth = ReflectionHelper.getPrivateValue(ShapedOreRecipe.class, ((ShapedOreRecipe)recipe), "width");
+
 					recipeHeight = ReflectionHelper.getPrivateValue(ShapedOreRecipe.class, ((ShapedOreRecipe)recipe), "height");
 
 					craftingComponents = ((ShapedOreRecipe)recipe).getInput();
@@ -1296,7 +1297,8 @@ public class GuiArcaneCompendium extends GuiScreen{
 			blockRenderer.renderBlockAsItem(block, meta, 0);
 		}else{
 			Tessellator.instance.startDrawingQuads();
-			blockRenderer.renderBlockByRenderType(block, 0, 0, 0);
+			try{blockRenderer.renderBlockByRenderType(block, 0, 0, 0);}
+			catch (NullPointerException ignored){}
 			Tessellator.instance.draw();
 		}
 

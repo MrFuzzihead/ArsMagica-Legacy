@@ -101,7 +101,6 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 	private static final int augmatl_mutex = 2;
 	private static final int lectern_mutex = 4;
 	private StructureGroup[] augMatl_primary;
-	StructureGroup lecternGroup_primary;
 	private StructureGroup tier1_primary;
 	private StructureGroup tier2_primary;
 	private StructureGroup tier3_primary;
@@ -861,9 +860,9 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 	private void checkForStartCondition(){
 		if (this.worldObj.isRemote || !structureValid || this.isCrafting) return;
 
-		List<Entity> items = this.worldObj.getEntitiesWithinAABB(EntityItem.class, AxisAlignedBB.getBoundingBox(xCoord - 2, yCoord - 3, zCoord - 2, xCoord + 2, yCoord, zCoord + 2));
+		List<EntityItem> items = this.worldObj.getEntitiesWithinAABB(EntityItem.class, AxisAlignedBB.getBoundingBox(xCoord - 2, yCoord - 3, zCoord - 2, xCoord + 2, yCoord, zCoord + 2));
 		if (items.size() == 1){
-			EntityItem item = (EntityItem)items.get(0);
+			EntityItem item = items.get(0);
 			if (item != null && !item.isDead && item.getEntityItem().getItem() == ItemsCommonProxy.rune && item.getEntityItem().getItemDamage() == ItemRune.META_BLANK){
 				item.setDead();
 				setCrafting(true);
@@ -876,9 +875,9 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 
 		double radius = worldObj.isRemote ? 2.2 : 2;
 
-		List<Entity> items = this.worldObj.getEntitiesWithinAABB(EntityItem.class, AxisAlignedBB.getBoundingBox(xCoord - radius, yCoord - 3, zCoord - radius, xCoord + radius, yCoord, zCoord + radius));
+		List<EntityItem> items = this.worldObj.getEntitiesWithinAABB(EntityItem.class, AxisAlignedBB.getBoundingBox(xCoord - radius, yCoord - 3, zCoord - radius, xCoord + radius, yCoord, zCoord + radius));
 		if (items.size() == 1){
-			EntityItem item = (EntityItem)items.get(0);
+			EntityItem item = items.get(0);
 			if (item != null && !item.isDead && item.getEntityItem() != null && checkEndItem(item.getEntityItem())){
 				if (!worldObj.isRemote){
 					item.setDead();

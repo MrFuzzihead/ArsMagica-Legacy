@@ -1,6 +1,6 @@
 package am2.entities.ai;
 
-import am2.api.blocks.MultiblockStructureDefinition.BlockCoord;
+import am2.api.blocks.BlockCoord;
 import am2.api.math.AMVector3;
 import am2.blocks.tileentities.TileEntityCraftingAltar;
 import am2.entities.EntityShadowHelper;
