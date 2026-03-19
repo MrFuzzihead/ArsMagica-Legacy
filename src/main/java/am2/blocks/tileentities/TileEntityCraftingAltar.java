@@ -3,7 +3,7 @@ package am2.blocks.tileentities;
 import am2.AMCore;
 import am2.api.blocks.BlockDec;
 import am2.api.blocks.MultiblockStructureDefinition;
-import am2.api.blocks.MultiblockStructureDefinition.BlockCoord;
+import am2.api.blocks.BlockCoord;
 import am2.api.blocks.MultiblockStructureDefinition.StructureGroup;
 import am2.api.math.AMVector3;
 import am2.api.power.IPowerNode;
@@ -11,7 +11,6 @@ import am2.api.power.PowerTypes;
 import am2.api.spell.component.interfaces.ISkillTreeEntry;
 import am2.api.spell.component.interfaces.ISpellModifier;
 import am2.api.spell.component.interfaces.ISpellPart;
-import am2.blocks.BlockAMOre;
 import am2.blocks.BlockWizardsChalk;
 import am2.blocks.BlocksCommonProxy;
 import am2.blocks.liquid.BlockLiquidEssence;
@@ -62,6 +61,7 @@ import java.util.*;
 
 import static am2.blocks.BlockAMOre.META_MOONSTONE_BLOCK;
 import static am2.blocks.BlockAMOre.META_SUNSTONE_BLOCK;
+import static net.minecraftforge.oredict.OreDictionary.WILDCARD_VALUE;
 
 public class TileEntityCraftingAltar extends TileEntityAMPower implements IMultiblockStructureController{
 
@@ -83,7 +83,6 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 	private BlockCoord switchLocation;
 	private int maxEffects;
 	private float stability;
-
 	private ItemStack addedPhylactery = null;
 	private ItemStack addedBindingCatalyst = null;
 
@@ -102,14 +101,10 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 	private static final int augmatl_mutex = 2;
 	private static final int lectern_mutex = 4;
 	private StructureGroup[] augMatl_primary;
+	StructureGroup lecternGroup_primary;
 	private StructureGroup tier1_primary;
 	private StructureGroup tier2_primary;
 	private StructureGroup tier3_primary;
-
-	private StructureGroup[] augMatl_secondary;
-	private StructureGroup tier1_secondary;
-	private StructureGroup tier2_secondary;
-	private StructureGroup tier3_secondary;
 
 	private String currentSpellName = "";
 	final BlockDec[] augMaterials = new BlockDec[]{
@@ -123,12 +118,11 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 			new BlockDec(Blocks.emerald_block,0),
 			new BlockDec(BlocksCommonProxy.AMOres,META_MOONSTONE_BLOCK),
 			new BlockDec(BlocksCommonProxy.AMOres,META_SUNSTONE_BLOCK),
-
-
 	};
 	public TileEntityCraftingAltar(){
 		super(500);
 		setupMultiblock();
+
 		allAddedItems = new ArrayList<>();
 		currentAddedItems = new ArrayList<>();
 		isCrafting = false;
@@ -148,7 +142,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 
 	private void setupMultiblock(){
 
-		primary = new MultiblockStructureDefinition("craftingAltar_alt");
+		primary = new MultiblockStructureDefinition("craftingAltar");
 		primary.addAllowedBlock(0, 0, 0, BlocksCommonProxy.craftingAltar);
 		for (int z : new int[]{-2, 2}) {
 			primary.addAllowedBlock(0, -1, z, BlocksCommonProxy.magicWall);
@@ -158,98 +152,72 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 			primary.addAllowedBlock( 0, y, 2, BlocksCommonProxy.magicWall);
 
 		}
-		generateStructurePrimary(primary,primary.mainGroup,Blocks.stonebrick);
-		generateStairsPrimary(primary,primary.mainGroup,Blocks.stonebrick);
-		generateDefaultLecternPrimary(primary);
-		generateDefaultAugmentPrimary(primary);
+		generateDefaultLectern(primary);
+		generateDefaultAugments(primary);
 
-
+		//wood, sandstone, cobble,
 		tier1_primary = primary.copyGroup("main","tier1");
-
-
-		tier1_primary.replaceAllBlocksOfType(Blocks.stonebrick, Blocks.planks);
-		tier1_primary.replaceAllBlocksOfType(Blocks.stone_brick_stairs, Blocks.oak_stairs);
-		for(ItemStack stack : OreDictionary.getOres("stairWood")){
-			generateStairsPrimary(primary, tier1_primary, Block.getBlockFromItem(stack.getItem()));
-		}
+		List<BlockDec> tier1_decs = new ArrayList<>();
+		List<BlockDec> tier1_decstairs = new ArrayList<>();
 		for(ItemStack stack : OreDictionary.getOres("plankWood")){
-			generateStructurePrimary(primary, tier1_primary,Block.getBlockFromItem(stack.getItem()));
+			BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()) ,WILDCARD_VALUE);
+			tier1_decs.add(dec);
 		}
-		generateStructurePrimary(primary, tier1_primary, Blocks.sandstone);
-		generateStairsPrimary(primary, tier1_primary, Blocks.sandstone_stairs);
-		generateStructurePrimary(primary, tier1_primary, Blocks.cobblestone);
-		generateStairsPrimary(primary, tier1_primary, Blocks.stone_stairs);
+		for(ItemStack stack : OreDictionary.getOres("sandstone")){
+			BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()) ,WILDCARD_VALUE);
+			tier1_decs.add(dec);
+		}
+		for(ItemStack stack : OreDictionary.getOres("cobblestone")){
+			BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()) ,WILDCARD_VALUE);
+			tier1_decs.add(dec);
+		}
+		for(ItemStack stack : OreDictionary.getOres("stairWood")){
+			BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()) ,WILDCARD_VALUE);
+			tier1_decstairs.add(dec);
+		}
+		tier1_decstairs.add(new BlockDec(Blocks.sandstone_stairs ,WILDCARD_VALUE));
+		tier1_decstairs.add(new BlockDec(Blocks.stone_stairs ,WILDCARD_VALUE));
+		generateStructure(primary,tier1_primary, tier1_decs);
+		generateStairs(primary,tier1_primary,tier1_decstairs);
 
 
-
+		//brick & magical wood & stonebrick
+		List<BlockDec> tier2_decs = new ArrayList<>();
+		List<BlockDec> tier2_decstairs = new ArrayList<>();
 		tier2_primary = primary.copyGroup("main","tier2");
-		tier2_primary.replaceAllBlocksOfType(Blocks.stonebrick, Blocks.brick_block);
-		tier2_primary.replaceAllBlocksOfType(Blocks.stone_brick_stairs, Blocks.brick_stairs);
 		for(ItemStack stack : OreDictionary.getOres("stairMagical")){
-			generateStairsPrimary(primary, tier2_primary, Block.getBlockFromItem(stack.getItem()));
+			BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()) ,WILDCARD_VALUE);
+			tier2_decstairs.add(dec);
 		}
 		for(ItemStack stack : OreDictionary.getOres("plankMagical")){
-			generateStructurePrimary(primary,tier2_primary,Block.getBlockFromItem(stack.getItem()));
+			BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()) ,WILDCARD_VALUE);
+			tier2_decs.add(dec);
 		}
+		tier2_decstairs.add(new BlockDec(Blocks.brick_stairs, WILDCARD_VALUE));
+		tier2_decstairs.add(new BlockDec(Blocks.stone_brick_stairs, WILDCARD_VALUE));
+		tier2_decs.add(new BlockDec(Blocks.stonebrick,WILDCARD_VALUE));
+		tier2_decs.add(new BlockDec(Blocks.brick_block,WILDCARD_VALUE));
+		generateStructure(primary,tier2_primary,tier2_decs);
+		generateStairs(primary,tier2_primary,tier2_decstairs);
 
+		//quartz & nether bricks
+
+		List<BlockDec> tier3_decs = new ArrayList<>();
+		List<BlockDec> tier3_decstairs = new ArrayList<>();
 		tier3_primary = primary.copyGroup("main","tier3");
-		tier3_primary.replaceAllBlocksOfType(Blocks.stonebrick, Blocks.quartz_block);
-		tier3_primary.replaceAllBlocksOfType(Blocks.stone_brick_stairs, Blocks.quartz_stairs);
-		generateStructurePrimary(primary, tier3_primary, Blocks.nether_brick);
-		generateStairsPrimary(primary, tier3_primary, Blocks.nether_brick_stairs);
-
-		//Secondary
-		secondary = new MultiblockStructureDefinition("craftingAltar");
-		secondary.addAllowedBlock(0, 0, 0, BlocksCommonProxy.craftingAltar);
-		// Magic walls at x=-2 and x=2, z=0
-		for (int x : new int[]{-2, 2}) {
-			secondary.addAllowedBlock(x, -1, 0, BlocksCommonProxy.magicWall, 0);
+		for(ItemStack stack : OreDictionary.getOres("blockQuartz")){
+			BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()) ,WILDCARD_VALUE);
+			tier3_decs.add(dec);
 		}
-		for (int y = -2; y >= -3; y--) {
-			secondary.addAllowedBlock(-2, y, 0, BlocksCommonProxy.magicWall);
-			secondary.addAllowedBlock( 2, y, 0, BlocksCommonProxy.magicWall);
+		tier3_decs.add(new BlockDec(Blocks.nether_brick,WILDCARD_VALUE));
+		tier3_decstairs.add(new BlockDec(Blocks.quartz_stairs,WILDCARD_VALUE));
+		tier3_decstairs.add(new BlockDec(Blocks.nether_brick_stairs,WILDCARD_VALUE));
 
-		}
-		generateStructureSecondary(secondary,secondary.mainGroup, Blocks.stonebrick);
-		generateStairsSecondary(secondary,secondary.mainGroup, Blocks.stone_brick_stairs);
-		generateLecternSecondary(secondary);
-		generateAugmentSecondary(secondary);
-
-
-		tier1_secondary = secondary.copyGroup("main","tier1s");
-		tier1_secondary.replaceAllBlocksOfType(Blocks.stonebrick, Blocks.planks);
-		tier1_secondary.replaceAllBlocksOfType(Blocks.stone_brick_stairs, Blocks.oak_stairs);
-		for(ItemStack stack : OreDictionary.getOres("stairWood")){
-			generateStairsSecondary(secondary, tier1_secondary, Block.getBlockFromItem(stack.getItem()));
-		}
-		for(ItemStack stack : OreDictionary.getOres("plankWood")){
-			generateStructureSecondary(secondary, tier1_secondary,Block.getBlockFromItem(stack.getItem()));
-		}
-		generateStructureSecondary(secondary, tier1_secondary, Blocks.sandstone);
-		generateStairsSecondary(secondary, tier1_secondary, Blocks.sandstone_stairs);
-		generateStructureSecondary(secondary, tier1_secondary, Blocks.cobblestone);
-		generateStairsSecondary(secondary, tier1_secondary, Blocks.stone_stairs);
-
-
-
-		tier2_secondary = secondary.copyGroup("main","tier2s");
-		tier2_secondary.replaceAllBlocksOfType(Blocks.stonebrick, Blocks.brick_block);
-		tier2_secondary.replaceAllBlocksOfType(Blocks.stone_brick_stairs, Blocks.brick_stairs);
-		for(ItemStack stack : OreDictionary.getOres("stairMagical")){
-			generateStairsSecondary(secondary, tier2_secondary, Block.getBlockFromItem(stack.getItem()));
-		}
-		for(ItemStack stack : OreDictionary.getOres("plankMagical")){
-			generateStructureSecondary(secondary,tier2_secondary,Block.getBlockFromItem(stack.getItem()));
-		}
-
-		tier3_secondary = secondary.copyGroup("main","tier3s");
-		tier3_secondary.replaceAllBlocksOfType(Blocks.stonebrick, Blocks.quartz_block);
-		tier3_secondary.replaceAllBlocksOfType(Blocks.stone_brick_stairs, Blocks.quartz_stairs);
-		generateStructureSecondary(secondary, tier3_secondary, Blocks.nether_brick);
-		generateStairsSecondary(secondary, tier3_secondary, Blocks.nether_brick_stairs);
+		generateStructure(primary, tier3_primary, tier3_decs);
+		generateStairs(primary, tier3_primary, tier3_decstairs);
 
 	}
-	void generateStructurePrimary(MultiblockStructureDefinition definition,StructureGroup group, Block block){
+	void generateStructure(MultiblockStructureDefinition definition, StructureGroup group, List<BlockDec> block){
 		// center column
 		definition.addAllowedBlock(group,0, 0, -1, block);
 		definition.addAllowedBlock(group,0, 0, 1, block);
@@ -275,77 +243,20 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 			}
 		}
 	}
-	void generateStructureSecondary(MultiblockStructureDefinition definition,StructureGroup group,Block block){
-
-		// Center row y=0
-		definition.addAllowedBlock(group,-1, 0, 0, block);
-		definition.addAllowedBlock(group,1, 0, 0, block);
-
-		// ===== Row 1 (y = -1) =====
-		for (int z : new int[]{-1, 1}) {
-			definition.addAllowedBlock(group,-2, -1, z, block);
-			definition.addAllowedBlock(group,2, -1,  z, block);
-		}
-		// ===== Rows 2 & 3 (y = -2, -3) =====
-		for (int y = -2; y >= -3; y--) {
-			for (int z : new int[]{-1, 1}) {
-				definition.addAllowedBlock(group,-2, y, z, block);
-				definition.addAllowedBlock(group, 2, y, z, block);
-			}
-		}
-		// ===== Row 4 (y = -4) =====
-		for (int i = -2; i <= 2; ++i){
-			for (int j = -2; j <= 2; ++j){
-				if (!(i == 0 && j == 0)){
-					definition.addAllowedBlock(group,i, -4, j, block);
-				}
-			}
-		}
-	}
-	void generateStairsPrimary(MultiblockStructureDefinition definition,StructureGroup group,Block block){
+	void generateStairs(MultiblockStructureDefinition definition, StructureGroup group, List<BlockDec> block){
 		// side stairs
 		for (int z = -1; z <= 1; z++) {
-			definition.addAllowedBlock(group,-1, 0, z, block, 0);
-			definition.addAllowedBlock(group, 1, 0, z, block, 1);
+			definition.addAllowedBlock(group,-1, 0, z, block);
+			definition.addAllowedBlock(group, 1, 0, z, block);
 		}
-		definition.addAllowedBlock(group,0, 0, -2, block, 2);
-		definition.addAllowedBlock(group,0, 0, 2, block, 3);
+		definition.addAllowedBlock(group,0, 0, -2, block);
+		definition.addAllowedBlock(group,0, 0, 2, block);
 		for (int x : new int[]{-1, 1}){
-			definition.addAllowedBlock(group,x, -1, -1, block, 7);
-			definition.addAllowedBlock(group,x, -1, 1, block, 6);
+			definition.addAllowedBlock(group,x, -1, -1, block);
+			definition.addAllowedBlock(group,x, -1, 1, block);
 		}
 	}
-	void generateStairsSecondary(MultiblockStructureDefinition definition,StructureGroup group,Block block){
-		// side stairs
-		for (int x = -1; x <= 1; x++) {
-			definition.addAllowedBlock(group,x, 0, -1, block, 2);
-			definition.addAllowedBlock(group,x, 0,  1, block, 3);
-		}
-		definition.addAllowedBlock(group,-2, 0, 0, block, 0);
-		definition.addAllowedBlock(group,2, 0, 0, block, 1);
-		for (int z : new int[]{-1, 1}){
-			definition.addAllowedBlock(group,-1, -1, z, block, 5);
-			definition.addAllowedBlock(group,1, -1,  z, block, 4);
-		}
-	}
-
-	void generateAugmentSecondary(MultiblockStructureDefinition definition){
-		augMatl_secondary = new StructureGroup[augMaterials.length];
-		for (int i = 0; i < augMaterials.length; ++i)
-			augMatl_secondary[i] = definition.createGroup("augmatl" + i, augmatl_mutex);
-		// Augment materials at x = -2 and x = 2 for z = -1 and z = 1
-		for (int i = 0; i < augMaterials.length; i++) {
-			definition.addAllowedBlock(augMatl_secondary[i], -2, 0, -1, augMaterials[i].getBlock(), augMaterials[i].getMeta());
-			definition.addAllowedBlock(augMatl_secondary[i], -2, 0,  1, augMaterials[i].getBlock(), augMaterials[i].getMeta());
-			definition.addAllowedBlock(augMatl_secondary[i],  2, 0, -1, augMaterials[i].getBlock(), augMaterials[i].getMeta());
-			definition.addAllowedBlock(augMatl_secondary[i],  2, 0,  1, augMaterials[i].getBlock(), augMaterials[i].getMeta());
-		}
-		for (int n = 0; n < augMaterials.length; ++n)
-			definition.addAllowedBlock(augMatl_secondary[n], 0, -4, 0, augMaterials[n].getBlock(), augMaterials[n].getMeta());
-	}
-
-
-	void generateDefaultAugmentPrimary(MultiblockStructureDefinition definition){
+	void generateDefaultAugments(MultiblockStructureDefinition definition){
 		augMatl_primary = new StructureGroup[augMaterials.length];
 		for (int i = 0; i < augMaterials.length; ++i)
 			augMatl_primary[i] = definition.createGroup("augmatl" + i, augmatl_mutex);
@@ -360,30 +271,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 		for (int n = 0; n < augMaterials.length; ++n)
 			definition.addAllowedBlock(augMatl_primary[n], 0, -4, 0, augMaterials[n].getBlock(), augMaterials[n].getMeta());
 	}
-
-
-	void generateLecternSecondary(MultiblockStructureDefinition definition){
-		StructureGroup[] lecternGroup_secondary = new StructureGroup[4];
-
-		for (int i = 0; i < lecternGroup_secondary.length; ++i){
-			lecternGroup_secondary[i] = definition.createGroup("lectern" + i, lectern_mutex);
-		}
-
-		int count = 0;
-		for (int i = -2; i <= 2; i += 4){
-			definition.addAllowedBlock(lecternGroup_secondary[count], i, -3, i, BlocksCommonProxy.blockLectern);
-			definition.addAllowedBlock(lecternGroup_secondary[count], -i, -2, i, Blocks.lever, (count < 2) ? 4 : 3);
-			definition.addAllowedBlock(lecternGroup_secondary[count], -i, -2, i, Blocks.lever, (count < 2) ? 12 : 11);
-			count++;
-			definition.addAllowedBlock(lecternGroup_secondary[count], -i, -3, i, BlocksCommonProxy.blockLectern);
-			definition.addAllowedBlock(lecternGroup_secondary[count], i, -2, i, Blocks.lever, (count < 2) ? 4 : 3);
-			definition.addAllowedBlock(lecternGroup_secondary[count], i, -2, i, Blocks.lever, (count < 2) ? 12 : 11);
-			count++;
-		}
-	}
-
-
-	void generateDefaultLecternPrimary(MultiblockStructureDefinition definition){
+	void generateDefaultLectern(MultiblockStructureDefinition definition){
 		StructureGroup[] lecternGroup_primary = new StructureGroup[4];
 
 		for (int i = 0; i < lecternGroup_primary.length; ++i){
@@ -393,19 +281,19 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 		int count = 0;
 		for (int i = -2; i <= 2; i += 4){
 			definition.addAllowedBlock(lecternGroup_primary[count], i, -3, i, BlocksCommonProxy.blockLectern);
-			definition.addAllowedBlock(lecternGroup_primary[count], i, -2, -i, Blocks.lever, (count < 2) ? 2 : 1);
-			definition.addAllowedBlock(lecternGroup_primary[count], i, -2, -i, Blocks.lever, (count < 2) ? 10 : 9);
+			definition.addAllowedBlock(lecternGroup_primary[count], i, -2, -i, Blocks.lever);
+			definition.addAllowedBlock(lecternGroup_primary[count], i, -2, -i, Blocks.lever);
 			count++;
 			definition.addAllowedBlock(lecternGroup_primary[count], i, -3, -i, BlocksCommonProxy.blockLectern);
-			definition.addAllowedBlock(lecternGroup_primary[count], i, -2, i, Blocks.lever, (count < 2) ? 2 : 1);
-			definition.addAllowedBlock(lecternGroup_primary[count], i, -2, i, Blocks.lever, (count < 2) ? 10 : 9);
+			definition.addAllowedBlock(lecternGroup_primary[count], i, -2, i, Blocks.lever);
+			definition.addAllowedBlock(lecternGroup_primary[count], i, -2, i, Blocks.lever);
 			count++;
 		}
 	}
 
 	@Override
 	public MultiblockStructureDefinition getDefinition(){
-		return secondary;
+		return primary;
 	}
 
 	public ItemStack getNextPlannedItem(){
@@ -450,6 +338,11 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 
 	public float getStability(){
 		return this.stability;
+	}
+	public int getDirection(){
+		Block block = worldObj.getBlock(xCoord,yCoord, zCoord + 2);
+		Block block1 = worldObj.getBlock(xCoord+2,yCoord, zCoord);
+		return block != Blocks.air ? 1 : block1 != Blocks.air ? 0 : -1;
 	}
 
 	public boolean structureValid(){
@@ -903,28 +796,22 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 		}
 		checkCounter = 0;
 
-		boolean primaryvalid = primary.checkStructure(worldObj, xCoord, yCoord, zCoord);
-		boolean secondaryvalid = secondary.checkStructure(worldObj, xCoord, yCoord, zCoord);
-		if (!primaryvalid && !secondaryvalid){
+		boolean valid = primary.checkStructure(worldObj, xCoord, yCoord, zCoord);
+
+		if (!valid){
 			if (isCrafting) setCrafting(false);
 		}
 
 		//locate lectern and lever & material groups
-		if (primaryvalid || secondaryvalid){
+		if (valid){
 			maxEffects = 0;
 			stability = 1F;
 			ArrayList<StructureGroup> lecternGroups;
 			ArrayList<StructureGroup> augmatlGroups;
 			ArrayList<StructureGroup> mainmatlGroups;
-			if (primaryvalid){
-				lecternGroups = primary.getMatchedGroups(lectern_mutex, worldObj, xCoord, yCoord, zCoord);
-				augmatlGroups = primary.getMatchedGroups(augmatl_mutex, worldObj, xCoord, yCoord, zCoord);
-				mainmatlGroups = primary.getMatchedGroups(MultiblockStructureDefinition.MAINGROUP_MUTEX, worldObj, xCoord, yCoord, zCoord);
-			}else{
-				lecternGroups = secondary.getMatchedGroups(lectern_mutex, worldObj, xCoord, yCoord, zCoord);
-				augmatlGroups = secondary.getMatchedGroups(augmatl_mutex, worldObj, xCoord, yCoord, zCoord);
-				mainmatlGroups = secondary.getMatchedGroups(MultiblockStructureDefinition.MAINGROUP_MUTEX, worldObj, xCoord, yCoord, zCoord);
-			}
+			lecternGroups = primary.getMatchedGroups(lectern_mutex, worldObj, xCoord, yCoord, zCoord);
+			augmatlGroups = primary.getMatchedGroups(augmatl_mutex, worldObj, xCoord, yCoord, zCoord);
+			mainmatlGroups = primary.getMatchedGroups(MultiblockStructureDefinition.MAINGROUP_MUTEX, worldObj, xCoord, yCoord, zCoord);
 			if (lecternGroups != null && !lecternGroups.isEmpty()){
 				StructureGroup group = lecternGroups.get(0);
 				HashMap<BlockCoord, ArrayList<BlockDec>> blocks = group.getAllowedBlocks();
@@ -941,7 +828,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 			if (augmatlGroups != null && augmatlGroups.size() == 1){
 				StructureGroup group = augmatlGroups.get(0);
 				int index = -1;
-				for (StructureGroup augmatlGroup : primaryvalid ? augMatl_primary : augMatl_secondary){
+				for (StructureGroup augmatlGroup : augMatl_primary){
 					index++;
 					stability += 0.2F; // 2F max
 					if (augmatlGroup == group){
@@ -952,15 +839,13 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 			}
 			if (mainmatlGroups != null && mainmatlGroups.size() == 1){
 				StructureGroup group = mainmatlGroups.get(0);
-				if (group == tier1_primary || group == tier1_secondary){
+				if (group == tier1_primary){
 					maxEffects += 1;
-				} else if (group == tier2_primary || group == tier2_secondary){
+				} else if (group == tier2_primary){
 					maxEffects += 2;
-				} else if (group == tier3_primary || group == tier3_secondary){
+				} else if (group == tier3_primary){
 					maxEffects += 3;
 					stability += 1F;
-				} else{ //default of stone brick
-					maxEffects += 2;
 				}
 			}
 		}else{
@@ -970,7 +855,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 		}
 
 		//maxEffects = 2;
-		setStructureValid(primaryvalid || secondaryvalid);
+		setStructureValid(valid);
 	}
 
 	private void checkForStartCondition(){
