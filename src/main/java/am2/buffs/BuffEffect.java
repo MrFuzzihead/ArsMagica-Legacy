@@ -1,7 +1,6 @@
 package am2.buffs;
 
 import am2.AMCore;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.potion.PotionEffect;
 
@@ -14,11 +13,6 @@ public abstract class BuffEffect extends PotionEffect{
 		super(buffID, duration, amplifier > 0 ? amplifier - 1 : amplifier);
 		InitialApplication = true;
 		HasNotified = ((duration / 20) > 5) ? false : true; //disable notification for effects that last less than 5 seconds
-	}
-
-	public static boolean SetAmplifier(PotionEffect pe, int amplifier){
-		ReflectionHelper.setPrivateValue(PotionEffect.class, pe, amplifier, 2);
-		return true;
 	}
 
 	public boolean shouldNotify(){

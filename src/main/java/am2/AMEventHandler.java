@@ -295,7 +295,6 @@ public class AMEventHandler{
 				buff.stopEffect(soonToBeDead);
 			}
 			soonToBeDead.removePotionEffect(BuffList.temporalAnchor.id);
-			return;
 		}
 	}
 
@@ -388,7 +387,6 @@ public class AMEventHandler{
 		}
 
 		if (EntityUtilities.isSummon(soonToBeDead)){
-			ReflectionHelper.setPrivateValue(EntityLivingBase.class, soonToBeDead, 0, "field_70718_bc", "recentlyHit");
 			int ownerID = EntityUtilities.getOwner(soonToBeDead);
 			Entity e = soonToBeDead.worldObj.getEntityByID(ownerID);
 			if (e != null & e instanceof EntityLivingBase){
@@ -396,7 +394,7 @@ public class AMEventHandler{
 			}
 		}
 
-		if (soonToBeDead instanceof EntityVillager && ((EntityVillager)soonToBeDead).isChild()){
+		if (soonToBeDead instanceof EntityVillager && soonToBeDead.isChild()){
 			BossSpawnHelper.instance.onVillagerChildKilled((EntityVillager)soonToBeDead);
 		}
 
@@ -548,7 +546,6 @@ public class AMEventHandler{
 		if (f <= 0){
 			ent.fallDistance = 0;
 			event.setCanceled(true);
-			return;
 		}
 	}
 
@@ -710,7 +707,7 @@ public class AMEventHandler{
 
 					}
 				}catch (IndexOutOfBoundsException e){
-					; // sometimes it's just unavoidable
+					// sometimes it's just unavoidable
 				}catch (Exception e){
 					e.printStackTrace();
 				}
@@ -1572,7 +1569,7 @@ public class AMEventHandler{
 	public void onEntityAttacked(LivingAttackEvent event){
 		if (event.source.isFireDamage() && event.entityLiving instanceof EntityPlayer && ((EntityPlayer)event.entityLiving).inventory.armorInventory[3] != null){
 			if (((EntityPlayer)event.entityLiving).inventory.armorInventory[3].getItem() == ItemsCommonProxy.fireEars || ((EntityPlayer)event.entityLiving).inventory.armorInventory[3].getItem() == ItemsCommonProxy.archmageHood){
-				((EntityPlayer)event.entityLiving).setFire(0);
+				event.entityLiving.setFire(0);
 				event.setCanceled(true);
 				return;
 			}
@@ -1597,7 +1594,6 @@ public class AMEventHandler{
 							event.entityLiving.posZ - 1 + event.entityLiving.worldObj.rand.nextFloat() * 2, 6, -1);
 				event.entityLiving.worldObj.playSoundAtEntity(event.entityLiving, "arsmagica2:spell.cast.arcane", 1.0f, event.entityLiving.worldObj.rand.nextFloat() + 0.5f);
 				event.setCanceled(true);
-				return;
 			}
 		}
 	}
@@ -1670,8 +1666,8 @@ public class AMEventHandler{
 			double deltaZ = event.entityLiving.posZ - entitySource.posZ;
 			double deltaX = event.entityLiving.posX - entitySource.posX;
 			double angle = Math.atan2(deltaZ, deltaX);
-			double speed = ((EntityPlayer)entitySource).isSprinting() ? 3 : 2;
-			double vertSpeed = ((EntityPlayer)entitySource).isSprinting() ? 0.5 : 0.325;
+			double speed = entitySource.isSprinting() ? 3 : 2;
+			double vertSpeed = entitySource.isSprinting() ? 0.5 : 0.325;
 
 			if (event.entityLiving instanceof EntityPlayer){
 				AMNetHandler.INSTANCE.sendVelocityAddPacket(event.entityLiving.worldObj, event.entityLiving, speed * Math.cos(angle), vertSpeed, speed * Math.sin(angle));
@@ -1690,8 +1686,8 @@ public class AMEventHandler{
 			double deltaZ = event.entityLiving.posZ - entitySource.posZ;
 			double deltaX = event.entityLiving.posX - entitySource.posX;
 			double angle = Math.atan2(deltaZ, deltaX);
-			double speed = ((EntityPlayer)entitySource).isSprinting() ? 5 : 3;
-			double vertSpeed = ((EntityPlayer)entitySource).isSprinting() ? 1 : 0.65;
+			double speed = entitySource.isSprinting() ? 5 : 3;
+			double vertSpeed = entitySource.isSprinting() ? 1 : 0.65;
 
 			if (event.entityLiving instanceof EntityPlayer){
 				AMNetHandler.INSTANCE.sendVelocityAddPacket(event.entityLiving.worldObj, event.entityLiving, speed * Math.cos(angle), vertSpeed, speed * Math.sin(angle));
@@ -1744,7 +1740,7 @@ public class AMEventHandler{
 				event.setCanceled(true);
 			}
 		} else if (event.overlayType == RenderBlockOverlayEvent.OverlayType.FIRE) {
-			if (event.player != null && ((EntityPlayer)event.player).inventory.armorInventory[3] != null && ((EntityPlayer)event.player).inventory.armorInventory[3].getItem() == ItemsCommonProxy.archmageHood) {
+			if (event.player != null && event.player.inventory.armorInventory[3] != null && event.player.inventory.armorInventory[3].getItem() == ItemsCommonProxy.archmageHood) {
 				event.setCanceled(true);
 			}
 		}

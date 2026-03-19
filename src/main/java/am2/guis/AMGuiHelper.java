@@ -223,13 +223,7 @@ public class AMGuiHelper{
 		Minecraft.getMinecraft().renderEngine.bindTexture(rl_items);
 
 		Tessellator tessellator = Tessellator.instance;
-
-		boolean drawing = ReflectionHelper.getPrivateValue(Tessellator.class, tessellator, "field_78415_z", "isDrawing");
-		if (drawing)
-			tessellator.draw();
-
 		tessellator.startDrawingQuads();
-
 		tessellator.addVertexWithUV(x, y + h, zLevel, IIcon.getMinU(), IIcon.getMaxV());
 		tessellator.addVertexWithUV(x + w, y + h, zLevel, IIcon.getMaxU(), IIcon.getMaxV());
 		tessellator.addVertexWithUV(x + w, y, zLevel, IIcon.getMaxU(), IIcon.getMinV());
@@ -243,8 +237,6 @@ public class AMGuiHelper{
 		GL11.glPopMatrix();
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 
-		if (drawing)
-			tessellator.startDrawingQuads();
 	}
 
 	public static void DrawItemAtXY(ItemStack stack, float x, float y, float zLevel){

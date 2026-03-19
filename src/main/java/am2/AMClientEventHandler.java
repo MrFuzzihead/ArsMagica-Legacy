@@ -24,7 +24,6 @@ import am2.power.PowerNodeEntry;
 import am2.utility.EntityUtilities;
 import am2.utility.RenderUtilities;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
@@ -32,7 +31,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiPlayerInfo;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemBlock;
@@ -252,7 +250,7 @@ public class AMClientEventHandler{
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void onPlayerRender(RenderPlayerEvent.Post event){
-		ModelBiped mainModel = ReflectionHelper.getPrivateValue(RenderPlayer.class, event.renderer, "field_77109_a", "modelBipedMain");
+		ModelBiped mainModel = event.renderer.modelBipedMain;
 		if (mainModel != null){
 			mainModel.bipedLeftArm.isHidden = false;
 			mainModel.bipedRightArm.isHidden = false;
