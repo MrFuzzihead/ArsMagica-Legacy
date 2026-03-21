@@ -190,15 +190,16 @@ public class SimpleBlockRenderHandler implements ISimpleBlockRenderingHandler{
 		if (icon == null)
 			icon = block.getIcon(5, 0);
 		renderer.renderFaceZNeg(block, x, y, z, icon);
+		renderer.enableAO = true;
+		renderer.renderFaceYPos(block, x, y, z+0.001, block.getIcon(1, 1));
+		renderer.renderFaceYNeg(block, x, y, z+0.001, block.getIcon(0, 1));
 
-		renderer.renderFaceYPos(block, x, y, z, block.getIcon(1, 1));
-		renderer.renderFaceYNeg(block, x, y, z, block.getIcon(0, 1));
+		renderer.renderFaceXPos(block, x, y, z+0.001, block.getIcon(2, 1));
+		renderer.renderFaceXNeg(block, x, y, z+0.001, block.getIcon(3, 1));
 
-		renderer.renderFaceXPos(block, x, y, z, block.getIcon(2, 1));
-		renderer.renderFaceXNeg(block, x, y, z, block.getIcon(3, 1));
-
-		renderer.renderFaceZPos(block, x, y, z, block.getIcon(4, 1));
-		renderer.renderFaceZNeg(block, x, y, z, block.getIcon(5, 1));
+		renderer.renderFaceZPos(block, x, y, z+0.001, block.getIcon(4, 1));
+		renderer.renderFaceZNeg(block, x, y, z+0.001, block.getIcon(5, 1));
+		renderer.enableAO = false;
 	}
 
 	private void renderBlock(Block block, int meta, RenderBlocks renderer){
