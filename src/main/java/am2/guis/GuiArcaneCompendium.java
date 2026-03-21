@@ -35,6 +35,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
@@ -123,7 +124,9 @@ public class GuiArcaneCompendium extends GuiScreen{
 	//======================================================
 	Entity entryEntity;
 	int curRotationH = 0;
+	int curRotationW = 0;
 	int lastMouseX = 0;
+	int lastMouseY = 0;
 	boolean isDragging = false;
 	//======================================================
 
@@ -187,7 +190,7 @@ public class GuiArcaneCompendium extends GuiScreen{
 	}
 
 	public GuiArcaneCompendium(MultiblockStructureDefinition multi, TileEntity controllingTileEntity){
-		this(multi.getID());
+		this(multi.getID().equals("fakeAltar") ? "craftingAltar" : multi.getID());
 		this.entryMultiblock = multi;
 		this.blockAccess = new GuiBlockAccess();
 		this.blockAccess.setControllingTileEntity(controllingTileEntity);
@@ -267,7 +270,7 @@ public class GuiArcaneCompendium extends GuiScreen{
 		}else if (renderStack.getItem() instanceof ItemSpellPart){
 			ISkillTreeEntry part = SkillManager.instance.getSkill(this.entryName);
 			if (part == null) return;
-			ArrayList<Object> recipe = new ArrayList<Object>();
+			ArrayList<Object> recipe = new ArrayList<>();
 
 			if (part instanceof ISpellPart){
 				Object[] recipeItems = ((ISpellPart)part).getRecipeItems();
@@ -356,17 +359,17 @@ public class GuiArcaneCompendium extends GuiScreen{
 
 		this.entryName = entryName;
 
-		forcedMetas = new HashMap<Item, Integer>();
+		forcedMetas = new HashMap<>();
 
 		if (entry != null){
 			lines = splitStringToLines(Minecraft.getMinecraft().fontRenderer, entry.getDescription(entryName), lineWidth, maxLines);
 			numPages = lines.size() - 1;
 			entry.setIsNew(false);
 		}else{
-			lines = new ArrayList<String>();
+			lines = new ArrayList<>();
 			numPages = 0;
 			relatedEntries = new ItemStack[0];
-			modifiers = new ArrayList<ItemStack>();
+			modifiers = new ArrayList<>();
 			return;
 		}
 
@@ -391,7 +394,7 @@ public class GuiArcaneCompendium extends GuiScreen{
 			relatedEntries[i] = childEntries[i].getRepresentItemStack(name, meta);
 		}
 
-		modifiers = new ArrayList<ItemStack>();
+		modifiers = new ArrayList<>();
 		SpellModifiers[] modifiedBy = new SpellModifiers[0];
 
 		if (entry instanceof CompendiumEntrySpellComponent){
@@ -548,8 +551,9 @@ public class GuiArcaneCompendium extends GuiScreen{
 	protected void mouseClickMove(int par1, int par2, int par3, long par4){
 		if (isDragging){
 			curRotationH -= (lastMouseX - par1);
-
+			curRotationW -= (lastMouseY - par2);
 			lastMouseX = par1;
+			lastMouseY = par2;
 		}
 		super.mouseClickMove(par1, par2, par3, par4);
 	}
@@ -608,10 +612,11 @@ public class GuiArcaneCompendium extends GuiScreen{
 		mc.renderEngine.bindTexture(background);
 		GL11.glColor3f(1.0f, 1.0f, 1.0f);
 		this.drawTexturedModalRect_Classic(l, i1, 0, 0, xSize, ySize, 256, 240);
-		RenderHelper.enableStandardItemLighting();
+
 		drawLeftPage(l, i1);
 		drawRightPage(l, i1, par1, par2);
 		drawRightPageExtras(l, i1);
+		RenderHelper.enableStandardItemLighting();
 		prevPage.visible = this.page != 0;
 
 
@@ -772,24 +777,21 @@ public class GuiArcaneCompendium extends GuiScreen{
 
 	private void drawRightPage_Entity(int cx, int cy){
 
+
 		GL11.glPushMatrix();
 		GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		GL11.glTranslatef((float)((double)cx - 2), (float)((double)cy + 20), -3.0F + itemRenderer.zLevel);
-		GL11.glScalef(10.0F, 10.0F, 10.0F);
-		GL11.glTranslatef(1.0F, 6.5F, 1.0F);
-		GL11.glScalef(6.0F, 6.0F, -1.0F);
-		GL11.glRotatef(210.0F, 1.0F, 0.0F, 0.0F);
-		GL11.glRotatef(45.0F, 0.0F, 1.0F, 0.0F);
-		GL11.glRotatef(-90.0F, 0.0F, 1.0F, 0.0F);
+		GL11.glTranslatef(cx + 8, cy + 80, itemRenderer.zLevel + 50);
+		GL11.glRotatef(180, 0, 0,1);
+		GL11.glScalef(40,40,40);
 
 		renderEntityIntoUI();
 		GL11.glPopMatrix();
 
-		int l = (width - xSize) / 2;
 		int i1 = (height - ySize) / 2;
 
-		String renderString = "Click and drag to rotate";
+		String renderString = StatCollector.translateToLocal("am.gui.rotate");
 		fontRendererObj.drawString(renderString, cx - fontRendererObj.getStringWidth(renderString) / 2, i1 + 20, 0x000000);
+
 	}
 
 	private void renderEntityIntoUI(){
@@ -797,8 +799,6 @@ public class GuiArcaneCompendium extends GuiScreen{
 		if (render != null){
 			GL11.glPushMatrix();
 			if (entryEntity instanceof IArsMagicaBoss){
-				float scaleFactorX = (1 / entryEntity.width);
-				float scaleFactorY = (2 / entryEntity.height);
 				GL11.glScalef(1,1,1);
 			}else if (entryEntity instanceof EntityFlicker){
 				GL11.glTranslatef(0, 1.3f, 0);
@@ -809,7 +809,10 @@ public class GuiArcaneCompendium extends GuiScreen{
 			GL11.glRotatef(curRotationH, 0, 1, 0);
 
 			//entity, x, y, z, yaw, partialtick
+			GL11.glDisable(GL11.GL_LIGHTING);
+			OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240f, 240f);
 			render.doRender(entryEntity, 0, 0, 0, 90, 0);
+			GL11.glEnable(GL11.GL_LIGHTING);
 
 			GL11.glPopMatrix();
 		}
@@ -1307,7 +1310,7 @@ public class GuiArcaneCompendium extends GuiScreen{
 	}
 
 	public static ArrayList<String> splitStringToLines(FontRenderer fontRenderer, String string, int lineWidth, int maxLines){
-		ArrayList<String> toReturn = new ArrayList<String>();
+		ArrayList<String> toReturn = new ArrayList<>();
 		int numLines = 0;
 		int len = 0;
 		int pageCount = 0;

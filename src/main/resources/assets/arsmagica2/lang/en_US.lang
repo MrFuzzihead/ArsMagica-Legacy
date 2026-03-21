@@ -699,6 +699,7 @@ am2.gui.negativeBuffs=Negative Buffs
 am2.gui.neutralPower=Neutral Etherium
 am2.gui.next=Next
 am2.gui.no=No
+am2.gui.rotate=Click and drag to rotate
 am2.gui.noneAffinity=None
 am2.gui.notLearned=not learned
 am2.gui.numericValues=Numeric

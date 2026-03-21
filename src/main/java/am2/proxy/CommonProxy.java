@@ -274,13 +274,6 @@ public class CommonProxy{
 	public void renderGameOverlay(){
 	}
 
-	/* LOCALIZATION */
-	public void addName(Object obj, String s){
-	}
-
-	public void addLocalization(String s1, String string){
-	}
-
 	public String getItemStackDisplayName(ItemStack newStack){
 		return "";
 	}

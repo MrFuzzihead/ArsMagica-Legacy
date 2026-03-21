@@ -1,5 +1,6 @@
 package am2;
 
+import am2.api.items.ICompendium;
 import am2.api.items.armor.IManaGoggle;
 import am2.api.math.AMVector3;
 import am2.api.power.IPowerNode;
@@ -14,8 +15,10 @@ import am2.blocks.tileentities.TileEntityParticleEmitter;
 import am2.buffs.BuffList;
 import am2.entities.EntityShadowHelper;
 import am2.guis.AMGuiHelper;
+import am2.items.ItemArcaneCompendium;
 import am2.items.ItemsCommonProxy;
 import am2.lore.ArcaneCompendium;
+import am2.lore.CompendiumEntry;
 import am2.network.AMDataWriter;
 import am2.network.AMNetHandler;
 import am2.network.AMPacketIDs;
@@ -28,16 +31,21 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiPlayerInfo;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.Facing;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.StatCollector;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.client.event.MouseEvent;
@@ -65,7 +73,7 @@ public class AMClientEventHandler{
 				){
 
 			TileEntity te = event.player.worldObj.getTileEntity(event.target.blockX, event.target.blockY, event.target.blockZ);
-			if (te != null && te instanceof IPowerNode){
+			if (te instanceof IPowerNode){
 				AMCore.proxy.setTrackedLocation(new AMVector3(event.target.blockX, event.target.blockY, event.target.blockZ));
 			}else{
 				AMCore.proxy.setTrackedLocation(AMVector3.zero());
@@ -169,7 +177,7 @@ public class AMClientEventHandler{
 					xp = armorCompound.getDouble(AMArmor.NBT_KEY_TOTALXP);
 					armorLevel = armorCompound.getInteger(AMArmor.NBT_KEY_ARMORLEVEL);
 					String effectsList = armorCompound.getString(AMArmor.NBT_KEY_EFFECTS);
-					if (effectsList != null && effectsList != ""){
+					if (effectsList != null && !effectsList.isEmpty()){
 						effects = effectsList.split(AMArmor.INFUSION_DELIMITER);
 					}
 				}
@@ -185,14 +193,14 @@ public class AMClientEventHandler{
 			}else{
 				event.toolTip.add(StatCollector.translateToLocal("am2.tooltip.shiftForDetails"));
 			}
-		}else if (stack.getItem() instanceof ItemBlock){
+		}else if(stack != null && stack.getItem() instanceof ItemBlock){
 			if (((ItemBlock)stack.getItem()).field_150939_a == BlocksCommonProxy.manaBattery){
 				if (stack.hasTagCompound()){
 					float batteryCharge = stack.stackTagCompound.getFloat("mana_battery_charge");
 					PowerTypes powerType = PowerTypes.getByID(stack.stackTagCompound.getInteger("mana_battery_powertype"));
 					if (batteryCharge != 0) {
 						// TODO localize this tooltip
-						event.toolTip.add(String.format("\u00A7r\u00A79Contains \u00A75%.2f %s%s \u00A79etherium", batteryCharge, powerType.chatColor(), powerType.name()));
+						event.toolTip.add(String.format("§r§9Contains §5%.2f %s%s §9etherium", batteryCharge, powerType.chatColor(), powerType.name()));
 					}
 				}
 			}
@@ -210,6 +218,65 @@ public class AMClientEventHandler{
 	public void onGuiRender(RenderGameOverlayEvent event){
 		if (event.type == ElementType.CROSSHAIRS || event.type == ElementType.TEXT)
 			AMCore.proxy.renderGameOverlay();
+	}
+	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
+	public void onDrawScreenPost(RenderGameOverlayEvent.Post event){
+		if(event.type == ElementType.ALL){
+			Minecraft mc = Minecraft.getMinecraft();
+			MovingObjectPosition mop = mc.objectMouseOver;
+			ItemStack equippedStack = mc.thePlayer.getCurrentEquippedItem();
+			if(equippedStack != null){
+				if (mop != null && mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK){
+					Block block = mc.theWorld.getBlock(mop.blockX, mop.blockY, mop.blockZ);
+					if (block instanceof ICompendium && equippedStack.getItem() instanceof ItemArcaneCompendium){
+						drawCompendiumHUD(block, mop, event.resolution);
+					}
+				}
+			}
+		}
+	}
+	public void drawCompendiumHUD(Block block, MovingObjectPosition pos, ScaledResolution res){
+		Minecraft mc = Minecraft.getMinecraft();
+		boolean draw = false;
+		String drawStr = "";
+		String secondLine = "";
+		FontRenderer font = mc.fontRenderer;
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		int sx = res.getScaledWidth() / 2 - 17;
+		int sy = res.getScaledHeight() / 2 + 2;
+
+		if(block instanceof ICompendium){
+			String sentry = block.getUnlocalizedName().replace("arsmagica2:", "").replace("tile.", "");
+			CompendiumEntry entry = ArcaneCompendium.instance.getEntry(sentry);
+			if(entry != null) {
+				drawStr = entry.name;
+				draw = true;
+			}
+		}
+		if(draw) {
+			if(!mc.thePlayer.isSneaking()) {
+				drawStr = "?";
+				secondLine = "";
+				font = mc.fontRenderer;
+			}
+
+			RenderItem.getInstance().renderItemIntoGUI(mc.fontRenderer, mc.renderEngine, new ItemStack(ItemsCommonProxy.arcaneCompendium), sx, sy);
+			GL11.glDisable(GL11.GL_LIGHTING);
+			font.drawStringWithShadow(drawStr, sx + 10, sy + 8, 0xFFFFFFFF);
+			font.drawStringWithShadow(secondLine, sx + 10, sy + 18, 0xFFAAAAAA);
+
+			if(!mc.thePlayer.isSneaking()) {
+				GL11.glScalef(0.5F, 0.5F, 1F);
+				mc.fontRenderer.drawStringWithShadow(EnumChatFormatting.BOLD + "Shift", (sx + 10) * 2 - 16, (sy + 8) * 2 + 20, 0xFFFFFFFF);
+				GL11.glScalef(2F, 2F, 1F);
+			}
+		}
+
+		GL11.glDisable(GL11.GL_BLEND);
+		GL11.glColor4f(1F, 1F, 1F, 1F);
+
 	}
 
 	@SubscribeEvent
@@ -327,11 +394,10 @@ public class AMClientEventHandler{
 			}
 
 			List<String> tablist = ((List<GuiPlayerInfo>) Minecraft.getMinecraft().thePlayer.sendQueue.playerInfoList).stream().map(r -> r.name).collect(Collectors.toList());
-			if (tablist.contains(Minecraft.getMinecraft().thePlayer.getDisplayName())) tablist.remove(Minecraft.getMinecraft().thePlayer.getDisplayName());
-			if (tablist.contains(Minecraft.getMinecraft().thePlayer.getCommandSenderName())) tablist.remove(Minecraft.getMinecraft().thePlayer.getCommandSenderName());
-			if (event.entity == Minecraft.getMinecraft().thePlayer && tablist.size() == 0) { // no players to sync the map from, clear it instead
+			tablist.remove(Minecraft.getMinecraft().thePlayer.getDisplayName());
+			tablist.remove(Minecraft.getMinecraft().thePlayer.getCommandSenderName());
+			if (event.entity == Minecraft.getMinecraft().thePlayer && tablist.isEmpty()) { // no players to sync the map from, clear it instead
 				MysteriumPatchesFixesMagicka.playerModelMap.clear();
-				return;
 			}
 		}
 	}
@@ -347,7 +413,7 @@ public class AMClientEventHandler{
 		if (block == BlocksCommonProxy.particleEmitter){
 			TileEntity te = event.world.getTileEntity(event.x + Facing.offsetsXForSide[event.face], event.y + Facing.offsetsYForSide[event.face], event.z + Facing.offsetsZForSide[event.face]);
 			
-			if (te != null && te instanceof TileEntityParticleEmitter && !((TileEntityParticleEmitter)te).getShow()){
+			if (te instanceof TileEntityParticleEmitter && !((TileEntityParticleEmitter)te).getShow()){
 				event.setCanceled(true);
 		  }
 		}

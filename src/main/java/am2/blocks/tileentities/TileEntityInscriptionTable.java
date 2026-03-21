@@ -498,7 +498,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 	}
 
 	public void addSpellPart(ISpellPart part){
-		if (!currentSpellIsReadOnly && this.currentRecipe.size() < 16){
+		if (!currentSpellIsReadOnly && this.currentRecipe.size() < 8){
 			this.currentRecipe.add(part);
 			if (this.worldObj.isRemote)
 				this.sendDataToServer();
@@ -645,40 +645,40 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 				}
 				for (int i = 0; i < recipeItems.length; ++i){
 					Object o = recipeItems[i];
-					String materialkey = "";
+					StringBuilder materialkey = new StringBuilder();
 					int qty = 1;
 					ItemStack recipeStack = null;
 					if (o instanceof ItemStack){
-						materialkey = ((ItemStack)o).getDisplayName();
+						materialkey = new StringBuilder(((ItemStack)o).getDisplayName());
 						recipeStack = (ItemStack)o;
 					}else if (o instanceof Item){
 						recipeStack = new ItemStack((Item)o);
-						materialkey = ((Item)o).getItemStackDisplayName(new ItemStack((Item)o));
+						materialkey = new StringBuilder(((Item)o).getItemStackDisplayName(new ItemStack((Item)o)));
 					}else if (o instanceof Block){
 						recipeStack = new ItemStack((Block)o);
-						materialkey = ((Block)o).getLocalizedName();
+						materialkey = new StringBuilder(((Block)o).getLocalizedName());
 					}else if (o instanceof String){
 						if (((String)o).startsWith("P:")){
 							String s = ((String)o).substring(2);
 							int pfx = SpellRecipeManager.parsePotionMeta(s);
 							recipeStack = new ItemStack(Items.potionitem, 1, pfx);
-							materialkey = recipeStack.getDisplayName();
+							materialkey = new StringBuilder(recipeStack.getDisplayName());
 						}else if (((String)o).startsWith("E:")){
 							int[] ids = SpellRecipeManager.ParseEssenceIDs((String)o);
-							materialkey = "Essence (";
+							materialkey = new StringBuilder("Essence (");
 							for (int powerID : ids){
 								PowerTypes type = PowerTypes.getByID(powerID);
-								materialkey += type.name() + "/";
+								materialkey.append(type.name()).append("/");
 							}
 
-							if (materialkey.equals("Essence (")){
+							if (materialkey.toString().equals("Essence (")){
 								++i;
 								continue;
 							}
 
 							o = recipeItems[++i];
-							if (materialkey.startsWith("Essence (")){
-								materialkey = materialkey.substring(0, materialkey.lastIndexOf("/")) + ")";
+							if (materialkey.toString().startsWith("Essence (")){
+								materialkey = new StringBuilder(materialkey.substring(0, materialkey.lastIndexOf("/")) + ")");
 								qty = (Integer)o;
 								int flag = 0;
 								for (int f : ids){
@@ -691,16 +691,16 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 						}else{
 							ArrayList<ItemStack> ores = OreDictionary.getOres((String)o);
 							recipeStack = !ores.isEmpty() ? ores.get(1) : null;
-							materialkey = (String)o;
+							materialkey = new StringBuilder((String)o);
 						}
 					}
 
-					if (materialsList.containsKey(materialkey)){
-						int old = materialsList.get(materialkey);
+					if (materialsList.containsKey(materialkey.toString())){
+						int old = materialsList.get(materialkey.toString());
 						old += qty;
-						materialsList.put(materialkey, old);
+						materialsList.put(materialkey.toString(), old);
 					}else{
-						materialsList.put(materialkey, qty);
+						materialsList.put(materialkey.toString(), qty);
 					}
 
 					if (recipeStack != null)
@@ -806,10 +806,8 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
 
 	private int[] concatenateArrays(int[] a, int[] b){
 		int[] concat = new int[a.length + b.length];
-		for (int i = 0; i < a.length; ++i)
-			concat[i] = a[i];
-		for (int i = 0; i < b.length; ++i)
-			concat[i + a.length] = b[i];
+		System.arraycopy(a, 0, concat, 0, a.length);
+		System.arraycopy(b, 0, concat, a.length, b.length);
 
 		return concat;
 	}

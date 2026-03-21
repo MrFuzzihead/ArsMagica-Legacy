@@ -246,7 +246,7 @@ public class AMGuiHelper{
 	public static void DrawItemAtXY(ItemStack stack, float x, float y, float zLevel, float scale){
 		if (stack == null)
 			return;
-		boolean success = false;
+		boolean success;
 
 		GL11.glPushAttrib(GL11.GL_TEXTURE_BIT | GL11.GL_LIGHTING_BIT);
 

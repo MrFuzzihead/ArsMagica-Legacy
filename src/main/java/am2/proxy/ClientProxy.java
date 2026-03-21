@@ -129,10 +129,10 @@ public class ClientProxy extends CommonProxy{
 		blocks.registerRenderInformation();
 
 		simpleBlockRenderHandler = new SimpleBlockRenderHandler();
-		RenderingRegistry.registerBlockHandler(blocks.commonBlockRenderID, simpleBlockRenderHandler);
+		RenderingRegistry.registerBlockHandler(BlocksCommonProxy.commonBlockRenderID, simpleBlockRenderHandler);
 
 		techneBlockRenderHandler = new TechneBlockRenderHandler();
-		RenderingRegistry.registerBlockHandler(blocks.blockRenderID, techneBlockRenderHandler);
+		RenderingRegistry.registerBlockHandler(BlocksCommonProxy.blockRenderID, techneBlockRenderHandler);
 
 
 		MinecraftForgeClient.registerItemRenderer(ItemsCommonProxy.scythe, CustomItemRenderer.instance);
@@ -254,15 +254,6 @@ public class ClientProxy extends CommonProxy{
 		return Minecraft.getMinecraft().getLanguageManager().getCurrentLanguage().getLanguageCode();
 	}
 
-	@Override
-	public void addName(Object obj, String s){
-		LanguageRegistry.addName(obj, s);
-	}
-
-	@Override
-	public void addLocalization(String s1, String string){
-		LanguageRegistry.instance().addStringLocalization(s1, string);
-	}
 
 	@Override
 	public String getItemStackDisplayName(ItemStack stack){
