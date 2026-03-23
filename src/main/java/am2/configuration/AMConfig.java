@@ -1037,48 +1037,48 @@ public class AMConfig extends Configuration{
 	}
 
 	public int GetHecateSpawnRate(){
-		Property prop = get(CATEGORY_MOBS, KEY_hecateSpawnRate, 2);
-		return Math.max(prop.getInt(2), 0);
+		Property prop = get(CATEGORY_MOBS, KEY_hecateSpawnRate, 20);
+		return Math.max(prop.getInt(20), 0);
 	}
 
 	public int GetMageSpawnRate(){
-		Property prop = get(CATEGORY_MOBS, KEY_mageSpawnRate, 1);
-		return Math.max(prop.getInt(1), 0);
+		Property prop = get(CATEGORY_MOBS, KEY_mageSpawnRate, 10);
+		return Math.max(prop.getInt(10), 0);
 	}
 
 	public int GetWaterElementalSpawnRate(){
-		Property prop = get(CATEGORY_MOBS, KEY_waterElementalSpawnRate, 3);
-		return Math.max(prop.getInt(3), 0);
+		Property prop = get(CATEGORY_MOBS, KEY_waterElementalSpawnRate, 30);
+		return Math.max(prop.getInt(30), 0);
 	}
 
 	public int GetManaElementalSpawnRate(){
-		Property prop = get(CATEGORY_MOBS, KEY_manaElementalSpawnRate, 2);
-		return Math.max(prop.getInt(2), 0);
+		Property prop = get(CATEGORY_MOBS, KEY_manaElementalSpawnRate, 20);
+		return Math.max(prop.getInt(20), 0);
 	}
 
 	public int GetDryadSpawnRate(){
-		Property prop = get(CATEGORY_MOBS, KEY_dryadSpawnRate, 5);
-		return Math.max(prop.getInt(5), 0);
+		Property prop = get(CATEGORY_MOBS, KEY_dryadSpawnRate, 50);
+		return Math.max(prop.getInt(50), 0);
 	}
 
 	public int GetManaCreeperSpawnRate(){
-		Property prop = get(CATEGORY_MOBS, KEY_manaCreeperSpawnRate, 3);
-		return Math.max(prop.getInt(3), 0);
+		Property prop = get(CATEGORY_MOBS, KEY_manaCreeperSpawnRate, 30);
+		return Math.max(prop.getInt(30), 0);
 	}
 
 	public int GetDarklingSpawnRate(){
-		Property prop = get(CATEGORY_MOBS, KEY_darklingSpawnRate, 5);
-		return Math.max(prop.getInt(5), 0);
+		Property prop = get(CATEGORY_MOBS, KEY_darklingSpawnRate, 50);
+		return Math.max(prop.getInt(50), 0);
 	}
 
 	public int GetEarthElementalSpawnRate(){
-		Property prop = get(CATEGORY_MOBS, KEY_earthElementalSpawnRate, 2);
-		return Math.max(prop.getInt(2), 0);
+		Property prop = get(CATEGORY_MOBS, KEY_earthElementalSpawnRate, 20);
+		return Math.max(prop.getInt(20), 0);
 	}
 
 	public int GetFireElementalSpawnRate(){
-		Property prop = get(CATEGORY_MOBS, KEY_fireElementalSpawnRate, 2);
-		return Math.max(prop.getInt(2), 0);
+		Property prop = get(CATEGORY_MOBS, KEY_fireElementalSpawnRate, 20);
+		return Math.max(prop.getInt(20), 0);
 	}
 
 	public int GetFlickerSpawnRate(){

@@ -394,7 +394,7 @@ public class AMEventHandler{
 			}
 		}
 
-		if (soonToBeDead instanceof EntityVillager && soonToBeDead.isChild()){
+		if (soonToBeDead instanceof EntityVillager){
 			BossSpawnHelper.instance.onVillagerChildKilled((EntityVillager)soonToBeDead);
 		}
 
@@ -1656,18 +1656,16 @@ public class AMEventHandler{
 			}
 		}
 
-		Entity entitySource = event.source.getSourceOfDamage();
-		if (entitySource instanceof EntityPlayer
-				&& ((EntityPlayer)entitySource).inventory.armorInventory[2] != null
-				&& ((EntityPlayer)entitySource).inventory.armorInventory[2].getItem() == ItemsCommonProxy.earthGuardianArmor
-				&& ((EntityPlayer)entitySource).getCurrentEquippedItem() == null){
+		Entity entityAttacker = event.source.getSourceOfDamage();
+		if (entityAttacker instanceof EntityPlayer && ((EntityPlayer)entityAttacker).inventory.armorInventory[2] != null && ((EntityPlayer)entityAttacker).inventory.armorInventory[2].getItem() == ItemsCommonProxy.earthGuardianArmor
+				&& ((EntityPlayer)entityAttacker).getCurrentEquippedItem() == null){
 			event.ammount += 4;
 
-			double deltaZ = event.entityLiving.posZ - entitySource.posZ;
-			double deltaX = event.entityLiving.posX - entitySource.posX;
+			double deltaZ = event.entityLiving.posZ - entityAttacker.posZ;
+			double deltaX = event.entityLiving.posX - entityAttacker.posX;
 			double angle = Math.atan2(deltaZ, deltaX);
-			double speed = entitySource.isSprinting() ? 3 : 2;
-			double vertSpeed = entitySource.isSprinting() ? 0.5 : 0.325;
+			double speed = entityAttacker.isSprinting() ? 3 : 2;
+			double vertSpeed = entityAttacker.isSprinting() ? 0.5 : 0.325;
 
 			if (event.entityLiving instanceof EntityPlayer){
 				AMNetHandler.INSTANCE.sendVelocityAddPacket(event.entityLiving.worldObj, event.entityLiving, speed * Math.cos(angle), vertSpeed, speed * Math.sin(angle));
@@ -1678,16 +1676,16 @@ public class AMEventHandler{
 			}
 			event.entityLiving.worldObj.playSoundAtEntity(event.entityLiving, "arsmagica2:spell.cast.earth", 0.4f, event.entityLiving.worldObj.rand.nextFloat() * 0.1F + 0.9F);
 		}
-		if (entitySource instanceof EntityPlayer
-				&& ((EntityPlayer)entitySource).inventory.armorInventory[2] != null
-				&& ((EntityPlayer)entitySource).inventory.armorInventory[2].getItem() == ItemsCommonProxy.archmageArmor){
+		if (entityAttacker instanceof EntityPlayer
+				&& ((EntityPlayer)entityAttacker).inventory.armorInventory[2] != null
+				&& ((EntityPlayer)entityAttacker).inventory.armorInventory[2].getItem() == ItemsCommonProxy.archmageArmor){
 			event.ammount += 5;
 
-			double deltaZ = event.entityLiving.posZ - entitySource.posZ;
-			double deltaX = event.entityLiving.posX - entitySource.posX;
+			double deltaZ = event.entityLiving.posZ - entityAttacker.posZ;
+			double deltaX = event.entityLiving.posX - entityAttacker.posX;
 			double angle = Math.atan2(deltaZ, deltaX);
-			double speed = entitySource.isSprinting() ? 5 : 3;
-			double vertSpeed = entitySource.isSprinting() ? 1 : 0.65;
+			double speed = entityAttacker.isSprinting() ? 5 : 3;
+			double vertSpeed = entityAttacker.isSprinting() ? 1 : 0.65;
 
 			if (event.entityLiving instanceof EntityPlayer){
 				AMNetHandler.INSTANCE.sendVelocityAddPacket(event.entityLiving.worldObj, event.entityLiving, speed * Math.cos(angle), vertSpeed, speed * Math.sin(angle));
@@ -1700,34 +1698,34 @@ public class AMEventHandler{
 		}
 
 		ExtendedProperties extendedProperties = ExtendedProperties.For(event.entityLiving);
-		EntityLivingBase ent = event.entityLiving;
+		EntityLivingBase entityAttacked = event.entityLiving;
 		if (!(extendedProperties.getContingencyEffect(0).getItem() instanceof ItemSnowball)){
 			extendedProperties.procContingency(0, (event.source.getEntity() != null && event.source.getEntity() instanceof EntityLivingBase) ? (EntityLivingBase)event.source.getEntity() : null);
 		}
-		if (!(extendedProperties.getContingencyEffect(4).getItem() instanceof ItemSnowball) && ent.getHealth() <= ent.getMaxHealth() / 3){
+		if (!(extendedProperties.getContingencyEffect(4).getItem() instanceof ItemSnowball) && entityAttacked.getHealth() <= entityAttacked.getMaxHealth() / 3){
 			extendedProperties.procContingency(4, (event.source.getEntity() != null && event.source.getEntity() instanceof EntityLivingBase) ? (EntityLivingBase)event.source.getEntity() : null);
 		}
 
-		if (entitySource instanceof EntityPlayer
-				&& ((EntityPlayer)entitySource).inventory.armorInventory[3] != null
-				&& ((EntityPlayer)entitySource).inventory.armorInventory[2] != null
-				&& ((EntityPlayer)entitySource).inventory.armorInventory[1] != null
-				&& ((EntityPlayer)entitySource).inventory.armorInventory[0] != null
-				&& ((EntityPlayer)entitySource).inventory.armorInventory[3].getItem() == ItemsCommonProxy.archmageHood
-				&& ((EntityPlayer)entitySource).inventory.armorInventory[2].getItem() == ItemsCommonProxy.archmageArmor
-				&& ((EntityPlayer)entitySource).inventory.armorInventory[1].getItem() == ItemsCommonProxy.archmageLeggings
-				&& ((EntityPlayer)entitySource).inventory.armorInventory[0].getItem() == ItemsCommonProxy.archmageBoots){
-			if (entitySource.isSneaking()) {
+		if (entityAttacker instanceof EntityPlayer
+				&& ((EntityPlayer)entityAttacker).inventory.armorInventory[3] != null
+				&& ((EntityPlayer)entityAttacker).inventory.armorInventory[2] != null
+				&& ((EntityPlayer)entityAttacker).inventory.armorInventory[1] != null
+				&& ((EntityPlayer)entityAttacker).inventory.armorInventory[0] != null
+				&& ((EntityPlayer)entityAttacker).inventory.armorInventory[3].getItem() == ItemsCommonProxy.archmageHood
+				&& ((EntityPlayer)entityAttacker).inventory.armorInventory[2].getItem() == ItemsCommonProxy.archmageArmor
+				&& ((EntityPlayer)entityAttacker).inventory.armorInventory[1].getItem() == ItemsCommonProxy.archmageLeggings
+				&& ((EntityPlayer)entityAttacker).inventory.armorInventory[0].getItem() == ItemsCommonProxy.archmageBoots){
+			if (entityAttacker.isSneaking()) {
 				extendedProperties.toggleFlipped();
 				tempFlipped.put(extendedProperties, 50);
 			}
 		}
 
-		if (ent.isPotionActive(BuffList.fury.id))
+		if (entityAttacked.isPotionActive(BuffList.fury.id))
 			event.ammount /= 2;
 
-		if (entitySource instanceof EntityLivingBase
-				&& ((EntityLivingBase)entitySource).isPotionActive(BuffList.shrink))
+		if (entityAttacker instanceof EntityLivingBase
+				&& ((EntityLivingBase)entityAttacker).isPotionActive(BuffList.shrink))
 			event.ammount /= 2;
 	}
 

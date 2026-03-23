@@ -271,7 +271,8 @@ public class AMCore{
 	@EventHandler
 	public void onIMCReceived(FMLInterModComms.IMCEvent event){
 		for (IMCMessage msg : event.getMessages()){
-			if (msg.key == "dsb"){
+			switch (msg.key){
+			case "dsb":{
 				LogHelper.info("Received dimension spawn blacklist IMC!  Processing.");
 				String[] split = msg.getStringValue().split("|");
 				if (split.length != 2){
@@ -283,7 +284,9 @@ public class AMCore{
 				}catch (NumberFormatException nex){
 					LogHelper.warn("Could not parse dsb IMC - improper dimension ID (not a number)!  Syntax is 'ClassName|DimensionID', for example:  EntityDryad|22");
 				}
-			}else if (msg.key == "bsb"){
+				break;
+			}
+			case "bsb":{
 				LogHelper.info("Received biome spawn blacklist IMC!  Processing.");
 				String[] split = msg.getStringValue().split("|");
 				if (split.length != 2){
@@ -295,20 +298,24 @@ public class AMCore{
 				}catch (NumberFormatException nex){
 					LogHelper.warn("Could not parse bsb IMC - improper biome ID (not a number)!  Syntax is 'ClassName|BiomeID', for example:  EntityDryad|22");
 				}
-			}else if (msg.key == "dwg"){
+				break;
+			}
+			case "dwg":
 				LogHelper.info("Received dimension worldgen blacklist IMC!  Processing.");
 				try{
 					SpawnBlacklists.addBlacklistedDimensionForWorldgen(Integer.parseInt(msg.getStringValue()));
 				}catch (NumberFormatException nex){
 					LogHelper.warn("Could not parse dwg IMC - improper dimension ID (not a number)!  Syntax is 'dimensionID', for example:  2");
 				}
-			}else if (msg.key == "adb"){
+				break;
+			case "adb":
 				LogHelper.info("Received dispel blacklist IMC!  Processing.");
 				try{
 					BuffList.instance.addDispelExclusion(Integer.parseInt(msg.getStringValue()));
 				}catch (NumberFormatException nex){
 					LogHelper.warn("Could not parse adb IMC - improper potion ID (not a number)!  Syntax is 'potionID', for example:  10");
 				}
+				break;
 			}
 		}
 	}
