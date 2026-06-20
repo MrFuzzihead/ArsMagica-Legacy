@@ -1,58 +1,64 @@
 package am2.buffs;
 
-import am2.playerextensions.ExtendedProperties;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.DamageSource;
 
-public class BuffEffectTemporalAnchor extends BuffEffect{
+import am2.playerextensions.ExtendedProperties;
 
-	private double x;
-	private double y;
-	private double z;
-	private float rotationPitch;
-	private float rotationYaw;
-	private float rotationYawHead;
+public class BuffEffectTemporalAnchor extends BuffEffect {
 
-	private float mana;
-	private float health;
+    private double x;
+    private double y;
+    private double z;
+    private float rotationPitch;
+    private float rotationYaw;
+    private float rotationYawHead;
 
-	public BuffEffectTemporalAnchor(int duration, int amplifier){
-		super(BuffList.temporalAnchor.id, duration, amplifier);
-	}
+    private float mana;
+    private float health;
 
-	@Override
-	public void applyEffect(EntityLivingBase entityliving){
-		//store values from the entity
-		x = entityliving.posX;
-		y = entityliving.posY;
-		z = entityliving.posZ;
+    public BuffEffectTemporalAnchor(int duration, int amplifier) {
+        super(BuffList.temporalAnchor.id, duration, amplifier);
+    }
 
-		rotationPitch = entityliving.rotationPitch;
-		rotationYaw = entityliving.rotationYaw;
-		rotationYawHead = entityliving.rotationYawHead;
+    @Override
+    public void applyEffect(EntityLivingBase entityliving) {
+        // store values from the entity
+        x = entityliving.posX;
+        y = entityliving.posY;
+        z = entityliving.posZ;
 
-		health = entityliving.getHealth();
-		mana = ExtendedProperties.For(entityliving).getCurrentMana();
-	}
+        rotationPitch = entityliving.rotationPitch;
+        rotationYaw = entityliving.rotationYaw;
+        rotationYawHead = entityliving.rotationYawHead;
 
-	@Override
-	public void stopEffect(EntityLivingBase entityliving){
-		if (health >= 1) {
-			entityliving.setPositionAndUpdate(x, y, z);
-			entityliving.rotationYawHead = rotationYawHead;
-			entityliving.rotationPitch = rotationPitch;
-			entityliving.rotationYaw = rotationYaw;
-			ExtendedProperties.For(entityliving).setCurrentMana(mana);
-			entityliving.setHealth(Math.max(1, health)); // to only explicitly fix level data resets
-			if (health == 0)
-				entityliving.attackEntityFrom(DamageSource.outOfWorld, Integer.MAX_VALUE); // still kills but avoids broken setHealth() call
-			entityliving.fallDistance = 0;
-		}
-	}
+        health = entityliving.getHealth();
+        mana = ExtendedProperties.For(entityliving)
+            .getCurrentMana();
+    }
 
-	@Override
-	protected String spellBuffName(){
-		return "Temporal Anchor";
-	}
+    @Override
+    public void stopEffect(EntityLivingBase entityliving) {
+        if (health >= 1) {
+            entityliving.setPositionAndUpdate(x, y, z);
+            entityliving.rotationYawHead = rotationYawHead;
+            entityliving.rotationPitch = rotationPitch;
+            entityliving.rotationYaw = rotationYaw;
+            ExtendedProperties.For(entityliving)
+                .setCurrentMana(mana);
+            entityliving.setHealth(Math.max(1, health)); // to only explicitly fix level data resets
+            if (health == 0) entityliving.attackEntityFrom(DamageSource.outOfWorld, Integer.MAX_VALUE); // still kills
+                                                                                                        // but avoids
+                                                                                                        // broken
+                                                                                                        // setHealth()
+                                                                                                        // call
+            entityliving.fallDistance = 0;
+        }
+    }
+
+    @Override
+    protected String spellBuffName() {
+        return "Temporal Anchor";
+    }
 
 }

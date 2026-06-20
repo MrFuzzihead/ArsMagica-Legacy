@@ -1,9 +1,7 @@
 package am2.items;
 
-import am2.AMCore;
-import am2.guis.ArsMagicaGuiIdList;
-import am2.utility.KeystoneUtilities;
-import cpw.mods.fml.common.network.internal.FMLNetworkHandler;
+import java.util.List;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -11,201 +9,219 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
-import java.util.List;
+import am2.AMCore;
+import am2.guis.ArsMagicaGuiIdList;
+import am2.utility.KeystoneUtilities;
+import cpw.mods.fml.common.network.internal.FMLNetworkHandler;
 
-public class ItemKeystone extends ArsMagicaItem{
+public class ItemKeystone extends ArsMagicaItem {
 
-	public static final int KEYSTONE_INVENTORY_SIZE = 3;
+    public static final int KEYSTONE_INVENTORY_SIZE = 3;
 
-	public ItemKeystone(){
-		super();
-		setMaxStackSize(1);
-	}
+    public ItemKeystone() {
+        super();
+        setMaxStackSize(1);
+    }
 
-	public void addCombination(ItemStack stack, String name, int[] metas){
-		if (!stack.hasTagCompound())
-			stack.setTagCompound(new NBTTagCompound());
+    public void addCombination(ItemStack stack, String name, int[] metas) {
+        if (!stack.hasTagCompound()) stack.setTagCompound(new NBTTagCompound());
 
-		int comboID = numCombinations(stack);
-		boolean isNew = true;
+        int comboID = numCombinations(stack);
+        boolean isNew = true;
 
-		for (int i = 0; i < comboID; ++i){
-			if (name.equals(stack.stackTagCompound.getString("Combination_" + i + "_name"))){
-				comboID = i;
-				isNew = false;
-				break;
-			}
-		}
+        for (int i = 0; i < comboID; ++i) {
+            if (name.equals(stack.stackTagCompound.getString("Combination_" + i + "_name"))) {
+                comboID = i;
+                isNew = false;
+                break;
+            }
+        }
 
-		stack.stackTagCompound.setString("Combination_" + comboID + "_name", name);
-		stack.stackTagCompound.setIntArray("Combination_" + comboID + "_metas", metas);
+        stack.stackTagCompound.setString("Combination_" + comboID + "_name", name);
+        stack.stackTagCompound.setIntArray("Combination_" + comboID + "_metas", metas);
 
-		if (isNew)
-			stack.stackTagCompound.setInteger("numKeystoneCombinations", comboID + 1);
-	}
+        if (isNew) stack.stackTagCompound.setInteger("numKeystoneCombinations", comboID + 1);
+    }
 
-	public void removeCombination(ItemStack stack, String name){
-		int c = numCombinations(stack);
-		int removedIndex = -1;
-		for (int i = 0; i < c; ++i){
-			KeystoneCombination combo = getCombinationAt(stack, i);
-			if (combo.name.equals(name)){
-				removedIndex = i;
-				break;
-			}
-		}
+    public void removeCombination(ItemStack stack, String name) {
+        int c = numCombinations(stack);
+        int removedIndex = -1;
+        for (int i = 0; i < c; ++i) {
+            KeystoneCombination combo = getCombinationAt(stack, i);
+            if (combo.name.equals(name)) {
+                removedIndex = i;
+                break;
+            }
+        }
 
-		if (removedIndex == -1)
-			return;
+        if (removedIndex == -1) return;
 
-		for (int i = removedIndex + 1; i < c; ++i){
-			String tName = stack.stackTagCompound.getString("Combination_" + i + "_name");
-			int[] tMetas = stack.stackTagCompound.getIntArray("Combination_" + i + "_metas");
+        for (int i = removedIndex + 1; i < c; ++i) {
+            String tName = stack.stackTagCompound.getString("Combination_" + i + "_name");
+            int[] tMetas = stack.stackTagCompound.getIntArray("Combination_" + i + "_metas");
 
-			stack.stackTagCompound.setString("Combination_" + (i - 1) + "_name", tName);
-			stack.stackTagCompound.setIntArray("Combination_" + (i - 1) + "_metas", tMetas);
-		}
+            stack.stackTagCompound.setString("Combination_" + (i - 1) + "_name", tName);
+            stack.stackTagCompound.setIntArray("Combination_" + (i - 1) + "_metas", tMetas);
+        }
 
-		stack.stackTagCompound.removeTag("Combination_" + c + "_name");
-		stack.stackTagCompound.removeTag("Combination_" + c + "_metas");
-		stack.stackTagCompound.setInteger("numKeystoneCombinations", c - 1);
-	}
+        stack.stackTagCompound.removeTag("Combination_" + c + "_name");
+        stack.stackTagCompound.removeTag("Combination_" + c + "_metas");
+        stack.stackTagCompound.setInteger("numKeystoneCombinations", c - 1);
+    }
 
-	public int numCombinations(ItemStack stack){
-		if (!stack.hasTagCompound()) return 0;
-		return stack.stackTagCompound.getInteger("numKeystoneCombinations");
-	}
+    public int numCombinations(ItemStack stack) {
+        if (!stack.hasTagCompound()) return 0;
+        return stack.stackTagCompound.getInteger("numKeystoneCombinations");
+    }
 
-	public KeystoneCombination getCombinationAt(ItemStack stack, int index){
-		if (!stack.hasTagCompound()) return null;
+    public KeystoneCombination getCombinationAt(ItemStack stack, int index) {
+        if (!stack.hasTagCompound()) return null;
 
-		if (numCombinations(stack) <= index) return null;
+        if (numCombinations(stack) <= index) return null;
 
-		String name = stack.stackTagCompound.getString("Combination_" + index + "_name");
-		int[] metas = stack.stackTagCompound.getIntArray("Combination_" + index + "_metas");
+        String name = stack.stackTagCompound.getString("Combination_" + index + "_name");
+        int[] metas = stack.stackTagCompound.getIntArray("Combination_" + index + "_metas");
 
-		return new KeystoneCombination(name, metas);
-	}
+        return new KeystoneCombination(name, metas);
+    }
 
-	@Override
-	public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player){
-		if (player.isSneaking()){
-			FMLNetworkHandler.openGui(player, AMCore.instance, ArsMagicaGuiIdList.GUI_KEYSTONE, world, (int)player.posX, (int)player.posY, (int)player.posZ);
-		}
+    @Override
+    public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
+        if (player.isSneaking()) {
+            FMLNetworkHandler.openGui(
+                player,
+                AMCore.instance,
+                ArsMagicaGuiIdList.GUI_KEYSTONE,
+                world,
+                (int) player.posX,
+                (int) player.posY,
+                (int) player.posZ);
+        }
 
-		return stack;
-	}
+        return stack;
+    }
 
-	private ItemStack[] getMyInventory(ItemStack itemStack){
-		return ReadFromStackTagCompound(itemStack);
-	}
+    private ItemStack[] getMyInventory(ItemStack itemStack) {
+        return ReadFromStackTagCompound(itemStack);
+    }
 
-	public String getRecipeAsString(ItemStack keystoneStack){
-		String s = "Recipe: ";
-		for (ItemStack stack : getMyInventory(keystoneStack)){
-			s += stack.getDisplayName().replace("Rune ", "") + " ";
-		}
-		return s;
-	}
+    public String getRecipeAsString(ItemStack keystoneStack) {
+        String s = "Recipe: ";
+        for (ItemStack stack : getMyInventory(keystoneStack)) {
+            s += stack.getDisplayName()
+                .replace("Rune ", "") + " ";
+        }
+        return s;
+    }
 
-	public void UpdateStackTagCompound(ItemStack itemStack, ItemStack[] values){
-		NBTTagList stacks = new NBTTagList();
-		for(int slot = 0; slot < values.length; ++slot){
-			if(values[slot] != null){
-				NBTTagCompound item = new NBTTagCompound();
-				item.setByte("Slot",(byte) slot);
-				values[slot].writeToNBT(item);
-				stacks.appendTag(item);
-			}
-		}
-		itemStack.setTagInfo("Inventory", stacks);
+    public void UpdateStackTagCompound(ItemStack itemStack, ItemStack[] values) {
+        NBTTagList stacks = new NBTTagList();
+        for (int slot = 0; slot < values.length; ++slot) {
+            if (values[slot] != null) {
+                NBTTagCompound item = new NBTTagCompound();
+                item.setByte("Slot", (byte) slot);
+                values[slot].writeToNBT(item);
+                stacks.appendTag(item);
+            }
+        }
+        itemStack.setTagInfo("Inventory", stacks);
 
+    }
 
-	}
+    public ItemStack[] ReadFromStackTagCompound(ItemStack item) {
+        ItemStack[] stackList = new ItemStack[19];
+        if (item.hasTagCompound()) {
+            NBTTagList var2 = item.stackTagCompound.getTagList("Inventory", 10);
 
-	public ItemStack[] ReadFromStackTagCompound(ItemStack item){
-		ItemStack[] stackList = new ItemStack[19];
-		if(item.hasTagCompound()) {
-			NBTTagList var2 = item.stackTagCompound.getTagList("Inventory", 10);
+            for (int var3 = 0; var3 < var2.tagCount(); ++var3) {
+                NBTTagCompound var4 = var2.getCompoundTagAt(var3);
+                int var5 = var4.getByte("Slot") & 255;
+                if (var5 >= 0 && var5 < stackList.length) {
+                    stackList[var5] = ItemStack.loadItemStackFromNBT(var4);
+                }
+            }
+        }
+        return stackList;
+    }
 
-			for(int var3 = 0; var3 < var2.tagCount(); ++var3) {
-				NBTTagCompound var4 = var2.getCompoundTagAt(var3);
-				int var5 = var4.getByte("Slot") & 255;
-				if(var5 >= 0 && var5 < stackList.length) {
-					stackList[var5] = ItemStack.loadItemStackFromNBT(var4);
-				}
-			}
-		}
-		return stackList;
-	}
+    public InventoryKeyStone ConvertToInventory(ItemStack keyStoneStack) {
+        InventoryKeyStone iks = new InventoryKeyStone();
+        iks.SetInventoryContents(getMyInventory(keyStoneStack));
+        return iks;
+    }
 
-	public InventoryKeyStone ConvertToInventory(ItemStack keyStoneStack){
-		InventoryKeyStone iks = new InventoryKeyStone();
-		iks.SetInventoryContents(getMyInventory(keyStoneStack));
-		return iks;
-	}
+    @Override
+    public boolean getShareTag() {
+        return true;
+    }
 
-	@Override
-	public boolean getShareTag(){
-		return true;
-	}
+    @Override
+    public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List par3List, boolean par4) {
+        ItemStack[] items = getMyInventory(par1ItemStack);
 
-	@Override
-	public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List par3List, boolean par4){
-		ItemStack[] items = getMyInventory(par1ItemStack);
+        String s = StatCollector.translateToLocal("am2.tooltip.open");
+        par3List.add(
+            (new StringBuilder()).append("\2477")
+                .append(s)
+                .toString());
 
-		String s = StatCollector.translateToLocal("am2.tooltip.open");
-		par3List.add((new StringBuilder()).append("\2477").append(s).toString());
+        if (items.length > 0) {
+            s = StatCollector.translateToLocal("am2.tooltip.runes") + ": ";
+            par3List.add(
+                (new StringBuilder()).append("\2477")
+                    .append(s)
+                    .toString());
+            s = "";
+            for (int i = 0; i < KEYSTONE_INVENTORY_SIZE; ++i) {
+                if (items[i] == null) continue;
+                s += items[i].getDisplayName()
+                    .replace("Rune", "")
+                    .trim() + " ";
+            }
+            if (s == "") s = StatCollector.translateToLocal("am2.tooltip.none");
+            par3List.add(
+                (new StringBuilder()).append("\2477")
+                    .append(s)
+                    .toString());
+        }
+    }
 
-		if (items.length > 0){
-			s = StatCollector.translateToLocal("am2.tooltip.runes") + ": ";
-			par3List.add((new StringBuilder()).append("\2477").append(s).toString());
-			s = "";
-			for (int i = 0; i < KEYSTONE_INVENTORY_SIZE; ++i){
-				if (items[i] == null) continue;
-				s += items[i].getDisplayName().replace("Rune", "").trim() + " ";
-			}
-			if (s == "") s = StatCollector.translateToLocal("am2.tooltip.none");
-			par3List.add((new StringBuilder()).append("\2477").append(s).toString());
-		}
-	}
+    public long getKey(ItemStack keystoneStack) {
+        ItemStack[] inventory = getMyInventory(keystoneStack);
+        if (inventory == null) return 0;
+        return KeystoneUtilities.instance.getKeyFromRunes(inventory);
+    }
 
-	public long getKey(ItemStack keystoneStack){
-		ItemStack[] inventory = getMyInventory(keystoneStack);
-		if (inventory == null) return 0;
-		return KeystoneUtilities.instance.getKeyFromRunes(inventory);
-	}
+    public class KeystoneCombination {
 
-	public class KeystoneCombination{
-		public int[] metas;
-		public String name;
+        public int[] metas;
+        public String name;
 
-		public KeystoneCombination(String name, int[] metas){
-			this.metas = metas;
-			this.name = name;
-		}
+        public KeystoneCombination(String name, int[] metas) {
+            this.metas = metas;
+            this.name = name;
+        }
 
-		@Override
-		public boolean equals(Object obj){
-			if (obj instanceof KeystoneCombination){
-				boolean match = ((KeystoneCombination)obj).metas.length == metas.length;
-				if (!match) return false;
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof KeystoneCombination) {
+                boolean match = ((KeystoneCombination) obj).metas.length == metas.length;
+                if (!match) return false;
 
-				for (int i = 0; i < this.metas.length; ++i){
-					match &= (this.metas[i] == ((KeystoneCombination)obj).metas[i]);
-				}
+                for (int i = 0; i < this.metas.length; ++i) {
+                    match &= (this.metas[i] == ((KeystoneCombination) obj).metas[i]);
+                }
 
-				return match;
-			}
-			return false;
-		}
+                return match;
+            }
+            return false;
+        }
 
-		@Override
-		public int hashCode(){
-			int sum = 0;
-			for (int i : metas)
-				sum += i;
-			return sum;
-		}
-	}
+        @Override
+        public int hashCode() {
+            int sum = 0;
+            for (int i : metas) sum += i;
+            return sum;
+        }
+    }
 }

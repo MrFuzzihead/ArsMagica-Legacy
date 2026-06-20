@@ -1,5 +1,21 @@
 package am2.spell.components;
 
+import static am2.AMEventHandler.summonCreature;
+import static am2.AMEventHandler.tempCurseMap;
+
+import java.util.*;
+
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.boss.IBossDisplayData;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.MathHelper;
+import net.minecraft.world.World;
+
 import am2.AMCore;
 import am2.RitualShapeHelper;
 import am2.api.ArsMagicaApi;
@@ -17,63 +33,54 @@ import am2.items.ItemsCommonProxy;
 import am2.particles.AMParticle;
 import am2.particles.ParticleArcToEntity;
 import am2.spell.SpellUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.boss.IBossDisplayData;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.MathHelper;
-import net.minecraft.world.World;
 
-import java.util.*;
+public class Curse implements ISpellComponent, IRitualInteraction {
 
-import static am2.AMEventHandler.summonCreature;
-import static am2.AMEventHandler.tempCurseMap;
-
-
-public class Curse implements ISpellComponent, IRitualInteraction{
     @Override
-    public boolean applyEffectBlock(ItemStack stack, World world, int blockx, int blocky, int blockz, int blockFace, double impactX, double impactY, double impactZ, EntityLivingBase caster){
+    public boolean applyEffectBlock(ItemStack stack, World world, int blockx, int blocky, int blockz, int blockFace,
+        double impactX, double impactY, double impactZ, EntityLivingBase caster) {
         return false;
     }
 
     @Override
-    public ItemStack[] getReagents(){
-        return new ItemStack[]{
-                new ItemStack(Items.nether_wart),
-                new ItemStack(Items.spider_eye)
-        };
+    public ItemStack[] getReagents() {
+        return new ItemStack[] { new ItemStack(Items.nether_wart), new ItemStack(Items.spider_eye) };
     }
 
     @Override
-    public int getReagentSearchRadius(){
+    public int getReagentSearchRadius() {
         return 3;
     }
 
     @Override
-    public MultiblockStructureDefinition getRitualShape(){
+    public MultiblockStructureDefinition getRitualShape() {
         return RitualShapeHelper.instance.hourglass;
     }
 
     @Override
-    public boolean applyEffectEntity(ItemStack stack, World world, EntityLivingBase caster, Entity target){
+    public boolean applyEffectEntity(ItemStack stack, World world, EntityLivingBase caster, Entity target) {
 
         // EFFECT REMOVING AND AMPLIFYING
         if (target instanceof EntityLivingBase && !(target instanceof IBossDisplayData)) {
             List<Integer> effectsToRemove = new ArrayList<Integer>();
             HashMap<Integer, String> effectsToMagnify = new HashMap<Integer, String>();
 
-            Iterator iter = ((EntityLivingBase) target).getActivePotionEffects().iterator();
+            Iterator iter = ((EntityLivingBase) target).getActivePotionEffects()
+                .iterator();
 
             int magnitudeLeft = 6 + (SpellUtils.instance.countModifiers(SpellModifiers.BUFF_POWER, stack) * 2);
             int targetAmplifier = 1 + SpellUtils.instance.countModifiers(SpellModifiers.BUFF_POWER, stack);
-            int targetDuration = SpellUtils.instance.getModifiedInt_Mul(BuffList.default_buff_duration / 2, stack, caster, target, world, 0, SpellModifiers.DURATION);
+            int targetDuration = SpellUtils.instance.getModifiedInt_Mul(
+                BuffList.default_buff_duration / 2,
+                stack,
+                caster,
+                target,
+                world,
+                0,
+                SpellModifiers.DURATION);
 
             while (iter.hasNext()) {
-                PotionEffect potion = ((PotionEffect)iter.next());
+                PotionEffect potion = ((PotionEffect) iter.next());
                 int potionID = potion.getPotionID();
                 PotionEffect pe = ((EntityLivingBase) target).getActivePotionEffect(Potion.potionTypes[potionID]);
                 if (!Potion.potionTypes[potionID].isBadEffect) { // method is clientside only; we need the field
@@ -86,33 +93,37 @@ public class Curse implements ISpellComponent, IRitualInteraction{
                         }
                     }
                 } else {// bad effect
-                    targetDuration = Math.max(targetDuration,potion.getDuration());
-                    targetAmplifier = Math.max(targetAmplifier,potion.getAmplifier());
-                    PotionEffect targetpotion = new PotionEffect(potionID,targetDuration,targetAmplifier);
-                    ((EntityLivingBase)target).addPotionEffect(targetpotion);
+                    targetDuration = Math.max(targetDuration, potion.getDuration());
+                    targetAmplifier = Math.max(targetAmplifier, potion.getAmplifier());
+                    PotionEffect targetpotion = new PotionEffect(potionID, targetDuration, targetAmplifier);
+                    ((EntityLivingBase) target).addPotionEffect(targetpotion);
 
-//                    effectsToRemove.add(potionID);
-//                    if (pe instanceof BuffEffect && !world.isRemote) {
-//                        ((BuffEffect) pe).stopEffect((EntityLivingBase) target);
-//                    }
-//                    effectsToMagnify.put(potionID, pe.getDuration() + ":" + pe.getAmplifier() + ":" + (pe instanceof BuffEffect));
-             }
+                    // effectsToRemove.add(potionID);
+                    // if (pe instanceof BuffEffect && !world.isRemote) {
+                    // ((BuffEffect) pe).stopEffect((EntityLivingBase) target);
+                    // }
+                    // effectsToMagnify.put(potionID, pe.getDuration() + ":" + pe.getAmplifier() + ":" + (pe instanceof
+                    // BuffEffect));
+                }
             }
 
             if (!world.isRemote) {
                 removePotionEffects((EntityLivingBase) target, effectsToRemove);
-//                for (Integer potionID : effectsToMagnify.keySet()) {
-//                    magnifyPotions(world, (EntityLivingBase) target, magnitudeLeft, targetAmplifier, targetDuration, potionID, Integer.valueOf(effectsToMagnify.get(potionID).split(":")[0]), Integer.valueOf(effectsToMagnify.get(potionID).split(":")[1]), Boolean.valueOf(effectsToMagnify.get(potionID).split(":")[2]));
-//                }
+                // for (Integer potionID : effectsToMagnify.keySet()) {
+                // magnifyPotions(world, (EntityLivingBase) target, magnitudeLeft, targetAmplifier, targetDuration,
+                // potionID, Integer.valueOf(effectsToMagnify.get(potionID).split(":")[0]),
+                // Integer.valueOf(effectsToMagnify.get(potionID).split(":")[1]),
+                // Boolean.valueOf(effectsToMagnify.get(potionID).split(":")[2]));
+                // }
             }
         }
 
         // CREATURE SUMMONING
-        if (world.isRemote || !(target instanceof EntityPlayer)){
+        if (world.isRemote || !(target instanceof EntityPlayer)) {
             return true;
         }
 
-        EntityPlayer player = (EntityPlayer)target;
+        EntityPlayer player = (EntityPlayer) target;
 
         int x = MathHelper.floor_double(player.posX);
         int y = MathHelper.floor_double(player.posY);
@@ -134,77 +145,98 @@ public class Curse implements ISpellComponent, IRitualInteraction{
                 break;
         }
 
-        int duration = SpellUtils.instance.getModifiedInt_Mul(BuffList.default_buff_duration, stack, caster, target, world, 0, SpellModifiers.DURATION);
+        int duration = SpellUtils.instance.getModifiedInt_Mul(
+            BuffList.default_buff_duration,
+            stack,
+            caster,
+            target,
+            world,
+            0,
+            SpellModifiers.DURATION);
         duration = SpellUtils.instance.modifyDurationBasedOnArmor(caster, duration);
-        if (RitualShapeHelper.instance.checkForRitual(this, world, (int)Math.floor(target.posX), (int)Math.floor(target.posY), (int)Math.floor(target.posZ)) != null){
+        if (RitualShapeHelper.instance.checkForRitual(
+            this,
+            world,
+            (int) Math.floor(target.posX),
+            (int) Math.floor(target.posY),
+            (int) Math.floor(target.posZ)) != null) {
             duration += (3600 * (SpellUtils.instance.countModifiers(SpellModifiers.BUFF_POWER, stack, 0) + 1));
-            RitualShapeHelper.instance.consumeRitualReagents(this, world, (int)Math.floor(target.posX), (int)Math.floor(target.posY), (int)Math.floor(target.posZ));
+            RitualShapeHelper.instance.consumeRitualReagents(
+                this,
+                world,
+                (int) Math.floor(target.posX),
+                (int) Math.floor(target.posY),
+                (int) Math.floor(target.posZ));
         }
 
         tempCurseMap.put(summonCreature(player.worldObj, halclass, x, y, z, player, 4, 9), duration);
         return true;
     }
 
-    private void removePotionEffects(EntityLivingBase target, List<Integer> effectsToRemove){
-        for (Integer i : effectsToRemove){
+    private void removePotionEffects(EntityLivingBase target, List<Integer> effectsToRemove) {
+        for (Integer i : effectsToRemove) {
             target.removePotionEffect(i);
         }
     }
 
     @Override
-    public float manaCost(EntityLivingBase caster){
+    public float manaCost(EntityLivingBase caster) {
         return 500;
     }
 
     @Override
-    public float burnout(EntityLivingBase caster){
+    public float burnout(EntityLivingBase caster) {
         return ArsMagicaApi.getBurnoutFromMana(manaCost(caster));
     }
 
     @Override
-    public ItemStack[] reagents(EntityLivingBase caster){
+    public ItemStack[] reagents(EntityLivingBase caster) {
         return null;
     }
 
     @Override
-    public void spawnParticles(World world, double x, double y, double z, EntityLivingBase caster, Entity target, Random rand, int colorModifier){
-        for (int i = 0; i < 15; ++i){
+    public void spawnParticles(World world, double x, double y, double z, EntityLivingBase caster, Entity target,
+        Random rand, int colorModifier) {
+        for (int i = 0; i < 15; ++i) {
             AMParticle particle = (AMParticle) AMCore.proxy.particleManager.spawn(world, "ember", x, y, z);
-            if (particle != null){
+            if (particle != null) {
                 particle.addRandomOffset(1, 1, 1);
                 particle.setIgnoreMaxAge(true);
-                particle.AddParticleController(new ParticleArcToEntity(particle, 1, caster, false).SetSpeed(0.03f).generateControlPoints());
+                particle.AddParticleController(
+                    new ParticleArcToEntity(particle, 1, caster, false).SetSpeed(0.03f)
+                        .generateControlPoints());
                 particle.setRGBColorF(1, 0.2f, 0.2f);
                 particle.SetParticleAlpha(0.5f);
-                if (colorModifier > -1){
-                    particle.setRGBColorF(((colorModifier >> 16) & 0xFF) / 255.0f, ((colorModifier >> 8) & 0xFF) / 255.0f, (colorModifier & 0xFF) / 255.0f);
+                if (colorModifier > -1) {
+                    particle.setRGBColorF(
+                        ((colorModifier >> 16) & 0xFF) / 255.0f,
+                        ((colorModifier >> 8) & 0xFF) / 255.0f,
+                        (colorModifier & 0xFF) / 255.0f);
                 }
             }
         }
     }
 
     @Override
-    public EnumSet<Affinity> getAffinity(){
+    public EnumSet<Affinity> getAffinity() {
         return EnumSet.of(Affinity.LIFE);
     }
 
     @Override
-    public int getID(){
+    public int getID() {
         return 94;
     }
 
     @Override
-    public Object[] getRecipeItems(){
-        return new Object[]{
-                new ItemStack(ItemsCommonProxy.rune, 1, ItemsCommonProxy.rune.META_RED),
-                new ItemStack(ItemsCommonProxy.itemOre, 1, ItemEssence.META_NIGHTMARE),
-                new ItemStack(ItemsCommonProxy.itemOre, 1, ItemsCommonProxy.itemOre.META_SUNSTONE),
-                BlocksCommonProxy.sanguineAmaryllis
-        };
+    public Object[] getRecipeItems() {
+        return new Object[] { new ItemStack(ItemsCommonProxy.rune, 1, ItemsCommonProxy.rune.META_RED),
+            new ItemStack(ItemsCommonProxy.itemOre, 1, ItemEssence.META_NIGHTMARE),
+            new ItemStack(ItemsCommonProxy.itemOre, 1, ItemsCommonProxy.itemOre.META_SUNSTONE),
+            BlocksCommonProxy.sanguineAmaryllis };
     }
 
     @Override
-    public float getAffinityShift(Affinity affinity){
+    public float getAffinityShift(Affinity affinity) {
         return 0.2f;
     }
 }

@@ -1,8 +1,7 @@
 package am2.api.power;
 
+public interface IManaContainer {
 
-public interface IManaContainer
-{
     /**
      * @return ManaStack representing the mana in the tank, null if the tank is empty.
      */
@@ -31,9 +30,9 @@ public interface IManaContainer
     /**
      * 
      * @param resource
-     *            ManaStack attempting to fill the tank.
+     *                 ManaStack attempting to fill the tank.
      * @param doFill
-     *            If false, the fill will only be simulated.
+     *                 If false, the fill will only be simulated.
      * @return Amount of mana that was accepted by the tank.
      */
     int fill(ManaStack resource, boolean doFill);
@@ -41,9 +40,9 @@ public interface IManaContainer
     /**
      * 
      * @param maxDrain
-     *            Maximum amount of mana to be removed from the container.
+     *                 Maximum amount of mana to be removed from the container.
      * @param doDrain
-     *            If false, the fill will only be simulated.
+     *                 If false, the fill will only be simulated.
      * @return Amount of mana that was removed from the tank.
      */
     ManaStack drain(int maxDrain, boolean doDrain);

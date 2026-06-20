@@ -1,46 +1,49 @@
 package am2.illeffect;
 
-import am2.api.illeffect.IllEffectBase;
-import am2.api.illeffect.IllEffectSeverity;
-import am2.playerextensions.ExtendedProperties;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.world.World;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class IllEffectDrainMana extends IllEffectBase{
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.world.World;
 
-	@Override
-	public IllEffectSeverity GetSeverity(){
-		return IllEffectSeverity.MINOR;
-	}
+import am2.api.illeffect.IllEffectBase;
+import am2.api.illeffect.IllEffectSeverity;
+import am2.playerextensions.ExtendedProperties;
 
-	@Override
-	public Map<EntityPlayer, Object> ApplyIllEffect(World world, int x, int y, int z){
-		HashMap<EntityPlayer, Object> toReturn = new HashMap<EntityPlayer, Object>();
-		if (world.isRemote) return toReturn;
+public class IllEffectDrainMana extends IllEffectBase {
 
-		List<EntityPlayer> located_players = world.getEntitiesWithinAABB(EntityPlayer.class, AxisAlignedBB.getBoundingBox(x - 3, y - 3, z - 3, x + 3, y + 3, z + 3));
+    @Override
+    public IllEffectSeverity GetSeverity() {
+        return IllEffectSeverity.MINOR;
+    }
 
-		EntityPlayer[] players = located_players.toArray(new EntityPlayer[located_players.size()]);
+    @Override
+    public Map<EntityPlayer, Object> ApplyIllEffect(World world, int x, int y, int z) {
+        HashMap<EntityPlayer, Object> toReturn = new HashMap<EntityPlayer, Object>();
+        if (world.isRemote) return toReturn;
 
-		if (players.length == 0) return toReturn;
+        List<EntityPlayer> located_players = world.getEntitiesWithinAABB(
+            EntityPlayer.class,
+            AxisAlignedBB.getBoundingBox(x - 3, y - 3, z - 3, x + 3, y + 3, z + 3));
 
-		for (EntityPlayer player : players){
-			ExtendedProperties props = ExtendedProperties.For(player);
-			props.setCurrentMana(0);
-			props.forceSync();
-			toReturn.put(player, null);
-		}
+        EntityPlayer[] players = located_players.toArray(new EntityPlayer[located_players.size()]);
 
-		return toReturn;
-	}
+        if (players.length == 0) return toReturn;
 
-	@Override
-	public String getDescription(EntityPlayer player, Object metadata){
-		return String.format("%s had their mana drained.", player.getCommandSenderName());
-	}
+        for (EntityPlayer player : players) {
+            ExtendedProperties props = ExtendedProperties.For(player);
+            props.setCurrentMana(0);
+            props.forceSync();
+            toReturn.put(player, null);
+        }
+
+        return toReturn;
+    }
+
+    @Override
+    public String getDescription(EntityPlayer player, Object metadata) {
+        return String.format("%s had their mana drained.", player.getCommandSenderName());
+    }
 }

@@ -1,5 +1,11 @@
 package am2;
 
+import java.util.List;
+
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import am2.customdata.CustomWorldData;
 import am2.network.AMDataWriter;
 import am2.network.AMNetHandler;
@@ -13,82 +19,76 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+public class PlayerTracker {
 
-public class PlayerTracker{
+    @SubscribeEvent
+    public void onPlayerLogin(PlayerLoggedInEvent event) {
+        if (hasAA(event.player)) {
+            AMNetHandler.INSTANCE.requestClientAuras((EntityPlayerMP) event.player);
+        }
 
+        int[] disabledSkills = SkillTreeManager.instance.getDisabledSkillIDs();
 
+        AMDataWriter writer = new AMDataWriter();
+        writer.add(AMCore.config.getSkillTreeSecondaryTierCap())
+            .add(disabledSkills);
+        writer.add(AMCore.config.getManaCap());
+        byte[] data = writer.generate();
 
-	@SubscribeEvent
-	public void onPlayerLogin(PlayerLoggedInEvent event){
-		if (hasAA(event.player)){
-			AMNetHandler.INSTANCE.requestClientAuras((EntityPlayerMP)event.player);
-		}
+        CustomWorldData.syncAllWorldVarsToClients(event.player);
 
-		int[] disabledSkills = SkillTreeManager.instance.getDisabledSkillIDs();
+        AMNetHandler.INSTANCE.syncLoginData((EntityPlayerMP) event.player, data);
+        if (ServerTickHandler.lastWorldName != null)
+            AMNetHandler.INSTANCE.syncWorldName((EntityPlayerMP) event.player, ServerTickHandler.lastWorldName);
+    }
 
-		AMDataWriter writer = new AMDataWriter();
-		writer.add(AMCore.config.getSkillTreeSecondaryTierCap()).add(disabledSkills);
-		writer.add(AMCore.config.getManaCap());
-		byte[] data = writer.generate();
+    @SubscribeEvent
+    public void onPlayerLogout(PlayerLoggedOutEvent event) {
+        // kill any summoned creatures
+        if (!event.player.worldObj.isRemote) {
+            List list = event.player.worldObj.loadedEntityList;
+            for (Object o : list) {
+                if (o instanceof EntityLivingBase && EntityUtilities.isSummon((EntityLivingBase) o)
+                    && EntityUtilities.getOwner((EntityLivingBase) o) == event.player.getEntityId()) {
+                    ((EntityLivingBase) o).setDead();
+                }
+            }
+        }
+    }
 
-		CustomWorldData.syncAllWorldVarsToClients(event.player);
+    @SubscribeEvent
+    public void onPlayerChangedDimension(PlayerChangedDimensionEvent event) {
+        // kill any summoned creatures, eventually respawn them in the new dimension
+        if (!event.player.worldObj.isRemote) {
+            List list = event.player.worldObj.loadedEntityList;
+            for (Object o : list) {
+                if (o instanceof EntityLivingBase && EntityUtilities.isSummon((EntityLivingBase) o)
+                    && EntityUtilities.getOwner((EntityLivingBase) o) == event.player.getEntityId()) {
+                    ((EntityLivingBase) o).setDead();
+                }
+            }
+            ExtendedProperties.For(event.player)
+                .setDelayedSync(40);
+            AffinityData.For(event.player)
+                .setDelayedSync(40);
+            SkillData.For(event.player)
+                .setDelayedSync(40);
+        }
+    }
 
-		AMNetHandler.INSTANCE.syncLoginData((EntityPlayerMP)event.player, data);
-		if (ServerTickHandler.lastWorldName != null)
-			AMNetHandler.INSTANCE.syncWorldName((EntityPlayerMP)event.player, ServerTickHandler.lastWorldName);
-	}
+    public static boolean hasAA(EntityPlayer entity) {
+        return getAAL(entity);
+    }
 
-	@SubscribeEvent
-	public void onPlayerLogout(PlayerLoggedOutEvent event){
-		//kill any summoned creatures
-		if (!event.player.worldObj.isRemote){
-			List list = event.player.worldObj.loadedEntityList;
-			for (Object o : list){
-				if (o instanceof EntityLivingBase && EntityUtilities.isSummon((EntityLivingBase)o) && EntityUtilities.getOwner((EntityLivingBase)o) == event.player.getEntityId()){
-					((EntityLivingBase)o).setDead();
-				}
-			}
-		}
-	}
+    public static boolean getAAL(EntityPlayer thePlayer) {
+        if (thePlayer == null) return false;
+        String name = "";
+        try {
+            name = thePlayer.getDisplayName();
+        } catch (Exception ignored) {
 
-	@SubscribeEvent
-	public void onPlayerChangedDimension(PlayerChangedDimensionEvent event){
-		//kill any summoned creatures, eventually respawn them in the new dimension
-		if (!event.player.worldObj.isRemote){
-			List list = event.player.worldObj.loadedEntityList;
-			for (Object o : list){
-				if (o instanceof EntityLivingBase && EntityUtilities.isSummon((EntityLivingBase)o) && EntityUtilities.getOwner((EntityLivingBase)o) == event.player.getEntityId()){
-					((EntityLivingBase)o).setDead();
-				}
-			}
-			ExtendedProperties.For(event.player).setDelayedSync(40);
-			AffinityData.For(event.player).setDelayedSync(40);
-			SkillData.For(event.player).setDelayedSync(40);
-		}
-	}
-
-
-
-	public static boolean hasAA(EntityPlayer entity){
-		return getAAL(entity);
-	}
-
-	public static boolean getAAL(EntityPlayer thePlayer){
-		if (thePlayer == null) return false;
-		String name = "";
-		try{
-			 name = thePlayer.getDisplayName();
-		}catch (Exception ignored){
-			
-		}
-		return name.equalsIgnoreCase("Nlghtwing");
-	}
+        }
+        return name.equalsIgnoreCase("Nlghtwing");
+    }
 }

@@ -2,18 +2,17 @@ package am2.api.power;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
+public interface IManaHandler {
 
-public interface IManaHandler
-{
     /**
      * Fills mana into internal tanks, distribution is left entirely to the IManaHandler.
      * 
      * @param from
-     *            Orientation the Mana is pumped in from.
+     *                 Orientation the Mana is pumped in from.
      * @param resource
-     *            ManaStack representing the Mana and maximum amount of mana to be filled.
+     *                 ManaStack representing the Mana and maximum amount of mana to be filled.
      * @param doFill
-     *            If false, fill will only be simulated.
+     *                 If false, fill will only be simulated.
      * @return Amount of resource that was (or would have been, if simulated) filled.
      */
     int fill(ForgeDirection from, ManaStack resource, boolean doFill);
@@ -22,11 +21,11 @@ public interface IManaHandler
      * Drains mana out of internal tanks, distribution is left entirely to the IManaHandler.
      * 
      * @param from
-     *            Orientation the Mana is drained to.
+     *                 Orientation the Mana is drained to.
      * @param resource
-     *            ManaStack representing the Mana and maximum amount of mana to be drained.
+     *                 ManaStack representing the Mana and maximum amount of mana to be drained.
      * @param doDrain
-     *            If false, drain will only be simulated.
+     *                 If false, drain will only be simulated.
      * @return ManaStack representing the Mana and amount that was (or would have been, if
      *         simulated) drained.
      */
@@ -38,11 +37,11 @@ public interface IManaHandler
      * This method is not Mana-sensitive.
      * 
      * @param from
-     *            Orientation the mana is drained to.
+     *                 Orientation the mana is drained to.
      * @param maxDrain
-     *            Maximum amount of mana to drain.
+     *                 Maximum amount of mana to drain.
      * @param doDrain
-     *            If false, drain will only be simulated.
+     *                 If false, drain will only be simulated.
      * @return ManaStack representing the Mana and amount that was (or would have been, if
      *         simulated) drained.
      */
@@ -67,7 +66,7 @@ public interface IManaHandler
      * to manipulate the internal tanks. See {@link ManaContainerInfo}.
      * 
      * @param from
-     *            Orientation determining which tanks should be queried.
+     *             Orientation determining which tanks should be queried.
      * @return Info for the relevant internal tanks.
      */
     ManaContainerInfo[] getTankInfo(ForgeDirection from);

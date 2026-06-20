@@ -1,10 +1,5 @@
 package am2.blocks;
 
-import am2.AMCore;
-import am2.blocks.tileentities.TileEntityFlickerHabitat;
-import am2.guis.ArsMagicaGuiIdList;
-import am2.items.ItemsCommonProxy;
-import cpw.mods.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
@@ -18,185 +13,192 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class BlockFlickerHabitat extends PoweredBlock{
+import am2.AMCore;
+import am2.blocks.tileentities.TileEntityFlickerHabitat;
+import am2.guis.ArsMagicaGuiIdList;
+import am2.items.ItemsCommonProxy;
+import cpw.mods.fml.common.network.internal.FMLNetworkHandler;
 
-	protected BlockFlickerHabitat(){
-		super(Material.rock);
-		setHardness(2);
-		setResistance(3);
-	}
+public class BlockFlickerHabitat extends PoweredBlock {
 
-	@Override
-	public TileEntity createNewTileEntity(World world, int i){
-		return new TileEntityFlickerHabitat();
-	}
+    protected BlockFlickerHabitat() {
+        super(Material.rock);
+        setHardness(2);
+        setResistance(3);
+    }
 
-	@Override
-	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int meta, float impx, float impy, float impz){
-		super.onBlockActivated(world, x, y, z, player, meta, impx, impy, impz);
+    @Override
+    public TileEntity createNewTileEntity(World world, int i) {
+        return new TileEntityFlickerHabitat();
+    }
 
-		if (player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem().getItem() == ItemsCommonProxy.crystalWrench){
-			if (world.isRemote){
-				player.swingItem();
-			}
-			return false;
-		}else{
-			FMLNetworkHandler.openGui(player, AMCore.instance, ArsMagicaGuiIdList.GUI_FLICKER_HABITAT, world, x, y, z);
-			return true;
-		}
-	}
+    @Override
+    public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int meta, float impx,
+        float impy, float impz) {
+        super.onBlockActivated(world, x, y, z, player, meta, impx, impy, impz);
 
-	@Override
-	public int getRenderType(){
-		return BlocksCommonProxy.blockRenderID;
-	}
+        if (player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem()
+            .getItem() == ItemsCommonProxy.crystalWrench) {
+            if (world.isRemote) {
+                player.swingItem();
+            }
+            return false;
+        } else {
+            FMLNetworkHandler.openGui(player, AMCore.instance, ArsMagicaGuiIdList.GUI_FLICKER_HABITAT, world, x, y, z);
+            return true;
+        }
+    }
 
-	@Override
-	public boolean renderAsNormalBlock(){
-		return false;
-	}
+    @Override
+    public int getRenderType() {
+        return BlocksCommonProxy.blockRenderID;
+    }
 
-	@Override
-	public boolean isOpaqueCube(){
-		return false;
-	}
+    @Override
+    public boolean renderAsNormalBlock() {
+        return false;
+    }
 
-	@Override
-	public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase elb, ItemStack stack){
-		setBlockMode(world, x, y, z);
-		super.onBlockPlacedBy(world, x, y, z, elb, stack);
-	}
+    @Override
+    public boolean isOpaqueCube() {
+        return false;
+    }
 
-	@Override
-	public void onBlockAdded(World world, int x, int y, int z){
-		setBlockMode(world, x, y, z);
-		super.onBlockAdded(world, x, y, z);
-	}
+    @Override
+    public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase elb, ItemStack stack) {
+        setBlockMode(world, x, y, z);
+        super.onBlockPlacedBy(world, x, y, z, elb, stack);
+    }
 
-	protected void setBlockMode(World world, int x, int y, int z){
-		if (world.isRemote)
-			return;
+    @Override
+    public void onBlockAdded(World world, int x, int y, int z) {
+        setBlockMode(world, x, y, z);
+        super.onBlockAdded(world, x, y, z);
+    }
 
-		TileEntity ent = world.getTileEntity(x, y, z);
-		int habCount = 0;
+    protected void setBlockMode(World world, int x, int y, int z) {
+        if (world.isRemote) return;
 
-		if (ent instanceof TileEntityFlickerHabitat){
-			TileEntityFlickerHabitat hab = (TileEntityFlickerHabitat)ent;
-			for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS){
-				Block block = world.getBlock(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ);
-				TileEntity te = world.getTileEntity(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ);
-				if (block == BlocksCommonProxy.elementalAttuner && te != null && te instanceof TileEntityFlickerHabitat){
-					TileEntityFlickerHabitat foundHab = (TileEntityFlickerHabitat)te;
-					if (foundHab.isUpgrade() == false){
-						habCount++;
-						if (habCount == 1){
-							hab.setUpgrade(true, direction);
-						}else{
-							world.func_147480_a(x, y, z, true);
-						}
-					}else{
-						world.func_147480_a(x, y, z, true);
-					}
-				}
-			}
-		}
-	}
+        TileEntity ent = world.getTileEntity(x, y, z);
+        int habCount = 0;
 
-	@Override
-	public void onNeighborBlockChange(World world, int x, int y, int z, Block neighborBlockID){
-		if (world.isRemote)
-			return;
+        if (ent instanceof TileEntityFlickerHabitat) {
+            TileEntityFlickerHabitat hab = (TileEntityFlickerHabitat) ent;
+            for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
+                Block block = world.getBlock(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ);
+                TileEntity te = world
+                    .getTileEntity(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ);
+                if (block == BlocksCommonProxy.elementalAttuner && te != null
+                    && te instanceof TileEntityFlickerHabitat) {
+                    TileEntityFlickerHabitat foundHab = (TileEntityFlickerHabitat) te;
+                    if (foundHab.isUpgrade() == false) {
+                        habCount++;
+                        if (habCount == 1) {
+                            hab.setUpgrade(true, direction);
+                        } else {
+                            world.func_147480_a(x, y, z, true);
+                        }
+                    } else {
+                        world.func_147480_a(x, y, z, true);
+                    }
+                }
+            }
+        }
+    }
 
-		TileEntity te = world.getTileEntity(x, y, z);
+    @Override
+    public void onNeighborBlockChange(World world, int x, int y, int z, Block neighborBlockID) {
+        if (world.isRemote) return;
 
-		if (te instanceof TileEntityFlickerHabitat){
-			TileEntityFlickerHabitat hab = (TileEntityFlickerHabitat)te;
+        TileEntity te = world.getTileEntity(x, y, z);
 
-			if (hab.isUpgrade()){
-				int habCount = 0;
-				for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS){
-					te = world.getTileEntity(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ);
-					if (te != null && te instanceof TileEntityFlickerHabitat){
-						TileEntityFlickerHabitat foundHab = (TileEntityFlickerHabitat)te;
-						if (foundHab.isUpgrade() == false){
-							habCount++;
-							if (habCount == 1){
-							}else{
-								world.func_147480_a(x, y, z, true);
-							}
-						}else{
-							world.func_147480_a(x, y, z, true);
-						}
-					}
-				}
+        if (te instanceof TileEntityFlickerHabitat) {
+            TileEntityFlickerHabitat hab = (TileEntityFlickerHabitat) te;
 
-				if (habCount == 0){
-					world.func_147480_a(x, y, z, true);
-				}
-			}else{
-				hab.scanForNearbyUpgrades();
+            if (hab.isUpgrade()) {
+                int habCount = 0;
+                for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
+                    te = world.getTileEntity(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ);
+                    if (te != null && te instanceof TileEntityFlickerHabitat) {
+                        TileEntityFlickerHabitat foundHab = (TileEntityFlickerHabitat) te;
+                        if (foundHab.isUpgrade() == false) {
+                            habCount++;
+                            if (habCount == 1) {} else {
+                                world.func_147480_a(x, y, z, true);
+                            }
+                        } else {
+                            world.func_147480_a(x, y, z, true);
+                        }
+                    }
+                }
 
-				if (!hab.isUpgrade()){
-					hab.scanForNearbyUpgrades();
-				}
-			}
-		}
-	}
+                if (habCount == 0) {
+                    world.func_147480_a(x, y, z, true);
+                }
+            } else {
+                hab.scanForNearbyUpgrades();
 
-	@Override
-	public void breakBlock(World world, int x, int y, int z, Block oldBlockID, int oldMetadata){
-		TileEntityFlickerHabitat habitat = (TileEntityFlickerHabitat)world.getTileEntity(x, y, z);
+                if (!hab.isUpgrade()) {
+                    hab.scanForNearbyUpgrades();
+                }
+            }
+        }
+    }
 
-		//if there is no habitat at the location break out
-		if (habitat == null)
-			return;
+    @Override
+    public void breakBlock(World world, int x, int y, int z, Block oldBlockID, int oldMetadata) {
+        TileEntityFlickerHabitat habitat = (TileEntityFlickerHabitat) world.getTileEntity(x, y, z);
 
-		//if the habitat has a flicker throw it on the ground
-		if (habitat.hasFlicker()){
-			ItemStack stack = habitat.getStackInSlot(0);
+        // if there is no habitat at the location break out
+        if (habitat == null) return;
 
-			float offsetX = world.rand.nextFloat() * 0.8F + 0.1F;
-			float offsetY = world.rand.nextFloat() * 0.8F + 0.1F;
-			float offsetZ = world.rand.nextFloat() * 0.8F + 0.1F;
-			float force = 0.05F;
+        // if the habitat has a flicker throw it on the ground
+        if (habitat.hasFlicker()) {
+            ItemStack stack = habitat.getStackInSlot(0);
 
-			EntityItem entityItem = new EntityItem(world, x + offsetX, y + offsetY, z + offsetZ, stack);
-			entityItem.motionX = (float)world.rand.nextGaussian() * force;
-			entityItem.motionY = (float)world.rand.nextGaussian() * force + 0.2F;
-			entityItem.motionZ = (float)world.rand.nextGaussian() * force;
-			world.spawnEntityInWorld(entityItem);
-		}
+            float offsetX = world.rand.nextFloat() * 0.8F + 0.1F;
+            float offsetY = world.rand.nextFloat() * 0.8F + 0.1F;
+            float offsetZ = world.rand.nextFloat() * 0.8F + 0.1F;
+            float force = 0.05F;
 
-		if (!habitat.isUpgrade()){
-			for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS){
-				TileEntity te = world.getTileEntity(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ);
-				if (te != null && te instanceof TileEntityFlickerHabitat){
-					TileEntityFlickerHabitat upgHab = (TileEntityFlickerHabitat)te;
+            EntityItem entityItem = new EntityItem(world, x + offsetX, y + offsetY, z + offsetZ, stack);
+            entityItem.motionX = (float) world.rand.nextGaussian() * force;
+            entityItem.motionY = (float) world.rand.nextGaussian() * force + 0.2F;
+            entityItem.motionZ = (float) world.rand.nextGaussian() * force;
+            world.spawnEntityInWorld(entityItem);
+        }
 
-					if (upgHab.isUpgrade()){
-						world.func_147480_a(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ, true);
-						world.setTileEntity(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ, null);
-					}
-				}
-			}
-		}
+        if (!habitat.isUpgrade()) {
+            for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
+                TileEntity te = world
+                    .getTileEntity(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ);
+                if (te != null && te instanceof TileEntityFlickerHabitat) {
+                    TileEntityFlickerHabitat upgHab = (TileEntityFlickerHabitat) te;
 
-		super.breakBlock(world, x, y, z, oldBlockID, oldMetadata);
-		return;
-	}
+                    if (upgHab.isUpgrade()) {
+                        world.func_147480_a(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ, true);
+                        world.setTileEntity(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ, null);
+                    }
+                }
+            }
+        }
 
-	@Override
-	public void registerBlockIcons(IIconRegister p_149651_1_){
-		//intentionally do nothing
-	}
+        super.breakBlock(world, x, y, z, oldBlockID, oldMetadata);
+        return;
+    }
 
-	@Override
-	public IIcon getIcon(int par1, int par2){
-		return Blocks.iron_bars.getIcon(par1, par2);
-	}
+    @Override
+    public void registerBlockIcons(IIconRegister p_149651_1_) {
+        // intentionally do nothing
+    }
 
-	@Override
-	public boolean canPlaceBlockOnSide(World world, int x, int y, int z, int meta){
-		return true;
-	}
+    @Override
+    public IIcon getIcon(int par1, int par2) {
+        return Blocks.iron_bars.getIcon(par1, par2);
+    }
+
+    @Override
+    public boolean canPlaceBlockOnSide(World world, int x, int y, int z, int meta) {
+        return true;
+    }
 }

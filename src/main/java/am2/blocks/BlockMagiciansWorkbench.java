@@ -1,14 +1,5 @@
 package am2.blocks;
 
-import am2.AMCore;
-import am2.api.blocks.IKeystoneLockable;
-import am2.api.items.KeystoneAccessType;
-import am2.blocks.tileentities.TileEntityMagiciansWorkbench;
-import am2.guis.ArsMagicaGuiIdList;
-import am2.items.ItemsCommonProxy;
-import am2.texture.ResourceManager;
-import am2.utility.KeystoneUtilities;
-import cpw.mods.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
@@ -20,157 +11,174 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
-public class BlockMagiciansWorkbench extends AMSpecialRenderBlockContainer{
+import am2.AMCore;
+import am2.api.blocks.IKeystoneLockable;
+import am2.api.items.KeystoneAccessType;
+import am2.blocks.tileentities.TileEntityMagiciansWorkbench;
+import am2.guis.ArsMagicaGuiIdList;
+import am2.items.ItemsCommonProxy;
+import am2.texture.ResourceManager;
+import am2.utility.KeystoneUtilities;
+import cpw.mods.fml.common.network.internal.FMLNetworkHandler;
 
-	protected BlockMagiciansWorkbench(){
-		super(Material.wood);
-		setHardness(2.0f);
-		setResistance(2.0f);
-		setStepSound(soundTypeWood);
-	}
+public class BlockMagiciansWorkbench extends AMSpecialRenderBlockContainer {
 
-	@Override
-	public TileEntity createNewTileEntity(World world, int i){
-		return new TileEntityMagiciansWorkbench();
-	}
+    protected BlockMagiciansWorkbench() {
+        super(Material.wood);
+        setHardness(2.0f);
+        setResistance(2.0f);
+        setStepSound(soundTypeWood);
+    }
 
-	@Override
-	public void onBlockPlacedBy(World par1World, int par2, int par3, int par4, EntityLivingBase par5EntityLiving, ItemStack stack){
-		int p = MathHelper.floor_double((par5EntityLiving.rotationYaw * 4F) / 360F + 0.5D) & 3;
+    @Override
+    public TileEntity createNewTileEntity(World world, int i) {
+        return new TileEntityMagiciansWorkbench();
+    }
 
-		byte byte0 = 3;
+    @Override
+    public void onBlockPlacedBy(World par1World, int par2, int par3, int par4, EntityLivingBase par5EntityLiving,
+        ItemStack stack) {
+        int p = MathHelper.floor_double((par5EntityLiving.rotationYaw * 4F) / 360F + 0.5D) & 3;
 
-		if (p == 0){
-			byte0 = 2;
-		}
-		if (p == 1){
-			byte0 = 1;
-		}
-		if (p == 2){
-			byte0 = 4;
-		}
-		if (p == 3){
-			byte0 = 3;
-		}
+        byte byte0 = 3;
 
-		par1World.setBlockMetadataWithNotify(par2, par3, par4, byte0, 2);
+        if (p == 0) {
+            byte0 = 2;
+        }
+        if (p == 1) {
+            byte0 = 1;
+        }
+        if (p == 2) {
+            byte0 = 4;
+        }
+        if (p == 3) {
+            byte0 = 3;
+        }
 
-		super.onBlockPlacedBy(par1World, par2, par3, par4, par5EntityLiving, stack);
-	}
+        par1World.setBlockMetadataWithNotify(par2, par3, par4, byte0, 2);
 
-	@Override
-	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int par6, float par7, float par8, float par9){
+        super.onBlockPlacedBy(par1World, par2, par3, par4, par5EntityLiving, stack);
+    }
 
-		TileEntity te = world.getTileEntity(x, y, z);
-		if (te instanceof TileEntityMagiciansWorkbench){
+    @Override
+    public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int par6, float par7,
+        float par8, float par9) {
 
-			if (KeystoneUtilities.HandleKeystoneRecovery(player, (IKeystoneLockable)te))
-				return true;
+        TileEntity te = world.getTileEntity(x, y, z);
+        if (te instanceof TileEntityMagiciansWorkbench) {
 
-			if (KeystoneUtilities.instance.canPlayerAccess((IKeystoneLockable)te, player, KeystoneAccessType.USE)){
+            if (KeystoneUtilities.HandleKeystoneRecovery(player, (IKeystoneLockable) te)) return true;
 
-				super.onBlockActivated(world, x, y, z, player, par6, par7, par8, par9);
+            if (KeystoneUtilities.instance.canPlayerAccess((IKeystoneLockable) te, player, KeystoneAccessType.USE)) {
 
-				if (player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem().getItem() == ItemsCommonProxy.workbenchUpgrade){
-					((TileEntityMagiciansWorkbench)te).setUpgradeStatus(TileEntityMagiciansWorkbench.UPG_CRAFT, true);
+                super.onBlockActivated(world, x, y, z, player, par6, par7, par8, par9);
 
-					if (!world.isRemote){
-						ItemStack stack = player.getCurrentEquippedItem();
-						stack.stackSize--;
+                if (player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem()
+                    .getItem() == ItemsCommonProxy.workbenchUpgrade) {
+                    ((TileEntityMagiciansWorkbench) te).setUpgradeStatus(TileEntityMagiciansWorkbench.UPG_CRAFT, true);
 
-						if (stack.stackSize <= 0)
-							stack = null;
+                    if (!world.isRemote) {
+                        ItemStack stack = player.getCurrentEquippedItem();
+                        stack.stackSize--;
 
-						player.inventory.setInventorySlotContents(player.inventory.currentItem, stack);
-					}
-					return true;
-				}else{
-					if (!world.isRemote){
-						super.onBlockActivated(world, x, y, z, player, par6, par7, par8, par9);
-						FMLNetworkHandler.openGui(player, AMCore.instance, ArsMagicaGuiIdList.GUI_MAGICIANS_WORKBENCH, world, x, y, z);
-					}
-				}
-			}
-		}
+                        if (stack.stackSize <= 0) stack = null;
 
-		return true;
-	}
+                        player.inventory.setInventorySlotContents(player.inventory.currentItem, stack);
+                    }
+                    return true;
+                } else {
+                    if (!world.isRemote) {
+                        super.onBlockActivated(world, x, y, z, player, par6, par7, par8, par9);
+                        FMLNetworkHandler.openGui(
+                            player,
+                            AMCore.instance,
+                            ArsMagicaGuiIdList.GUI_MAGICIANS_WORKBENCH,
+                            world,
+                            x,
+                            y,
+                            z);
+                    }
+                }
+            }
+        }
 
-	@Override
-	public void registerBlockIcons(IIconRegister par1IconRegister){
-		this.blockIcon = ResourceManager.RegisterTexture("plankWitchwood", par1IconRegister);
-	}
+        return true;
+    }
 
-	@Override
-	public void onBlockHarvested(World world, int x, int y, int z, int meta, EntityPlayer player){
-	  TileEntityMagiciansWorkbench receptacle = (TileEntityMagiciansWorkbench)world.getTileEntity(x, y, z);
-	  if (receptacle == null)
-	    return;
-	  if (KeystoneUtilities.instance.canPlayerAccess(receptacle, player, KeystoneAccessType.BREAK)){
-	    for (int i = receptacle.getSizeInventory() - 3; i < receptacle.getSizeInventory(); i++){
-	      receptacle.decrStackSize(i, 9001);
-	      // arbitrary number, just in case rune stack sizes increase in the future
-	      // yes, it's hard-coded; yes, it's also less computationally intensive than a stack size lookup
-	    }
-	  }
-	}
+    @Override
+    public void registerBlockIcons(IIconRegister par1IconRegister) {
+        this.blockIcon = ResourceManager.RegisterTexture("plankWitchwood", par1IconRegister);
+    }
 
-	@Override
-	public void breakBlock(World world, int i, int j, int k, Block par5, int metadata){
+    @Override
+    public void onBlockHarvested(World world, int x, int y, int z, int meta, EntityPlayer player) {
+        TileEntityMagiciansWorkbench receptacle = (TileEntityMagiciansWorkbench) world.getTileEntity(x, y, z);
+        if (receptacle == null) return;
+        if (KeystoneUtilities.instance.canPlayerAccess(receptacle, player, KeystoneAccessType.BREAK)) {
+            for (int i = receptacle.getSizeInventory() - 3; i < receptacle.getSizeInventory(); i++) {
+                receptacle.decrStackSize(i, 9001);
+                // arbitrary number, just in case rune stack sizes increase in the future
+                // yes, it's hard-coded; yes, it's also less computationally intensive than a stack size lookup
+            }
+        }
+    }
 
-		if (world.isRemote){
-			super.breakBlock(world, i, j, k, par5, metadata);
-			return;
-		}
-		TileEntityMagiciansWorkbench workbench = (TileEntityMagiciansWorkbench)world.getTileEntity(i, j, k);
-		if (workbench == null || KeystoneUtilities.instance.getKeyFromRunes(workbench.getRunesInKey()) != 0) return;
+    @Override
+    public void breakBlock(World world, int i, int j, int k, Block par5, int metadata) {
 
-		for (int l = 0; l < workbench.getSizeInventory() - 3; l++){
-			ItemStack itemstack = workbench.getStackInSlot(l);
-			if (itemstack == null){
-				continue;
-			}
-			float f = world.rand.nextFloat() * 0.8F + 0.1F;
-			float f1 = world.rand.nextFloat() * 0.8F + 0.1F;
-			float f2 = world.rand.nextFloat() * 0.8F + 0.1F;
-			while (itemstack.stackSize > 0){
-				int i1 = world.rand.nextInt(21) + 10;
-				if (i1 > itemstack.stackSize){
-					i1 = itemstack.stackSize;
-				}
-				itemstack.stackSize -= i1;
-				ItemStack newItem = new ItemStack(itemstack.getItem(), i1, itemstack.getItemDamage());
-				newItem.setTagCompound(itemstack.getTagCompound());
-				EntityItem entityitem = new EntityItem(world, i + f, j + f1, k + f2, newItem);
-				float f3 = 0.05F;
-				entityitem.motionX = (float)world.rand.nextGaussian() * f3;
-				entityitem.motionY = (float)world.rand.nextGaussian() * f3 + 0.2F;
-				entityitem.motionZ = (float)world.rand.nextGaussian() * f3;
-				world.spawnEntityInWorld(entityitem);
-			}
-		}
+        if (world.isRemote) {
+            super.breakBlock(world, i, j, k, par5, metadata);
+            return;
+        }
+        TileEntityMagiciansWorkbench workbench = (TileEntityMagiciansWorkbench) world.getTileEntity(i, j, k);
+        if (workbench == null || KeystoneUtilities.instance.getKeyFromRunes(workbench.getRunesInKey()) != 0) return;
 
-		if(workbench.getUpgradeStatus(TileEntityMagiciansWorkbench.UPG_CRAFT)){
-			float f = world.rand.nextFloat() * 0.8F + 0.1F;
-			float f1 = world.rand.nextFloat() * 0.8F + 0.1F;
-			float f2 = world.rand.nextFloat() * 0.8F + 0.1F;
-			ItemStack newItem = new ItemStack(ItemsCommonProxy.workbenchUpgrade, 1);
-			EntityItem entityitem = new EntityItem(world, i + f, j + f1, k + f2, newItem);
-			float f3 = 0.05F;
-			entityitem.motionX = (float)world.rand.nextGaussian() * f3;
-			entityitem.motionY = (float)world.rand.nextGaussian() * f3 + 0.2F;
-			entityitem.motionZ = (float)world.rand.nextGaussian() * f3;
-			world.spawnEntityInWorld(entityitem);
-		}
-		
-		super.breakBlock(world, i, j, k, par5, metadata);
-	}
+        for (int l = 0; l < workbench.getSizeInventory() - 3; l++) {
+            ItemStack itemstack = workbench.getStackInSlot(l);
+            if (itemstack == null) {
+                continue;
+            }
+            float f = world.rand.nextFloat() * 0.8F + 0.1F;
+            float f1 = world.rand.nextFloat() * 0.8F + 0.1F;
+            float f2 = world.rand.nextFloat() * 0.8F + 0.1F;
+            while (itemstack.stackSize > 0) {
+                int i1 = world.rand.nextInt(21) + 10;
+                if (i1 > itemstack.stackSize) {
+                    i1 = itemstack.stackSize;
+                }
+                itemstack.stackSize -= i1;
+                ItemStack newItem = new ItemStack(itemstack.getItem(), i1, itemstack.getItemDamage());
+                newItem.setTagCompound(itemstack.getTagCompound());
+                EntityItem entityitem = new EntityItem(world, i + f, j + f1, k + f2, newItem);
+                float f3 = 0.05F;
+                entityitem.motionX = (float) world.rand.nextGaussian() * f3;
+                entityitem.motionY = (float) world.rand.nextGaussian() * f3 + 0.2F;
+                entityitem.motionZ = (float) world.rand.nextGaussian() * f3;
+                world.spawnEntityInWorld(entityitem);
+            }
+        }
 
-	@Override
-	public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z){
-		IKeystoneLockable lockable = (IKeystoneLockable)world.getTileEntity(x, y, z);
-		if (!KeystoneUtilities.instance.canPlayerAccess(lockable, player, KeystoneAccessType.BREAK)) return false;
+        if (workbench.getUpgradeStatus(TileEntityMagiciansWorkbench.UPG_CRAFT)) {
+            float f = world.rand.nextFloat() * 0.8F + 0.1F;
+            float f1 = world.rand.nextFloat() * 0.8F + 0.1F;
+            float f2 = world.rand.nextFloat() * 0.8F + 0.1F;
+            ItemStack newItem = new ItemStack(ItemsCommonProxy.workbenchUpgrade, 1);
+            EntityItem entityitem = new EntityItem(world, i + f, j + f1, k + f2, newItem);
+            float f3 = 0.05F;
+            entityitem.motionX = (float) world.rand.nextGaussian() * f3;
+            entityitem.motionY = (float) world.rand.nextGaussian() * f3 + 0.2F;
+            entityitem.motionZ = (float) world.rand.nextGaussian() * f3;
+            world.spawnEntityInWorld(entityitem);
+        }
 
-		return super.removedByPlayer(world, player, x, y, z);
-	}
+        super.breakBlock(world, i, j, k, par5, metadata);
+    }
+
+    @Override
+    public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z) {
+        IKeystoneLockable lockable = (IKeystoneLockable) world.getTileEntity(x, y, z);
+        if (!KeystoneUtilities.instance.canPlayerAccess(lockable, player, KeystoneAccessType.BREAK)) return false;
+
+        return super.removedByPlayer(world, player, x, y, z);
+    }
 }

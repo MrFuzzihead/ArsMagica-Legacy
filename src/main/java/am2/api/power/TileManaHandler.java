@@ -10,66 +10,57 @@ import net.minecraftforge.common.util.ForgeDirection;
  *
  * 
  */
-public class TileManaHandler extends TileEntity implements IManaHandler
-{
+public class TileManaHandler extends TileEntity implements IManaHandler {
+
     protected ManaContainer tank;
 
-    public TileManaHandler(int capacity){
+    public TileManaHandler(int capacity) {
         this.tank = new ManaContainer(capacity);
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound tag)
-    {
+    public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
         tank.readFromNBT(tag);
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound tag)
-    {
+    public void writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
         tank.writeToNBT(tag);
     }
 
     /* IManaHandler */
     @Override
-    public int fill(ForgeDirection from, ManaStack resource, boolean doFill)
-    {
+    public int fill(ForgeDirection from, ManaStack resource, boolean doFill) {
         return tank.fill(resource, doFill);
     }
 
     @Override
-    public ManaStack drain(ForgeDirection from, ManaStack resource, boolean doDrain)
-    {
-        if (resource == null || !resource.isManaEqual(tank.getMana()))
-        {
+    public ManaStack drain(ForgeDirection from, ManaStack resource, boolean doDrain) {
+        if (resource == null || !resource.isManaEqual(tank.getMana())) {
             return null;
         }
         return tank.drain(resource.amount, doDrain);
     }
 
     @Override
-    public ManaStack drain(ForgeDirection from, int maxDrain, boolean doDrain)
-    {
+    public ManaStack drain(ForgeDirection from, int maxDrain, boolean doDrain) {
         return tank.drain(maxDrain, doDrain);
     }
 
     @Override
-    public boolean canFill(ForgeDirection from, Mana mana)
-    {
+    public boolean canFill(ForgeDirection from, Mana mana) {
         return true;
     }
 
     @Override
-    public boolean canDrain(ForgeDirection from, Mana mana)
-    {
+    public boolean canDrain(ForgeDirection from, Mana mana) {
         return true;
     }
 
     @Override
-    public ManaContainerInfo[] getTankInfo(ForgeDirection from)
-    {
+    public ManaContainerInfo[] getTankInfo(ForgeDirection from) {
         return new ManaContainerInfo[] { tank.getInfo() };
     }
 }

@@ -1,9 +1,7 @@
 package am2.api.power;
 
-
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-
 
 /**
  * Reference implementation of {@link IManaContainer}. Use/extend this or implement your own.
@@ -11,162 +9,130 @@ import net.minecraft.tileentity.TileEntity;
  * @author King Lemming, cpw (LiquidTank)
  *
  */
-public class ManaContainer implements IManaContainer
-{
-	protected ManaStack mana;
-	protected int capacity;
-	protected TileEntity tile;
+public class ManaContainer implements IManaContainer {
 
-	public ManaContainer(int capacity)
-	{
-		this(null, capacity);
-	}
+    protected ManaStack mana;
+    protected int capacity;
+    protected TileEntity tile;
 
-	public ManaContainer(ManaStack stack, int capacity)
-	{
-		this.mana = stack;
-		this.capacity = capacity;
-	}
+    public ManaContainer(int capacity) {
+        this(null, capacity);
+    }
 
-	public ManaContainer(Mana mana, int amount, int capacity)
-	{
-		this(new ManaStack(mana, amount), capacity);
-	}
+    public ManaContainer(ManaStack stack, int capacity) {
+        this.mana = stack;
+        this.capacity = capacity;
+    }
 
-	public ManaContainer readFromNBT(NBTTagCompound nbt)
-	{
-		if (!nbt.hasKey("Empty"))
-		{
-			ManaStack mana = ManaStack.loadManaStackFromNBT(nbt);
-			setMana(mana);
-		}
-		else
-		{
-			setMana(null);
-		}
-		return this;
-	}
+    public ManaContainer(Mana mana, int amount, int capacity) {
+        this(new ManaStack(mana, amount), capacity);
+    }
 
-	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
-	{
-		if (mana != null)
-		{
-			mana.writeToNBT(nbt);
-		}
-		else
-		{
-			nbt.setString("Empty", "");
-		}
-		return nbt;
-	}
+    public ManaContainer readFromNBT(NBTTagCompound nbt) {
+        if (!nbt.hasKey("Empty")) {
+            ManaStack mana = ManaStack.loadManaStackFromNBT(nbt);
+            setMana(mana);
+        } else {
+            setMana(null);
+        }
+        return this;
+    }
 
-	public void setMana(ManaStack mana)
-	{
-		this.mana = mana;
-	}
+    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+        if (mana != null) {
+            mana.writeToNBT(nbt);
+        } else {
+            nbt.setString("Empty", "");
+        }
+        return nbt;
+    }
 
-	/* IManaContainer */
-	@Override
-	public ManaStack getMana()
-	{
-		return mana;
-	}
+    public void setMana(ManaStack mana) {
+        this.mana = mana;
+    }
 
-	@Override
-	public int getManaAmount()
-	{
-		if (mana == null)
-		{
-			return 0;
-		}
-		return mana.amount;
-	}
+    /* IManaContainer */
+    @Override
+    public ManaStack getMana() {
+        return mana;
+    }
 
-	@Override
-	public int getCapacity()
-	{
-		return capacity;
-	}
+    @Override
+    public int getManaAmount() {
+        if (mana == null) {
+            return 0;
+        }
+        return mana.amount;
+    }
 
-	@Override
-	public ManaContainerInfo getInfo()
-	{
-		return new ManaContainerInfo(this);
-	}
+    @Override
+    public int getCapacity() {
+        return capacity;
+    }
 
-	@Override
-	public int fill(ManaStack resource, boolean doFill)
-	{
-		if (resource == null)
-		{
-			return 0;
-		}
+    @Override
+    public ManaContainerInfo getInfo() {
+        return new ManaContainerInfo(this);
+    }
 
-		if (!doFill)
-		{
-			if (mana == null)
-			{
-				return Math.min(capacity, resource.amount);
-			}
+    @Override
+    public int fill(ManaStack resource, boolean doFill) {
+        if (resource == null) {
+            return 0;
+        }
 
-			if (!mana.isManaEqual(resource))
-			{
-				return 0;
-			}
+        if (!doFill) {
+            if (mana == null) {
+                return Math.min(capacity, resource.amount);
+            }
 
-			return Math.min(capacity - mana.amount, resource.amount);
-		}
+            if (!mana.isManaEqual(resource)) {
+                return 0;
+            }
 
-		if (mana == null)
-		{
-			mana = new ManaStack(resource, Math.min(capacity, resource.amount));
+            return Math.min(capacity - mana.amount, resource.amount);
+        }
 
-			return mana.amount;
-		}
+        if (mana == null) {
+            mana = new ManaStack(resource, Math.min(capacity, resource.amount));
 
-		if (!mana.isManaEqual(resource))
-		{
-			return 0;
-		}
-		int filled = capacity - mana.amount;
+            return mana.amount;
+        }
 
-		if (resource.amount < filled)
-		{
-			mana.amount += resource.amount;
-			filled = resource.amount;
-		}
-		else
-		{
-			mana.amount = capacity;
-		}
+        if (!mana.isManaEqual(resource)) {
+            return 0;
+        }
+        int filled = capacity - mana.amount;
 
-		return filled;
-	}
+        if (resource.amount < filled) {
+            mana.amount += resource.amount;
+            filled = resource.amount;
+        } else {
+            mana.amount = capacity;
+        }
 
-	@Override
-	public ManaStack drain(int maxDrain, boolean doDrain)
-	{
-		if (mana == null)
-		{
-			return null;
-		}
+        return filled;
+    }
 
-		int drained = maxDrain;
-		if (mana.amount < drained)
-		{
-			drained = mana.amount;
-		}
+    @Override
+    public ManaStack drain(int maxDrain, boolean doDrain) {
+        if (mana == null) {
+            return null;
+        }
 
-		ManaStack stack = new ManaStack(mana, drained);
-		if (doDrain)
-		{
-			mana.amount -= drained;
-			if (mana.amount <= 0)
-			{
-				mana = null;
-			}
+        int drained = maxDrain;
+        if (mana.amount < drained) {
+            drained = mana.amount;
+        }
 
-		}
-		return stack;
-	}
+        ManaStack stack = new ManaStack(mana, drained);
+        if (doDrain) {
+            mana.amount -= drained;
+            if (mana.amount <= 0) {
+                mana = null;
+            }
+
+        }
+        return stack;
+    }
 }
