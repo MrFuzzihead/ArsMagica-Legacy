@@ -1,6 +1,11 @@
 package am2.guis;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
+import java.util.TreeMap;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -60,7 +65,11 @@ import am2.items.ItemEssence;
 import am2.items.ItemSpellPart;
 import am2.items.ItemsCommonProxy;
 import am2.items.RecipeArsMagica;
-import am2.lore.*;
+import am2.lore.ArcaneCompendium;
+import am2.lore.CompendiumEntry;
+import am2.lore.CompendiumEntrySpellComponent;
+import am2.lore.CompendiumEntrySpellModifier;
+import am2.lore.CompendiumEntrySpellShape;
 import am2.spell.SkillManager;
 import am2.spell.SpellRecipeManager;
 import am2.texture.SpellIconManager;

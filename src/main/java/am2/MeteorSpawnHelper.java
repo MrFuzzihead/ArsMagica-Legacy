@@ -24,6 +24,7 @@ public class MeteorSpawnHelper {
 
     public void tick() {
         if (ticksSinceLastMeteor == 0) {
+            if (MinecraftServer.getServer() == null) return;
             if (MinecraftServer.getServer().worldServers.length < 1) return;
             WorldServer ws = MinecraftServer.getServer().worldServers[0];
             if (rand.nextInt(
@@ -39,6 +40,7 @@ public class MeteorSpawnHelper {
 
     public void spawnMeteor() {
         ticksSinceLastMeteor = AMCore.config.getMoonstoneFrequency();
+        if (MinecraftServer.getServer() == null) return;
         if (MinecraftServer.getServer().worldServers.length < 1) return;
 
         WorldServer ws = null;

@@ -1,6 +1,6 @@
 package am2.guis;
 
-import java.awt.*;
+import java.awt.Desktop;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +25,12 @@ import am2.guis.controls.GuiButtonCompendiumLink;
 import am2.guis.controls.GuiButtonCompendiumNext;
 import am2.guis.controls.GuiButtonCompendiumTab;
 import am2.guis.controls.GuiSpellImageButton;
-import am2.lore.*;
+import am2.lore.ArcaneCompendium;
+import am2.lore.CompendiumEntry;
+import am2.lore.CompendiumEntrySpellComponent;
+import am2.lore.CompendiumEntrySpellModifier;
+import am2.lore.CompendiumEntrySpellShape;
+import am2.lore.CompendiumEntryType;
 import am2.playerextensions.SkillData;
 import am2.spell.SkillManager;
 import am2.spell.SkillTreeManager;

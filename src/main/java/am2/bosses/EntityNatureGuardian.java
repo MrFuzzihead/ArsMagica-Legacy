@@ -9,7 +9,12 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 
 import am2.AMCore;
-import am2.bosses.ai.*;
+import am2.bosses.ai.EntityAICastSpell;
+import am2.bosses.ai.EntityAIPlantGuardianThrowSickle;
+import am2.bosses.ai.EntityAIShieldBash;
+import am2.bosses.ai.EntityAISpinAttack;
+import am2.bosses.ai.EntityAIStrikeAttack;
+import am2.bosses.ai.ISpellCastCallback;
 import am2.damage.DamageSourceFire;
 import am2.damage.DamageSourceFrost;
 import am2.damage.DamageSources;

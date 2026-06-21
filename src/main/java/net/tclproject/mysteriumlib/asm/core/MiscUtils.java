@@ -192,7 +192,7 @@ public class MiscUtils {
      * <p/>
      * It is still highly recommended to generate methods.bin for your own version of mcp,
      * otherwise errors like "can't find target method of fix" will most likely occur at some point.
-     * 
+     *
      * @throws Exception if something went wrong, e.g. the program doesn't have the permissions to access the file or
      *                   folder it's in.
      */

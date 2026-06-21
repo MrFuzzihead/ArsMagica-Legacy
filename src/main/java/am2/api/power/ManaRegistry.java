@@ -70,7 +70,7 @@ public class ManaRegistry {
 
     /**
      * Does the supplied mana have an entry for it's name.
-     * 
+     *
      * @param mana the mana we're testing
      * @return if the mana's name has a registration entry
      */

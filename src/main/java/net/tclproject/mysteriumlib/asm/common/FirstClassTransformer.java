@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import net.minecraft.launchwrapper.IClassTransformer;
-import net.tclproject.mysteriumlib.asm.core.*;
+import net.tclproject.mysteriumlib.asm.core.ASMFix;
+import net.tclproject.mysteriumlib.asm.core.FixInserterClassVisitor;
+import net.tclproject.mysteriumlib.asm.core.TargetClassTransformer;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
@@ -87,7 +89,7 @@ public class FirstClassTransformer extends TargetClassTransformer implements ICl
 
     /**
      * Returns an obfuscated equivalent of a type.
-     * 
+     *
      * @param type A type.
      * @return an obfuscated equivalent of the type.
      */

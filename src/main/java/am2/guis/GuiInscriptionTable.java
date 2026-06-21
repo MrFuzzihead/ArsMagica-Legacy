@@ -21,7 +21,11 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 import am2.api.math.AMVector2;
-import am2.api.spell.component.interfaces.*;
+import am2.api.spell.component.interfaces.ISkillTreeEntry;
+import am2.api.spell.component.interfaces.ISpellComponent;
+import am2.api.spell.component.interfaces.ISpellModifier;
+import am2.api.spell.component.interfaces.ISpellPart;
+import am2.api.spell.component.interfaces.ISpellShape;
 import am2.blocks.tileentities.TileEntityInscriptionTable;
 import am2.containers.ContainerInscriptionTable;
 import am2.guis.controls.GuiButtonVariableDims;

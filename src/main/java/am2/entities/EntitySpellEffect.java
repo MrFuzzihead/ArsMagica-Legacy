@@ -21,7 +21,11 @@ import am2.api.spell.component.interfaces.ISpellModifier;
 import am2.api.spell.enums.SpellModifiers;
 import am2.buffs.BuffEffectFrostSlowed;
 import am2.damage.DamageSources;
-import am2.particles.*;
+import am2.particles.AMParticle;
+import am2.particles.AMParticleIcons;
+import am2.particles.ParticleFleePoint;
+import am2.particles.ParticleFloatUpward;
+import am2.particles.ParticleOrbitPoint;
 import am2.spell.SpellHelper;
 import am2.spell.SpellUtils;
 import am2.spell.modifiers.Colour;
@@ -314,7 +318,7 @@ public class EntitySpellEffect extends Entity {
             // TODO: SoundHelper.instance.loopSound(worldObj, (float)posX, (float)posY, (float)posZ,
             // "arsmagica2:spell.loop.fire", 1.0f);
         } else {
-            List<Entity> possibleTargets = worldObj.getEntitiesWithinAABB(
+            List<Entity> possibleTargets = (List) worldObj.getEntitiesWithinAABB(
                 EntityLivingBase.class,
                 AxisAlignedBB
                     .getBoundingBox(posX - radius, posY - 1, posZ - radius, posX + radius, posY + 3, posZ + radius));
@@ -403,7 +407,7 @@ public class EntitySpellEffect extends Entity {
             // TODO: SoundHelper.instance.loopSound(worldObj, (float)posX, (float)posY, (float)posZ,
             // "arsmagica2:spell.loop.air", 1.0f);
         } else {
-            List<Entity> possibleTargets = worldObj.getEntitiesWithinAABB(
+            List<Entity> possibleTargets = (List) worldObj.getEntitiesWithinAABB(
                 EntityLivingBase.class,
                 AxisAlignedBB
                     .getBoundingBox(posX - radius, posY - 1, posZ - radius, posX + radius, posY + 3, posZ + radius));

@@ -13,12 +13,21 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 import am2.AMCore;
-import am2.bosses.ai.*;
+import am2.bosses.ai.EntityAICastSpell;
+import am2.bosses.ai.EntityAIDispel;
+import am2.bosses.ai.EntityAIDive;
+import am2.bosses.ai.EntityAIFireRain;
+import am2.bosses.ai.EntityAIFlamethrower;
 import am2.damage.DamageSourceFrost;
 import am2.damage.DamageSources;
 import am2.items.ItemsCommonProxy;
 import am2.network.AMNetHandler;
-import am2.particles.*;
+import am2.particles.AMParticle;
+import am2.particles.ParticleFloatUpward;
+import am2.particles.ParticleHoldPosition;
+import am2.particles.ParticleLeaveParticleTrail;
+import am2.particles.ParticleMoveOnHeading;
+import am2.particles.ParticleOrbitEntity;
 import am2.playerextensions.ExtendedProperties;
 import am2.utility.NPCSpells;
 

@@ -31,14 +31,19 @@ public class ItemArcaneCompendium extends ArsMagicaItem {
     @Override
     public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side,
         float subX, float subY, float subZ) {
-        if (player.isSneaking()) {
+        if (player.isSneaking() && world.isRemote) {
             Block block = world.getBlock(x, y, z);
             if (block instanceof ICompendium) {
-                Minecraft.getMinecraft()
-                    .displayGuiScreen(new GuiArcaneCompendium(block));
+                openCompendiumBlock(block);
             }
         }
         return false;
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void openCompendiumBlock(Block block) {
+        Minecraft.getMinecraft()
+            .displayGuiScreen(new GuiArcaneCompendium(block));
     }
 
     @Override

@@ -1,6 +1,10 @@
 package am2.particles;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Random;
 
 import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.renderer.RenderHelper;

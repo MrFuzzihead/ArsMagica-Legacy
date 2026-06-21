@@ -55,7 +55,7 @@ public class Telekinesis implements ISpellComponent {
 
         double distance = 16;
         int hDist = 3;
-        List<Entity> entities = world.getEntitiesWithinAABB(
+        List<Entity> entities = (List) world.getEntitiesWithinAABB(
             EntityItem.class,
             AxisAlignedBB.getBoundingBox(
                 impactX - distance,

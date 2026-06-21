@@ -21,7 +21,7 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 
 /**
  * Custom IFMLLoadingPlugin implementation.
- * 
+ *
  * @see IFMLLoadingPlugin
  */
 @IFMLLoadingPlugin.TransformerExclusions({ "net.tclproject" })
@@ -49,7 +49,7 @@ public class CustomLoadingPlugin implements IFMLLoadingPlugin {
     /**
      * Returns the transformer that we are using at the current moment in time to modify classes.
      * See why we have to use two separate ones in the documentation for FirstClassTransformer.
-     * 
+     *
      * @return FirstClassTransformer if our built-in fixes haven't been applied, otherwise - CustomClassTransformer.
      */
     public static TargetClassTransformer getTransformer() {
@@ -87,7 +87,7 @@ public class CustomLoadingPlugin implements IFMLLoadingPlugin {
     /**
      * If the obfuscation has not yet been checked, checks and returns it.
      * If it has, returns the value that the previous check returned.
-     * 
+     *
      * @return If the mod is run in an obfuscated environment.
      */
     public static boolean isObfuscated() {

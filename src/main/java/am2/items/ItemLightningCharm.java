@@ -43,7 +43,7 @@ public class ItemLightningCharm extends ArsMagicaItem {
     private void attractItems(World world, Entity ent) {
         double distance = 16;
         int hDist = 5;
-        List<Entity> entities = world.getEntitiesWithinAABB(
+        List<Entity> entities = (List) world.getEntitiesWithinAABB(
             EntityItem.class,
             AxisAlignedBB.getBoundingBox(
                 ent.posX - distance,

@@ -2,7 +2,12 @@ package am2.spell.components;
 
 import static am2.buffs.BuffList.buffEffectFromPotionID;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;

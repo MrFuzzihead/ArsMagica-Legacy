@@ -1,7 +1,31 @@
 package net.tclproject.mysteriumlib.asm.core;
 
-import static org.objectweb.asm.Opcodes.*;
-import static org.objectweb.asm.Type.*;
+import static org.objectweb.asm.Opcodes.ALOAD;
+import static org.objectweb.asm.Opcodes.ARETURN;
+import static org.objectweb.asm.Opcodes.DLOAD;
+import static org.objectweb.asm.Opcodes.DRETURN;
+import static org.objectweb.asm.Opcodes.FLOAD;
+import static org.objectweb.asm.Opcodes.FRETURN;
+import static org.objectweb.asm.Opcodes.IFEQ;
+import static org.objectweb.asm.Opcodes.IFNONNULL;
+import static org.objectweb.asm.Opcodes.IFNULL;
+import static org.objectweb.asm.Opcodes.ILOAD;
+import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
+import static org.objectweb.asm.Opcodes.INVOKESTATIC;
+import static org.objectweb.asm.Opcodes.IRETURN;
+import static org.objectweb.asm.Opcodes.LLOAD;
+import static org.objectweb.asm.Opcodes.LRETURN;
+import static org.objectweb.asm.Opcodes.RETURN;
+import static org.objectweb.asm.Type.BOOLEAN_TYPE;
+import static org.objectweb.asm.Type.BYTE_TYPE;
+import static org.objectweb.asm.Type.CHAR_TYPE;
+import static org.objectweb.asm.Type.DOUBLE_TYPE;
+import static org.objectweb.asm.Type.FLOAT_TYPE;
+import static org.objectweb.asm.Type.INT_TYPE;
+import static org.objectweb.asm.Type.LONG_TYPE;
+import static org.objectweb.asm.Type.SHORT_TYPE;
+import static org.objectweb.asm.Type.VOID_TYPE;
+import static org.objectweb.asm.Type.getType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -176,7 +200,7 @@ public class ASMFix implements Cloneable, Comparable<ASMFix> {
 
     /**
      * Inserts the fix needed.
-     * 
+     *
      * @param inserter the FixInserter that has called this method.
      */
     public void insertFix(FixInserter inserter) {
@@ -249,7 +273,7 @@ public class ASMFix implements Cloneable, Comparable<ASMFix> {
     /**
      * Inserts a load instruction for the type passed. A load instruction loads a variable from the local variable table
      * onto the stack.
-     * 
+     *
      * @param inserter      Inserter that is inserting this fix.
      * @param parameterType The type of variable to be loaded.
      * @param variableIndex The index of the variable in the table.
@@ -275,7 +299,7 @@ public class ASMFix implements Cloneable, Comparable<ASMFix> {
 
     /**
      * Inserts a call to super().
-     * 
+     *
      * @param inserter Inserter that is inserting this fix.
      */
     public void insertSuperCall(FixInserter inserter, MetaReader.MethodReference method) {
@@ -301,7 +325,7 @@ public class ASMFix implements Cloneable, Comparable<ASMFix> {
     /**
      * Inserts an instruction to push the target method return type's default value onto the stack, e.g. int -> 0,
      * object -> null
-     * 
+     *
      * @param inserter               Inserter that is inserting this fix.
      * @param targetMethodReturnType the return type of the target method.
      */
@@ -333,7 +357,7 @@ public class ASMFix implements Cloneable, Comparable<ASMFix> {
 
     /**
      * Inserts a return instruction.
-     * 
+     *
      * @param inserter               Inserter that is inserting this fix.
      * @param targetMethodReturnType the return type of the target method.
      */
@@ -359,7 +383,7 @@ public class ASMFix implements Cloneable, Comparable<ASMFix> {
     /**
      * Inserts an instruction to call a static method. This instruction is used to insert a call to the fix methods
      * inside the target methods.
-     * 
+     *
      * @param inserter              Inserter that is inserting this fix.
      * @param indexOfReturnArgument Index at which the argument for passing the return value is.
      */
@@ -445,7 +469,7 @@ public class ASMFix implements Cloneable, Comparable<ASMFix> {
 
     /**
      * A factory for a builder object.
-     * 
+     *
      * @return a new builder for a new ASMFix object.
      */
     public static Builder newBuilder() {
@@ -525,7 +549,7 @@ public class ASMFix implements Cloneable, Comparable<ASMFix> {
          * This is an abstraction layer for addTargetMethodParameters(Type... parameterTypes), that resolves the types
          * from names.
          * <p/>
-         * 
+         *
          * @param argumentTypeNames Names of classes of the arguments of the target method, e.g.
          *                          net.minecraft.world.World
          * @return this
@@ -837,7 +861,7 @@ public class ASMFix implements Cloneable, Comparable<ASMFix> {
 
         /**
          * Figures out if the type passed in is a primitive.
-         * 
+         *
          * @param type a type.
          * @return if the type passed in is a primitive.
          */
@@ -850,7 +874,7 @@ public class ASMFix implements Cloneable, Comparable<ASMFix> {
          * <p/>
          * Call this after setReturnType(EnumReturnType.PRIMITIVE_CONSTANT).
          * Specifies the primitive, that will always be returned.
-         * 
+         *
          * @param object Object, class of which represents the primitive, e.g. int -> Integer.
          * @throws IllegalStateException    If specified return type isn't PRIMITIVE_CONSTANT
          * @throws IllegalArgumentException If the class of the passed in value isn't a wrapper for a primitive
@@ -914,7 +938,7 @@ public class ASMFix implements Cloneable, Comparable<ASMFix> {
         /**
          * Sets the priority of inserting this fix.
          * Fixes with higher priority will be inserted first.
-         * 
+         *
          * @return this
          */
         public Builder setPriority(FixOrder priority) {
@@ -926,7 +950,7 @@ public class ASMFix implements Cloneable, Comparable<ASMFix> {
         /**
          * Setter for createMethod.
          * NOTE: The method body is a call to super() if it's an override, or only the return statement otherwise.
-         * 
+         *
          * @return this
          */
         public Builder setCreateMethod(boolean createMethod) {
@@ -936,7 +960,7 @@ public class ASMFix implements Cloneable, Comparable<ASMFix> {
 
         /**
          * Setter for isFatal. (if a fix with isFatal == true fails, the game crashes)
-         * 
+         *
          * @return this
          */
         public Builder setFatal(boolean isMandatory) {
@@ -946,7 +970,7 @@ public class ASMFix implements Cloneable, Comparable<ASMFix> {
 
         /**
          * Builds a method descriptor from the return type and arguments.
-         * 
+         *
          * @param returnType    the return type of the method.
          * @param argumentTypes the argument types of the method.
          * @return a string method descriptor.

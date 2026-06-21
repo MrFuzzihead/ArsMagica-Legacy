@@ -1,6 +1,15 @@
 package am2.blocks.tileentities;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -26,7 +35,11 @@ import am2.AMCore;
 import am2.LogHelper;
 import am2.api.events.SpellRecipeItemsEvent;
 import am2.api.power.PowerTypes;
-import am2.api.spell.component.interfaces.*;
+import am2.api.spell.component.interfaces.ISkillTreeEntry;
+import am2.api.spell.component.interfaces.ISpellComponent;
+import am2.api.spell.component.interfaces.ISpellModifier;
+import am2.api.spell.component.interfaces.ISpellPart;
+import am2.api.spell.component.interfaces.ISpellShape;
 import am2.api.spell.enums.Affinity;
 import am2.api.spell.enums.SpellModifiers;
 import am2.containers.ContainerInscriptionTable;

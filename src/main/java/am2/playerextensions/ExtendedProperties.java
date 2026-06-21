@@ -1,6 +1,11 @@
 package am2.playerextensions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
@@ -648,7 +653,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
                     } else if (roll == 1) {
                         this.deductMana(this.currentMana / 4);
                         if (!this.entity.worldObj.isRemote) {
-                            List<EntityLivingBase> entitiesNear = this.entity.worldObj
+                            List<EntityLivingBase> entitiesNear = (List) this.entity.worldObj
                                 .getEntitiesWithinAABBExcludingEntity(
                                     this.entity,
                                     AxisAlignedBB.getBoundingBox(

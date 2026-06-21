@@ -23,9 +23,37 @@ import am2.api.spell.enums.Affinity;
 import am2.armor.infusions.ImbuementRegistry;
 import am2.blocks.RecipesEssenceRefiner;
 import am2.blocks.liquid.BlockLiquidEssence;
-import am2.blocks.tileentities.flickers.*;
+import am2.blocks.tileentities.flickers.FlickerOperatorButchery;
+import am2.blocks.tileentities.flickers.FlickerOperatorContainment;
+import am2.blocks.tileentities.flickers.FlickerOperatorFelledOak;
+import am2.blocks.tileentities.flickers.FlickerOperatorFishing;
+import am2.blocks.tileentities.flickers.FlickerOperatorFlatLands;
+import am2.blocks.tileentities.flickers.FlickerOperatorGentleRains;
+import am2.blocks.tileentities.flickers.FlickerOperatorInterdiction;
+import am2.blocks.tileentities.flickers.FlickerOperatorItemTransport;
+import am2.blocks.tileentities.flickers.FlickerOperatorLight;
+import am2.blocks.tileentities.flickers.FlickerOperatorMoonstoneAttractor;
+import am2.blocks.tileentities.flickers.FlickerOperatorNaturesBounty;
+import am2.blocks.tileentities.flickers.FlickerOperatorPackedEarth;
+import am2.blocks.tileentities.flickers.FlickerOperatorProgeny;
+import am2.blocks.tileentities.flickers.FlickerOperatorRegistry;
 import am2.buffs.BuffList;
-import am2.commands.*;
+import am2.commands.ClearKnownSpellParts;
+import am2.commands.DumpNBT;
+import am2.commands.Explosions;
+import am2.commands.FillManaBarCommand;
+import am2.commands.GiveSkillPoints;
+import am2.commands.RecoverKeystoneCommand;
+import am2.commands.RegisterTeamHostilityCommand;
+import am2.commands.ReloadSkillTree;
+import am2.commands.Respec;
+import am2.commands.SetAffinityCommand;
+import am2.commands.SetMagicLevelCommand;
+import am2.commands.SetSkillKnown;
+import am2.commands.ShiftAffinityCommand;
+import am2.commands.TakeSkillPoints;
+import am2.commands.UnlockAugmentedCastingCommand;
+import am2.commands.UnlockCompendiumEntry;
 import am2.configuration.AMConfig;
 import am2.configuration.SkillConfiguration;
 import am2.customdata.CustomWorldData;
@@ -54,8 +82,14 @@ import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.SidedProxy;
-import cpw.mods.fml.common.event.*;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.event.FMLInterModComms.IMCMessage;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartedEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.relauncher.Side;
@@ -64,9 +98,8 @@ import cpw.mods.fml.relauncher.Side;
 // "required-after:AnimationAPI")
 @Mod(
     modid = "arsmagica2",
-    modLanguage = "java",
     name = "Ars Magica 2",
-    version = "1.8",
+    version = Tags.VERSION,
     dependencies = "required-after:AnimationAPI;after:CoFHCore")
 public class AMCore {
 

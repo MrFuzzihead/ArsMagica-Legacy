@@ -14,14 +14,22 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 
 import am2.AMCore;
-import am2.bosses.ai.*;
+import am2.bosses.ai.EntityAICastSpell;
+import am2.bosses.ai.EntityAISmash;
+import am2.bosses.ai.EntityAIStrikeAttack;
+import am2.bosses.ai.EntityWinterGuardianLaunchArm;
+import am2.bosses.ai.ISpellCastCallback;
 import am2.buffs.BuffEffectFrostSlowed;
 import am2.damage.DamageSourceFire;
 import am2.damage.DamageSourceFrost;
 import am2.damage.DamageSources;
 import am2.items.ItemsCommonProxy;
 import am2.network.AMNetHandler;
-import am2.particles.*;
+import am2.particles.AMParticle;
+import am2.particles.ParticleApproachEntity;
+import am2.particles.ParticleFleeEntity;
+import am2.particles.ParticleFloatUpward;
+import am2.particles.ParticleOrbitEntity;
 import am2.playerextensions.ExtendedProperties;
 import am2.utility.NPCSpells;
 

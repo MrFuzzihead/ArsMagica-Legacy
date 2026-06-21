@@ -16,7 +16,6 @@ import net.minecraft.entity.boss.IBossDisplayData;
 import net.minecraft.entity.monster.EntityGhast;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.monster.EntitySlime;
-import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.EntityTameable;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -115,7 +114,8 @@ public class EntityUtilities {
                 float speed = entityliving.getAIMoveSpeed();
                 if (speed <= 0) speed = 1.0f;
                 entityliving.tasks.addTask(3, new EntityAIAttackOnCollide(entityliving, EntityMob.class, speed, true));
-                entityliving.tasks.addTask(3, new EntityAIAttackOnCollide(entityliving, IMob.class, speed, true));
+                entityliving.tasks
+                    .addTask(3, new EntityAIAttackOnCollide(entityliving, EntityLivingBase.class, speed, true));
                 entityliving.tasks
                     .addTask(3, new EntityAIAttackOnCollide(entityliving, EntitySlime.class, speed, true));
             }

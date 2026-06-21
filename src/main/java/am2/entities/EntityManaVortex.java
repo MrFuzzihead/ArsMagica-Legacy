@@ -12,7 +12,11 @@ import net.minecraft.world.World;
 import am2.AMCore;
 import am2.api.math.AMVector3;
 import am2.damage.DamageSources;
-import am2.particles.*;
+import am2.particles.AMParticle;
+import am2.particles.ParticleArcToEntity;
+import am2.particles.ParticleFadeOut;
+import am2.particles.ParticleLeaveParticleTrail;
+import am2.particles.ParticleMoveOnHeading;
 import am2.playerextensions.ExtendedProperties;
 import am2.utility.MathUtilities;
 

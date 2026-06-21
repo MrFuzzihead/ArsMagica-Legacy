@@ -9,7 +9,11 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 
 import am2.AMCore;
-import am2.bosses.ai.*;
+import am2.bosses.ai.EntityAICastSpell;
+import am2.bosses.ai.EntityAIDispel;
+import am2.bosses.ai.EntityAILightningBolt;
+import am2.bosses.ai.EntityAILightningRod;
+import am2.bosses.ai.EntityAIStatic;
 import am2.items.ItemsCommonProxy;
 import am2.particles.AMParticle;
 import am2.particles.ParticleHoldPosition;

@@ -3,9 +3,15 @@ package net.tclproject.mysteriumlib.asm.fixes;
 import static am2.blocks.liquid.BlockLiquidEssence.liquidEssenceMaterial;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockDynamicLiquid;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
@@ -54,7 +60,13 @@ import am2.blocks.liquid.BlockLiquidEssence;
 import am2.buffs.BuffList;
 import am2.entities.EntityHallucination;
 import am2.entities.renderers.RenderPlayerSpecial;
-import am2.items.*;
+import am2.items.ItemArcaneFishingRod;
+import am2.items.ItemInfernalFishingRod;
+import am2.items.ItemOre;
+import am2.items.ItemSoulspike;
+import am2.items.ItemSpellStaff;
+import am2.items.ItemsCommonProxy;
+import am2.items.SpellBase;
 import am2.network.AMPacketProcessorClient;
 import am2.network.TickrateMessage;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -444,7 +456,7 @@ public class MysteriumPatchesFixesMagicka {
     public static void changeClientTickratePublic(float ticksPerSecond) {
         MinecraftServer server = MinecraftServer.getServer();
         if ((server != null) && (server.getConfigurationManager() != null)) { // Is a server or singleplayer
-            for (EntityPlayer p : (List<EntityPlayer>) server.getConfigurationManager().playerEntityList) {
+            for (EntityPlayer p : server.getConfigurationManager().playerEntityList) {
                 changeClientTickratePublic(p, ticksPerSecond);
             }
         } else { // Is in menu or a player connected in a server. We can say this is client.

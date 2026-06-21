@@ -1,6 +1,8 @@
 package am2.items.renderers;
 
-import static net.minecraftforge.client.IItemRenderer.ItemRenderType.*;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED_FIRST_PERSON;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
 
 import java.util.Map;
 

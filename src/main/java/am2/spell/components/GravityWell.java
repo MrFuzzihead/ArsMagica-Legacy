@@ -21,7 +21,11 @@ import am2.api.spell.enums.SpellModifiers;
 import am2.buffs.BuffEffectGravityWell;
 import am2.buffs.BuffList;
 import am2.items.ItemsCommonProxy;
-import am2.particles.*;
+import am2.particles.AMParticle;
+import am2.particles.ParticleFadeOut;
+import am2.particles.ParticleFloatUpward;
+import am2.particles.ParticleLeaveParticleTrail;
+import am2.particles.ParticleOrbitEntity;
 import am2.spell.SpellUtils;
 
 public class GravityWell implements ISpellComponent, IRitualInteraction {

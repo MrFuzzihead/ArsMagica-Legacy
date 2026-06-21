@@ -63,7 +63,7 @@ public class Storm implements ISpellComponent {
                     EntityLightningBolt bolt = new EntityLightningBolt(world, randPosX, posY, randPosZ);
                     world.addWeatherEffect(bolt);
                 } else if (random < 80) {
-                    List<Entity> entities = world
+                    List<Entity> entities = (List) world
                         .getEntitiesWithinAABB(IMob.class, caster.boundingBox.expand(xzradius, 10D, xzradius));
                     if (entities.isEmpty()) {
                         return;

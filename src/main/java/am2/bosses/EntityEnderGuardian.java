@@ -13,7 +13,13 @@ import net.minecraft.world.World;
 
 import am2.AMCore;
 import am2.api.math.AMVector3;
-import am2.bosses.ai.*;
+import am2.bosses.ai.EntityAIEnderRush;
+import am2.bosses.ai.EntityAIEnderbolt;
+import am2.bosses.ai.EntityAIEndertorrent;
+import am2.bosses.ai.EntityAIEnderwave;
+import am2.bosses.ai.EntityAIOtherworldlyRoar;
+import am2.bosses.ai.EntityAIProtect;
+import am2.bosses.ai.EntityAIShadowstep;
 import am2.buffs.BuffList;
 import am2.damage.DamageSources;
 import am2.items.ItemsCommonProxy;

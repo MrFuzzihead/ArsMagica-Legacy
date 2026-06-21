@@ -6,7 +6,10 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 
-import am2.items.*;
+import am2.items.ItemEssence;
+import am2.items.ItemOre;
+import am2.items.ItemsCommonProxy;
+import am2.items.RecipesArsMagica;
 
 public class RecipesEssenceRefiner extends RecipesArsMagica {
 

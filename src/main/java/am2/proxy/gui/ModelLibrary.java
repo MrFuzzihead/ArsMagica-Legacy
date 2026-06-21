@@ -6,7 +6,13 @@ import am2.bosses.models.ModelPlantGuardianSickle;
 import am2.bosses.models.ModelWinterGuardianArm;
 import am2.entities.EntityBroom;
 import am2.entities.models.ModelBroom;
-import am2.models.*;
+import am2.models.ModelAirGuardianHoverball;
+import am2.models.ModelArcaneGuardianSpellBook;
+import am2.models.ModelCandle;
+import am2.models.ModelEarthGuardianChest;
+import am2.models.ModelFireGuardianEars;
+import am2.models.ModelWaterGuardianOrbs;
+import am2.models.modelBlockCaster;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 

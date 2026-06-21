@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import net.tclproject.mysteriumlib.asm.core.MiscUtils.LogHelper;
-import net.tclproject.mysteriumlib.asm.core.MiscUtils.SystemLogHelper;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;

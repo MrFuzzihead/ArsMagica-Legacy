@@ -4,7 +4,12 @@ import static am2.blocks.BlockAMOre.META_MOONSTONE_BLOCK;
 import static am2.blocks.BlockAMOre.META_SUNSTONE_BLOCK;
 import static net.minecraftforge.oredict.OreDictionary.WILDCARD_VALUE;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;

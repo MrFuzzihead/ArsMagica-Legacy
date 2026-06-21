@@ -10,7 +10,11 @@ import net.tclproject.mysteriumlib.asm.annotations.FixOrder;
 import net.tclproject.mysteriumlib.asm.annotations.LocalVariable;
 import net.tclproject.mysteriumlib.asm.annotations.ReturnedValue;
 
-import org.objectweb.asm.*;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 /** Class for parsing fix methods and creating fixes out of them. */
 public class FixParser {
@@ -53,7 +57,7 @@ public class FixParser {
 
     /**
      * Parses a class for fix methods via a FixClassVisitor.
-     * 
+     *
      * @param className The full name of the class.
      */
     protected void parseForFixes(String className) {
@@ -67,7 +71,7 @@ public class FixParser {
 
     /**
      * Parses a class for fix methods via a FixClassVisitor.
-     * 
+     *
      * @param classBytes The class (bytes).
      */
     protected void parseForFixes(byte[] classBytes) {
@@ -86,7 +90,7 @@ public class FixParser {
 
     /**
      * Displays a warning about an invalid fix method, e.g. if it's not public and static.
-     * 
+     *
      * @param message A message to add to the warning.
      */
     private void warnInvalidFix(String message) {
