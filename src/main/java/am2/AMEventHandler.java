@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -118,6 +119,7 @@ import cpw.mods.fml.common.eventhandler.Event.Result;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent;
 import cpw.mods.fml.relauncher.ReflectionHelper;
 import cpw.mods.fml.relauncher.Side;
@@ -632,8 +634,53 @@ public class AMEventHandler {
 
     public static List<String> forceShielded = new ArrayList<>();
     public static Map<String, Integer> slowedTiles = new HashMap<>();
-    public static Map<String, Integer> acceleratedEntitiesUUIDs = new HashMap<>();
-    public static Map<String, Integer> slowedEntitiesUUIDs = new HashMap<>();
+    public static Map<UUID, Integer> acceleratedEntitiesUUIDs = new HashMap<>();
+    public static Map<UUID, Integer> slowedEntitiesUUIDs = new HashMap<>();
+
+    /**
+     * Apply extra entity ticks once per server tick.
+     *
+     * <p>
+     * This used to run from {@link LivingUpdateEvent}, which meant that every living entity caused a complete
+     * scan of every loaded entity. Apart from doing the same work L times per tick, that made the cost quadratic in
+     * the number of loaded living entities. UUIDs are used as map keys so the normal update path never has to
+     * allocate the string representation of an entity UUID.
+     * </p>
+     */
+    @SubscribeEvent
+    public void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || !enabled_accelerate || acceleratedEntitiesUUIDs.isEmpty()) {
+            return;
+        }
+
+        for (WorldServer worldServer : DimensionManager.getWorlds()) {
+            // Entity#onUpdate can add or remove entities. Iterate over a snapshot just as the old code did, but do it
+            // only once for the whole server tick instead of once for every LivingUpdateEvent.
+            List<Entity> entityList = new ArrayList<>(worldServer.loadedEntityList);
+            for (Entity entity : entityList) {
+                if (!(entity instanceof EntityLivingBase) || entity.isDead) {
+                    continue;
+                }
+
+                Integer extraTicks = acceleratedEntitiesUUIDs.get(entity.getUniqueID());
+                if (extraTicks == null || extraTicks <= 0) {
+                    continue;
+                }
+
+                for (int i = 0; i < extraTicks && !entity.isDead; i++) {
+                    entity.onUpdate();
+                }
+            }
+        }
+    }
+
+    private static UUID parseUUID(String value) {
+        try {
+            return UUID.fromString(value);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
 
     @SubscribeEvent
     public void onBlockBreak(BlockEvent.BreakEvent event) {
@@ -733,14 +780,14 @@ public class AMEventHandler {
 
         EntityLivingBase ent = event.entityLiving;
 
-        if (!SkillTreeManager.instance.isSkillDisabled(SkillManager.instance.getSkill("DiluteTime"))) {
-            String UUID = ent.getUniqueID()
-                .toString();
-            if (slowedEntitiesUUIDs.containsKey(UUID)) {
-                if (ent.ticksExisted % slowedEntitiesUUIDs.get(UUID) != 0) {
-                    event.setCanceled(true);
-                    return;
-                }
+        if (!slowedEntitiesUUIDs.isEmpty()) {
+            Integer updateInterval = slowedEntitiesUUIDs.get(ent.getUniqueID());
+            if (updateInterval != null
+                && !SkillTreeManager.instance.isSkillDisabled(SkillManager.instance.getSkill("DiluteTime"))
+                && updateInterval > 0
+                && ent.ticksExisted % updateInterval != 0) {
+                event.setCanceled(true);
+                return;
             }
         }
 
@@ -806,28 +853,8 @@ public class AMEventHandler {
                     }
                 }
             }
-            WorldServer[] worlds = DimensionManager.getWorlds();
-            try { // do this outside of for loop to save performance
-                for (WorldServer worldServer : worlds) {
-                    List<Entity> entitylist = new ArrayList<>(worldServer.loadedEntityList);
-                    for (Entity entityobj : entitylist) {
-                        if (entityobj instanceof EntityLivingBase) {
-                            String UUID = entityobj.getUniqueID()
-                                .toString();
-                            if (acceleratedEntitiesUUIDs.containsKey(UUID)) {
-                                for (int i = 0; i < acceleratedEntitiesUUIDs.get(UUID); i++) {
-                                    entityobj.onUpdate();
-                                }
-                            }
-                        }
-                    }
-
-                }
-            } catch (IndexOutOfBoundsException e) {
-                // sometimes it's just unavoidable
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            // Accelerated entities are processed once per server tick in onServerTick(), not from every
+            // LivingUpdateEvent. Keeping the entity-list scan out of this hot path avoids the old L^2 behavior.
         }
 
         if (enabled_accelerate || enabled_slow || enable_spatialVortex || enabled_timeFortified || enabled_shield) {
@@ -851,16 +878,23 @@ public class AMEventHandler {
                     for (Map.Entry<String, String> entry : acceleratedEntities.entrySet()) {
                         String[] entryvalues = entry.getKey()
                             .split("_");
+                        UUID entityUUID = parseUUID(entryvalues[4]);
+                        if (entityUUID == null) {
+                            // Do not leave malformed legacy data in a live extra-property map.
+                            extendedProperties.removeFromExtraVariables(entry.getKey());
+                            continue;
+                        }
                         if (Integer.parseInt(entry.getValue()) < 3) {
                             extendedProperties.removeFromExtraVariables(entry.getKey());
-                            acceleratedEntitiesUUIDs.remove(entryvalues[4]);
+                            acceleratedEntitiesUUIDs.remove(entityUUID);
                         } else {
                             extendedProperties.addToExtraVariables(
                                 entry.getKey(),
                                 String.valueOf(Integer.parseInt(entry.getValue()) - 5)); // entryvalue 4 is uuid, 3 is
                                                                                          // power
-                            if (!(acceleratedEntitiesUUIDs.containsKey(entryvalues[4])))
-                                acceleratedEntitiesUUIDs.put(entryvalues[4], Integer.valueOf(entryvalues[3]));
+                            if (acceleratedEntitiesUUIDs.get(entityUUID) == null) {
+                                acceleratedEntitiesUUIDs.put(entityUUID, Integer.valueOf(entryvalues[3]));
+                            }
                         }
                     }
                 }
@@ -877,16 +911,23 @@ public class AMEventHandler {
                     for (Map.Entry<String, String> entry : slowedEntities.entrySet()) {
                         String[] entryvalues = entry.getKey()
                             .split("_");
+                        UUID entityUUID = parseUUID(entryvalues[4]);
+                        if (entityUUID == null) {
+                            // Do not leave malformed legacy data in a live extra-property map.
+                            extendedProperties.removeFromExtraVariables(entry.getKey());
+                            continue;
+                        }
                         if (Integer.parseInt(entry.getValue()) < 3) {
                             extendedProperties.removeFromExtraVariables(entry.getKey());
-                            slowedEntitiesUUIDs.remove(entryvalues[4]);
+                            slowedEntitiesUUIDs.remove(entityUUID);
                         } else {
                             extendedProperties.addToExtraVariables(
                                 entry.getKey(),
                                 String.valueOf(Integer.parseInt(entry.getValue()) - 5)); // entryvalue 4 is uuid, 3 is
                                                                                          // power
-                            if (!(slowedEntitiesUUIDs.containsKey(entryvalues[4])))
-                                slowedEntitiesUUIDs.put(entryvalues[4], Integer.valueOf(entryvalues[3]));
+                            if (slowedEntitiesUUIDs.get(entityUUID) == null) {
+                                slowedEntitiesUUIDs.put(entityUUID, Integer.valueOf(entryvalues[3]));
+                            }
                         }
                     }
 
