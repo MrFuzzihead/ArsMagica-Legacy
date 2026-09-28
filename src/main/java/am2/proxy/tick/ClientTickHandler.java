@@ -25,7 +25,6 @@ import net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixesMagicka;
 import am2.AMCore;
 import am2.EntityItemWatcher;
 import am2.LogHelper;
-import am2.MeteorSpawnHelper;
 import am2.api.items.armor.IManaGoggle;
 import am2.api.math.AMVector3;
 import am2.api.power.IPowerNode;
@@ -55,7 +54,6 @@ import am2.power.PowerNodeEntry;
 import am2.spell.SpellHelper;
 import am2.spell.SpellUtils;
 import am2.spell.components.Telekinesis;
-import am2.utility.DimensionUtilities;
 import am2.worldgen.RetroactiveWorldgenerator;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -123,18 +121,9 @@ public class ClientTickHandler {
             ArcaneCompendium.instance.loadUnlockData();
             compendiumLoad = false;
         }
-        AMCore.proxy.itemFrameWatcher.checkWatchedFrames();
-    }
-
-    private void applyDeferredPotionEffects() {
-        for (EntityLivingBase ent : AMCore.proxy.getDeferredPotionEffects()
-            .keySet()) {
-            ArrayList<PotionEffect> potions = AMCore.proxy.getDeferredPotionEffects()
-                .get(ent);
-            for (PotionEffect effect : potions) ent.addPotionEffect(effect);
-        }
-
-        AMCore.proxy.clearDeferredPotionEffects();
+        // Only the frames that live in a client world are ours to touch here. Server-side frames are
+        // handled by ServerTickHandler, which owns the WorldServer they belong to.
+        AMCore.proxy.itemFrameWatcher.checkWatchedFrames(true);
     }
 
     @SubscribeEvent
@@ -152,18 +141,6 @@ public class ClientTickHandler {
         }
     }
 
-    private void applyDeferredDimensionTransfers() {
-        for (EntityLivingBase ent : AMCore.proxy.getDeferredDimensionTransfers()
-            .keySet()) {
-            DimensionUtilities.doDimensionTransfer(
-                ent,
-                AMCore.proxy.getDeferredDimensionTransfers()
-                    .get(ent));
-        }
-
-        AMCore.proxy.clearDeferredDimensionTransfers();
-    }
-
     private void gameTick_End() {
 
         AMGuiHelper.instance.tick();
@@ -172,8 +149,12 @@ public class ClientTickHandler {
 
         if (Minecraft.getMinecraft()
             .isIntegratedServerRunning()) {
-            MeteorSpawnHelper.instance.tick();
-            applyDeferredPotionEffects();
+            // Deliberately no drain of the deferred potion-effect or dimension-transfer queues here.
+            // Both are server-authoritative and only ever populated with server-side entities
+            // (BuffEffectFury.stopEffect is isRemote-guarded, and addDeferredDimensionTransfer
+            // rejects remote entities), so in an integrated server the client thread could only ever
+            // steal entries the server thread still had to apply, mutating server entities off-thread.
+            // ServerTickHandler drains both, on the server thread.
         }
 
         if (!powerWatch.equals(AMVector3.zero())) {
@@ -451,9 +432,9 @@ public class ClientTickHandler {
             .isIntegratedServerRunning()) {
             if (AMCore.config.retroactiveWorldgen()) RetroactiveWorldgenerator.instance.continueRetrogen(event.world);
         }
-        if (event.phase == TickEvent.Phase.END) {
-            applyDeferredDimensionTransfers();
-        }
+        // Dimension transfers are server-authoritative: doDimensionTransfer calls
+        // MinecraftServer.getServer() and removes/spawns entities in WorldServer instances. It is
+        // drained by ServerTickHandler, never from here.
     }
 
     @SubscribeEvent

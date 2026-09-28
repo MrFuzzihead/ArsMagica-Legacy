@@ -2,7 +2,9 @@ package am2;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.item.EntityItemFrame;
@@ -19,11 +21,35 @@ import am2.particles.ParticleHoldPosition;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
+/**
+ * Watches item frames that hold a book and turns them into Arcane Compendiums once they have been
+ * surrounded by essence long enough.
+ *
+ * <p>
+ * A single instance lives on {@link CommonProxy}, so in an integrated server this class is ticked
+ * by both the client thread and the server thread. Two things follow from that:
+ *
+ * <ul>
+ * <li>All mutable state is guarded by {@link #lock}, and {@link #watchedFrames} is only ever
+ * iterated over a snapshot. Mutating a {@link HashMap} while iterating its {@code keySet} -
+ * which the old code did - throws {@link java.util.ConcurrentModificationException}.
+ * <li>Each side only ever touches frames that live in a world it owns. Previously the client
+ * thread walked server-side frames and read blocks out of the server's
+ * {@code ChunkProviderServer}, which hodgepodge reports as
+ * "Off-thread read from Client thread - serving from snapshot".
+ * </ul>
+ */
 public class ItemFrameWatcher {
 
-    private final HashMap<EntityItemFrameComparator, Integer> watchedFrames;
-    private final ArrayList<EntityItemFrameComparator> queuedAddFrames;
-    private final ArrayList<EntityItemFrameComparator> queuedRemoveFrames;
+    private final Map<EntityItemFrameComparator, Integer> watchedFrames;
+    private final List<EntityItemFrameComparator> queuedAddFrames;
+    private final List<EntityItemFrameComparator> queuedRemoveFrames;
+
+    /**
+     * Guards all three collections. The integrated server and the client share one watcher, so the
+     * client thread and the server thread both enter these methods.
+     */
+    private final Object lock = new Object();
 
     private static final int processTime = 800;
 
@@ -33,36 +59,54 @@ public class ItemFrameWatcher {
         queuedRemoveFrames = new ArrayList<EntityItemFrameComparator>();
     }
 
-    public void checkWatchedFrames() {
-        ArrayList<EntityItemFrameComparator> toRemove = new ArrayList<EntityItemFrameComparator>();
+    /**
+     * @param remote {@code true} when called from the client thread, {@code false} from the server
+     *               thread. Frames belonging to the other side are skipped entirely, so neither side
+     *               reaches into a world it does not own.
+     */
+    public void checkWatchedFrames(boolean remote) {
+        synchronized (lock) {
+            ArrayList<EntityItemFrameComparator> toRemove = new ArrayList<EntityItemFrameComparator>();
 
-        updateQueuedChanges();
+            updateQueuedChanges(remote);
 
-        for (EntityItemFrameComparator frameComp : watchedFrames.keySet()) {
+            // Iterate a snapshot: checkFrameRadius writes the counter back into watchedFrames, and
+            // doing that during a keySet() walk is what used to throw CME.
+            for (EntityItemFrameComparator frameComp : new ArrayList<EntityItemFrameComparator>(
+                watchedFrames.keySet())) {
 
-            Integer time = watchedFrames.get(frameComp);
-            if (time == null) time = 0;
+                Integer time = watchedFrames.get(frameComp);
+                if (time == null) time = 0;
 
-            if (frameComp == null || frameComp.frame == null || frameComp.frame.worldObj == null) continue;
+                if (frameComp.frame == null || frameComp.frame.worldObj == null) continue;
 
-            if (!frameComp.frame.worldObj.isRemote || time >= processTime) toRemove.add(frameComp);
+                if (frameComp.frame.worldObj.isRemote != remote) continue;
 
-            if (frameIsValid(frameComp.frame)) {
-                if (!checkFrameRadius(frameComp)) {
-                    toRemove.remove(frameComp);
+                // A frame stops being watched once it stops holding a book, once the server has
+                // turned it into a compendium, or once it has run out of time to do so. The client
+                // keeps watching a little longer so it can play the completion particles.
+                boolean shouldRemove = !remote || time >= processTime;
+
+                if (frameIsValid(frameComp.frame)) {
+                    if (!checkFrameRadius(frameComp, remote)) {
+                        shouldRemove = false;
+                    }
+                } else {
+                    watchedFrames.put(frameComp, time + 1);
                 }
-            } else {
-                time++;
-                watchedFrames.put(frameComp, time);
-            }
-        }
 
-        for (EntityItemFrameComparator frame : toRemove) {
-            stopWatchingFrame(frame.frame);
+                if (shouldRemove) {
+                    toRemove.add(frameComp);
+                }
+            }
+
+            for (EntityItemFrameComparator frame : toRemove) {
+                stopWatchingFrame(frame.frame);
+            }
         }
     }
 
-    private boolean checkFrameRadius(EntityItemFrameComparator frameComp) {
+    private boolean checkFrameRadius(EntityItemFrameComparator frameComp, boolean remote) {
 
         int radius = 2;
 
@@ -70,7 +114,7 @@ public class ItemFrameWatcher {
 
         EntityItemFrame frame = frameComp.frame;
 
-        List<Block> targetBlock = new ArrayList<>();
+        List<Block> targetBlock = new ArrayList<Block>();
 
         if (AMCore.config.isAlternativeStart()) {
             targetBlock.add(BlocksCommonProxy.witchwoodLeaves);
@@ -95,13 +139,15 @@ public class ItemFrameWatcher {
                         watchedFrames.put(frameComp, time);
 
                         if (time >= processTime) {
-                            if (!frame.worldObj.isRemote) {
+                            if (!remote) {
+                                // Only the server may change the contents of a frame, otherwise the
+                                // change is never replicated to other clients.
                                 frame.setDisplayedItem(new ItemStack(ItemsCommonProxy.arcaneCompendium));
                                 return true;
                             }
                         } else {
                             shouldRemove = false;
-                            if (frame.worldObj.isRemote) {
+                            if (remote) {
                                 spawnCompendiumProgressParticles(
                                     frame,
                                     (int) frame.posX + i,
@@ -125,29 +171,26 @@ public class ItemFrameWatcher {
                 .getItem() instanceof ItemBook;
     }
 
-    private void updateQueuedChanges() {
+    private void updateQueuedChanges(boolean remote) {
+        // Only this side's entries are consumed. Anything the other thread queued stays queued, so
+        // the queues are never cleared wholesale.
+        for (Iterator<EntityItemFrameComparator> it = queuedAddFrames.iterator(); it.hasNext();) {
+            EntityItemFrameComparator comp = it.next();
+            if (!isOwnedBy(comp, remote)) continue;
+            it.remove();
 
-        // safe copy to avoid CME
-        EntityItemFrameComparator[] toAdd = queuedAddFrames
-            .toArray(new EntityItemFrameComparator[queuedAddFrames.size()]);
-        queuedAddFrames.clear();
-
-        for (EntityItemFrameComparator comp : toAdd) {
-            if (comp.frame != null && (comp.frame.getDisplayedItem() == null || comp.frame.getDisplayedItem()
-                .getItem() != ItemsCommonProxy.arcaneCompendium)) watchedFrames.put(comp, 0);
+            if (comp.frame.getDisplayedItem() == null || comp.frame.getDisplayedItem()
+                .getItem() != ItemsCommonProxy.arcaneCompendium) watchedFrames.put(comp, 0);
         }
 
-        // safe copy to avoid CME, again with queued removes
-        EntityItemFrameComparator[] toRemove = queuedRemoveFrames
-            .toArray(new EntityItemFrameComparator[queuedRemoveFrames.size()]);
-        queuedRemoveFrames.clear();
+        for (Iterator<EntityItemFrameComparator> it = queuedRemoveFrames.iterator(); it.hasNext();) {
+            EntityItemFrameComparator comp = it.next();
+            if (!isOwnedBy(comp, remote)) continue;
+            it.remove();
 
-        for (EntityItemFrameComparator comp : toRemove) {
             Integer time = watchedFrames.get(comp);
             if (time != null && time >= processTime
-                && comp.frame != null
                 && !comp.frame.isDead
-                && comp.frame.worldObj.isRemote
                 && (comp.frame.getDisplayedItem() != null && (comp.frame.getDisplayedItem()
                     .getItem() == Items.book
                     || comp.frame.getDisplayedItem()
@@ -158,12 +201,24 @@ public class ItemFrameWatcher {
         }
     }
 
+    private static boolean isOwnedBy(EntityItemFrameComparator comp, boolean remote) {
+        return comp != null && comp.frame != null
+            && comp.frame.worldObj != null
+            && comp.frame.worldObj.isRemote == remote;
+    }
+
     public void startWatchingFrame(EntityItemFrame frame) {
-        queuedAddFrames.add(new EntityItemFrameComparator(frame));
+        if (frame == null || frame.worldObj == null) return;
+        synchronized (lock) {
+            queuedAddFrames.add(new EntityItemFrameComparator(frame));
+        }
     }
 
     public void stopWatchingFrame(EntityItemFrame frame) {
-        queuedRemoveFrames.add(new EntityItemFrameComparator(frame));
+        if (frame == null || frame.worldObj == null) return;
+        synchronized (lock) {
+            queuedRemoveFrames.add(new EntityItemFrameComparator(frame));
+        }
     }
 
     @SideOnly(Side.CLIENT)

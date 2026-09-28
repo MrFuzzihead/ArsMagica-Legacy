@@ -28,7 +28,6 @@ import am2.items.ItemsCommonProxy;
 import am2.particles.AMParticle;
 import am2.particles.ParticleExpandingCollapsingRingAtPoint;
 import am2.playerextensions.ExtendedProperties;
-import am2.utility.DimensionUtilities;
 import am2.utility.EntityUtilities;
 import am2.utility.KeystoneUtilities;
 
@@ -127,7 +126,13 @@ public class Recall implements ISpellComponent, IRitualInteraction {
             } else {
                 RitualShapeHelper.instance.consumeRitualReagents(this, world, x, y, z);
                 if (target.worldObj.provider.dimensionId != caster.worldObj.provider.dimensionId) {
-                    DimensionUtilities.doDimensionTransfer(player, caster.worldObj.provider.dimensionId);
+                    // Deferred: this runs while the caster's entity is ticking, and
+                    // doDimensionTransfer() removes the entity from one world's EntityTracker and
+                    // spawns a copy in another. Doing that from inside
+                    // EntityTracker.func_72788_a() modifies trackedEntities while the server thread is
+                    // iterating it, which throws ConcurrentModificationException. ServerTickHandler
+                    // drains this queue at WorldTickEvent.END, outside the tracker loop.
+                    AMCore.proxy.addDeferredDimensionTransfer(player, caster.worldObj.provider.dimensionId);
                 }
                 ((EntityLivingBase) target).setPositionAndUpdate(x, y, z);
                 return true;

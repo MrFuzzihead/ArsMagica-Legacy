@@ -6,6 +6,7 @@ import static am2.spell.SpellHelper.lingeringSpellList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -52,7 +53,7 @@ public class ServerTickHandler {
             firstTick = false;
         }
 
-        AMCore.proxy.itemFrameWatcher.checkWatchedFrames();
+        AMCore.proxy.itemFrameWatcher.checkWatchedFrames(false);
     }
 
     private void gameTick_End() {
@@ -74,9 +75,14 @@ public class ServerTickHandler {
     public void onWorldTick(TickEvent.WorldTickEvent event) {
         if (AMCore.config.retroactiveWorldgen()) RetroactiveWorldgenerator.instance.continueRetrogen(event.world);
 
-        applyDeferredPotionEffects();
-        if (event.phase == TickEvent.Phase.END) {
-            applyDeferredDimensionTransfers();
+        // WorldTickEvent is also fired for the client world, which in an integrated server means it
+        // can arrive on the client thread. Both queues below end up mutating server entities, so
+        // neither may be drained anywhere but the server thread.
+        if (!event.world.isRemote) {
+            applyDeferredPotionEffects();
+            if (event.phase == TickEvent.Phase.END) {
+                applyDeferredDimensionTransfers();
+            }
         }
 
         // update lingering spells
@@ -125,26 +131,21 @@ public class ServerTickHandler {
     }
 
     private void applyDeferredPotionEffects() {
-        for (EntityLivingBase ent : AMCore.proxy.getDeferredPotionEffects()
-            .keySet()) {
-            ArrayList<PotionEffect> potions = AMCore.proxy.getDeferredPotionEffects()
-                .get(ent);
-            for (PotionEffect effect : potions) ent.addPotionEffect(effect);
+        for (Map.Entry<EntityLivingBase, List<PotionEffect>> entry : AMCore.proxy.drainDeferredPotionEffects()
+            .entrySet()) {
+            EntityLivingBase ent = entry.getKey();
+            if (ent == null || ent.isDead) continue;
+            for (PotionEffect effect : entry.getValue()) {
+                ent.addPotionEffect(effect);
+            }
         }
-
-        AMCore.proxy.clearDeferredPotionEffects();
     }
 
     private void applyDeferredDimensionTransfers() {
-        for (EntityLivingBase ent : AMCore.proxy.getDeferredDimensionTransfers()
-            .keySet()) {
-            DimensionUtilities.doDimensionTransfer(
-                ent,
-                AMCore.proxy.getDeferredDimensionTransfers()
-                    .get(ent));
+        for (Map.Entry<EntityLivingBase, Integer> entry : AMCore.proxy.drainDeferredDimensionTransfers()
+            .entrySet()) {
+            DimensionUtilities.doDimensionTransfer(entry.getKey(), entry.getValue());
         }
-
-        AMCore.proxy.clearDeferredDimensionTransfers();
     }
 
     private void applyDeferredTargetSets() {
