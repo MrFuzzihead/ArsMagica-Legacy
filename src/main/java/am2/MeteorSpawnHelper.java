@@ -19,10 +19,32 @@ public class MeteorSpawnHelper {
 
     private final Random rand = new Random();
     private int ticksSinceLastMeteor = 0;
+    private boolean spawnPending = false;
 
     public static MeteorSpawnHelper instance = new MeteorSpawnHelper();
 
+    /**
+     * Asks for a meteor to be spawned on a later server tick instead of spawning it right now.
+     *
+     * <p>
+     * {@link #spawnMeteor()} ends in {@code WorldServer.spawnEntityInWorld}, which adds to the
+     * server's {@code EntityTracker.trackedEntities} map. If that happens while the server thread is
+     * inside {@code EntityTracker.func_72788_a()} iterating that map, the structural modification
+     * throws {@link java.util.ConcurrentModificationException}. Callers that run inside an entity
+     * tick (for example an item use) must use this instead of calling {@link #spawnMeteor()}.
+     */
+    public void deferSpawn() {
+        spawnPending = true;
+    }
+
     public void tick() {
+        if (spawnPending) {
+            // Drop the request rather than spawning here. ServerTickHandler ticks this on the server
+            // thread at ServerTickEvent.END, which is outside the entity update loop.
+            spawnPending = false;
+            spawnMeteor();
+            return;
+        }
         if (ticksSinceLastMeteor == 0) {
             if (MinecraftServer.getServer() == null) return;
             if (MinecraftServer.getServer().worldServers.length < 1) return;

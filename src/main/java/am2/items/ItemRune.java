@@ -416,7 +416,9 @@ public class ItemRune extends ArsMagicaItem {
     }
 
     public void spawnMoonstoneMeteor(ItemStack stack, World world, EntityPlayer player) {
-        if (!world.isRemote) MeteorSpawnHelper.instance.spawnMeteor();
+        // Deferred rather than spawning inline: this is reached from onItemUse during the player's
+        // entity tick, and spawnMeteor() would modify the server's EntityTracker mid-iteration.
+        if (!world.isRemote) MeteorSpawnHelper.instance.deferSpawn();
     }
 
     public void openSkillTreeUI(ItemStack stack, World world, EntityPlayer player) {

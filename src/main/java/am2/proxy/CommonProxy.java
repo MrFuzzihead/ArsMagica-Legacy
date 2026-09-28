@@ -3,8 +3,11 @@ package am2.proxy;
 import static am2.blocks.BlocksCommonProxy.AMOres;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -103,8 +106,8 @@ public class CommonProxy {
 
     private ServerTickHandler serverTickHandler;
 
-    private final HashMap<EntityLivingBase, ArrayList<PotionEffect>> deferredPotionEffects = new HashMap<EntityLivingBase, ArrayList<PotionEffect>>();
-    private final HashMap<EntityLivingBase, Integer> deferredDimensionTransfers = new HashMap<EntityLivingBase, Integer>();
+    private final Map<EntityLivingBase, List<PotionEffect>> deferredPotionEffects = new HashMap<>();
+    private final Map<EntityLivingBase, Integer> deferredDimensionTransfers = new HashMap<>();
 
     private int totalFlickerCount = 0;
 
@@ -333,31 +336,53 @@ public class CommonProxy {
 
     }
 
-    public void addDeferredPotionEffect(EntityLivingBase ent, PotionEffect pe) {
-        if (!deferredPotionEffects.containsKey(ent)) deferredPotionEffects.put(ent, new ArrayList<PotionEffect>());
-
-        ArrayList<PotionEffect> effects = deferredPotionEffects.get(ent);
-        effects.add(pe);
+    /**
+     * Queues a potion effect to be applied on a later server tick.
+     *
+     * <p>
+     * Only server-side entities are accepted. The one producer, {@code BuffEffectFury.stopEffect},
+     * already runs server-side, and applying a potion effect to a server entity from the client
+     * thread would mutate that entity from outside the server tick.
+     */
+    public synchronized void addDeferredPotionEffect(EntityLivingBase ent, PotionEffect pe) {
+        if (ent == null || ent.worldObj == null || ent.worldObj.isRemote) return;
+        deferredPotionEffects.computeIfAbsent(ent, k -> new ArrayList<PotionEffect>())
+            .add(pe);
     }
 
-    public void addDeferredDimensionTransfer(EntityLivingBase ent, int dimension) {
+    /**
+     * Removes and returns every queued potion effect in a single atomic step.
+     *
+     * <p>
+     * This deliberately replaces the old {@code getDeferredPotionEffects()} +
+     * {@code clearDeferredPotionEffects()} pair. Those were two separate operations on a map that the
+     * integrated server and the client share, so an effect queued in between the read and the clear
+     * was silently dropped, and two drainers could each apply half the set.
+     */
+    public synchronized Map<EntityLivingBase, List<PotionEffect>> drainDeferredPotionEffects() {
+        if (deferredPotionEffects.isEmpty()) return Collections.emptyMap();
+        Map<EntityLivingBase, List<PotionEffect>> drained = new HashMap<>(deferredPotionEffects);
+        deferredPotionEffects.clear();
+        return drained;
+    }
+
+    public synchronized void addDeferredDimensionTransfer(EntityLivingBase ent, int dimension) {
+        // Only server-side entities are queued. On a physical client the spell components also run
+        // their local prediction copy, and the transfer itself is server-authoritative, so queueing
+        // client entities would only grow a map nothing ever drains.
+        if (ent == null || ent.worldObj == null || ent.worldObj.isRemote) return;
         deferredDimensionTransfers.put(ent, dimension);
     }
 
-    public HashMap<EntityLivingBase, ArrayList<PotionEffect>> getDeferredPotionEffects() {
-        return (HashMap<EntityLivingBase, ArrayList<PotionEffect>>) deferredPotionEffects.clone();
-    }
-
-    public void clearDeferredDimensionTransfers() {
+    /**
+     * Removes and returns every queued dimension transfer in a single atomic step, mirroring
+     * {@link #drainDeferredPotionEffects()}.
+     */
+    public synchronized Map<EntityLivingBase, Integer> drainDeferredDimensionTransfers() {
+        if (deferredDimensionTransfers.isEmpty()) return Collections.emptyMap();
+        Map<EntityLivingBase, Integer> drained = new HashMap<>(deferredDimensionTransfers);
         deferredDimensionTransfers.clear();
-    }
-
-    public HashMap<EntityLivingBase, Integer> getDeferredDimensionTransfers() {
-        return (HashMap<EntityLivingBase, Integer>) deferredDimensionTransfers.clone();
-    }
-
-    public void clearDeferredPotionEffects() {
-        deferredPotionEffects.clear();
+        return drained;
     }
 
     public void requestPowerPathVisuals(IPowerNode node, EntityPlayerMP player) {
