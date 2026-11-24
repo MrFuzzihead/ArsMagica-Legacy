@@ -1,8 +1,6 @@
 package am2.buffs;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +14,6 @@ import am2.api.potion.IBuffHelper;
 import am2.particles.AMParticle;
 import am2.particles.ParticleLiveForBuffDuration;
 import am2.texture.ResourceManager;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 
 public class BuffList implements IBuffHelper {
 
@@ -61,6 +58,7 @@ public class BuffList implements IBuffHelper {
     private static int potionDefaultOffset = 0;
     public static HashMap<Integer, Integer> particlesForBuffID;
     private static HashMap<Integer, Class<? extends BuffEffect>> classesForBuffID;
+    private static final HashMap<String, ArsMagicaPotion> potionsByName = new HashMap<String, ArsMagicaPotion>();
 
     // since sync code only applies the PotionEffect class, any inherited bonuses are lost.
     // These dummy buffs can be used to apply the tick of the potion when the class type
@@ -281,8 +279,56 @@ public class BuffList implements IBuffHelper {
             BuffEffectBurnoutReduction.class);
         psychedelic = createAMPotion(potionDefaultOffset + 32, "Psychedelic", 1, 2, false, BuffEffectPsychedelic.class);
 
+        registerPotions();
+
         for (int i : classesForBuffID.keySet()) {
             createDummyBuff(classesForBuffID.get(i), i);
+        }
+    }
+
+    /**
+     * Explicit name lookup for the {@link IBuffHelper#getPotionID(String)} API. The old implementation reflected over
+     * the class's own fields; registering the fields once keeps the API working without per-call reflection.
+     */
+    private static void registerPotions() {
+        registerPotion("waterBreathing", waterBreathing);
+        registerPotion("flight", flight);
+        registerPotion("slowfall", slowfall);
+        registerPotion("haste", haste);
+        registerPotion("trueSight", trueSight);
+        registerPotion("regeneration", regeneration);
+        registerPotion("magicShield", magicShield);
+        registerPotion("charmed", charmed);
+        registerPotion("frostSlowed", frostSlowed);
+        registerPotion("temporalAnchor", temporalAnchor);
+        registerPotion("manaRegen", manaRegen);
+        registerPotion("entangled", entangled);
+        registerPotion("wateryGrave", wateryGrave);
+        registerPotion("spellReflect", spellReflect);
+        registerPotion("silence", silence);
+        registerPotion("swiftSwim", swiftSwim);
+        registerPotion("agility", agility);
+        registerPotion("leap", leap);
+        registerPotion("gravityWell", gravityWell);
+        registerPotion("astralDistortion", astralDistortion);
+        registerPotion("levitation", levitation);
+        registerPotion("clarity", clarity);
+        registerPotion("illumination", illumination);
+        registerPotion("manaBoost", manaBoost);
+        registerPotion("manaShield", manaShield);
+        registerPotion("fury", fury);
+        registerPotion("scrambleSynapses", scrambleSynapses);
+        registerPotion("shrink", shrink);
+        registerPotion("burnoutReduction", burnoutReduction);
+        registerPotion("psychedelic", psychedelic);
+        registerPotion("greaterManaPotion", greaterManaPotion);
+        registerPotion("epicManaPotion", epicManaPotion);
+        registerPotion("legendaryManaPotion", legendaryManaPotion);
+    }
+
+    private static void registerPotion(String name, ArsMagicaPotion potion) {
+        if (potion != null) {
+            potionsByName.put(name, potion);
         }
     }
 
@@ -362,16 +408,13 @@ public class BuffList implements IBuffHelper {
     }
 
     public static BuffEffect buffEffectFromPotionID(int potionID, int duration, int amplifier) {
-        Class<? extends BuffEffect> _class = classesForBuffID.get(potionID);
-        if (_class == null) return null;
+        Class<? extends BuffEffect> buffClass = classesForBuffID.get(potionID);
+        if (buffClass == null) return null;
 
-        Constructor buffMaker = _class.getDeclaredConstructors()[0];
         try {
-            buffMaker.setAccessible(true);
-            BuffEffect p = (BuffEffect) buffMaker.newInstance(duration, amplifier);
-            return p;
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-            | InvocationTargetException e) {
+            return buffClass.getConstructor(int.class, int.class)
+                .newInstance(duration, amplifier);
+        } catch (ReflectiveOperationException e) {
             LogHelper.error("Could not create potion: " + e.getMessage());
         }
         return null;
@@ -383,17 +426,8 @@ public class BuffList implements IBuffHelper {
 
     @Override
     public int getPotionID(String name) {
-        Field potionField = ReflectionHelper.findField(BuffList.class, name);
-        if (potionField != null && potionField.getType() == ArsMagicaPotion.class) {
-            try {
-                return ((ArsMagicaPotion) potionField.get(null)).getId();
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        return -1;
+        ArsMagicaPotion potion = potionsByName.get(name);
+        return potion == null ? -1 : potion.getId();
     }
 
     @Override

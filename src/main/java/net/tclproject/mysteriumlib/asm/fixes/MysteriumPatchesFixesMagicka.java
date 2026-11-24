@@ -2,7 +2,6 @@ package net.tclproject.mysteriumlib.asm.fixes;
 
 import static am2.blocks.liquid.BlockLiquidEssence.liquidEssenceMaterial;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +66,7 @@ import am2.items.ItemSoulspike;
 import am2.items.ItemSpellStaff;
 import am2.items.ItemsCommonProxy;
 import am2.items.SpellBase;
+import am2.mixins.early.MinecraftAccessor;
 import am2.network.AMPacketProcessorClient;
 import am2.network.TickrateMessage;
 import am2.utility.EtherealState;
@@ -530,30 +530,12 @@ public class MysteriumPatchesFixesMagicka {
     // return false;
     // }
 
-    private static Field timerField = null;
-
     @SideOnly(Side.CLIENT)
     public static void changeClientTickrate(float newtickrate) {
         clienttickrate = newtickrate; // store it in case we need to access it later
         Minecraft mc = Minecraft.getMinecraft();
         if (mc == null) return;
-        try {
-            if (timerField == null) {
-                for (Field fld : mc.getClass()
-                    .getDeclaredFields()) {
-                    if (fld.getType() == net.minecraft.util.Timer.class) { // have to type out the whole class,
-                                                                           // otherwise it assumes it's the java.util
-                                                                           // timer
-                        timerField = fld;
-                        timerField.setAccessible(true);
-                        break;
-                    }
-                }
-            }
-            timerField.set(mc, new net.minecraft.util.Timer(clienttickrate));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        ((MinecraftAccessor) mc).am2$setTimer(new net.minecraft.util.Timer(clienttickrate));
     }
 
     public static void changeServerTickrate(float newtickrate) {

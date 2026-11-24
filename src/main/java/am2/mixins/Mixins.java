@@ -31,7 +31,8 @@ public enum Mixins implements IMixins {
             "EntityLivingInvoker",
             "EntityCreeperAccessor",
             "PotionAccessor",
-            "DamageSourceAccessor")),
+            "DamageSourceAccessor",
+            "TileEntityAccessor")),
 
     // Replaces BytecodeTransformers.alterServerTickrate. The tick length is owned by TickrateController.
     TICKRATE(new MixinBuilder().setPhase(Phase.EARLY)
@@ -73,7 +74,11 @@ public enum Mixins implements IMixins {
 
     // Remaining client render @Fix group: ethereal camera distance, cloaked particles and hallucination models.
     CLIENT_RENDER(new MixinBuilder().setPhase(Phase.EARLY)
-        .addClientMixins("Vec3Mixin", "EffectRendererMixin", "ModelMagmaCubeMixin", "ModelSkeletonMixin"));
+        .addClientMixins("Vec3Mixin", "EffectRendererMixin", "ModelMagmaCubeMixin", "ModelSkeletonMixin")),
+
+    // Client-only accessors for Forge's ShapedOreRecipe width/height and Minecraft.timer.
+    CLIENT_ACCESSORS(new MixinBuilder().setPhase(Phase.EARLY)
+        .addClientMixins("ShapedOreRecipeAccessor", "MinecraftAccessor"));
 
     // Deliberately not ported: BytecodeTransformers.alterNetHandlerPlayServer overwrote the per-player stance
     // difference with 1.5, which disables vanilla's illegal-stance check for every player. The old coremod was never

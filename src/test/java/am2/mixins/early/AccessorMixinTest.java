@@ -11,7 +11,10 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.potion.Potion;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.Timer;
+import net.minecraftforge.oredict.ShapedOreRecipe;
 
 import org.junit.Test;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -78,6 +81,25 @@ public class AccessorMixinTest {
         assertAccessor(
             DamageSourceAccessor.class.getDeclaredMethod("am2$setUnblockable", boolean.class),
             "isUnblockable");
+    }
+
+    @Test
+    public void tileEntityAccessorTargetsNameToClassMap() throws Exception {
+        assertEquals(TileEntity.class.getName(), mixinTarget(TileEntityAccessor.class));
+        assertAccessor(TileEntityAccessor.class.getDeclaredMethod("am2$getNameToClassMap"), "nameToClassMap");
+    }
+
+    @Test
+    public void shapedOreRecipeAccessorTargetsWidthAndHeight() throws Exception {
+        assertEquals(ShapedOreRecipe.class.getName(), mixinTarget(ShapedOreRecipeAccessor.class));
+        assertAccessor(ShapedOreRecipeAccessor.class.getDeclaredMethod("am2$getWidth"), "width");
+        assertAccessor(ShapedOreRecipeAccessor.class.getDeclaredMethod("am2$getHeight"), "height");
+    }
+
+    @Test
+    public void minecraftAccessorTargetsTimer() throws Exception {
+        assertEquals(net.minecraft.client.Minecraft.class.getName(), mixinTarget(MinecraftAccessor.class));
+        assertAccessor(MinecraftAccessor.class.getDeclaredMethod("am2$setTimer", Timer.class), "timer");
     }
 
     private static void assertAccessor(Method method, String expectedTarget) {

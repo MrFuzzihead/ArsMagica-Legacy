@@ -1,7 +1,5 @@
 package am2.lore;
 
-import java.util.Map;
-
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 
@@ -9,8 +7,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import am2.guis.GuiArcaneCompendium;
+import am2.mixins.early.TileEntityAccessor;
 import am2.multiblock.IMultiblockStructureController;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -38,7 +36,7 @@ public class CompendiumEntryStructure extends CompendiumEntry {
     @SideOnly(Side.CLIENT)
     protected GuiArcaneCompendium getCompendiumGui(String searchID, int meta) {
         if (this.controllerClass != null) {
-            Class tileEntityClass = (Class) ((Map<?, ?>) ReflectionHelper.getPrivateValue(TileEntity.class, null, 1))
+            Class tileEntityClass = TileEntityAccessor.am2$getNameToClassMap()
                 .get(controllerClass);
             if (tileEntityClass != null && IMultiblockStructureController.class.isAssignableFrom(tileEntityClass)) {
                 try {

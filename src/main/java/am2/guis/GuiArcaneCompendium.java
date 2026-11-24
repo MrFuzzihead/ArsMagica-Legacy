@@ -70,11 +70,11 @@ import am2.lore.CompendiumEntry;
 import am2.lore.CompendiumEntrySpellComponent;
 import am2.lore.CompendiumEntrySpellModifier;
 import am2.lore.CompendiumEntrySpellShape;
+import am2.mixins.early.ShapedOreRecipeAccessor;
 import am2.spell.SkillManager;
 import am2.spell.SpellRecipeManager;
 import am2.texture.SpellIconManager;
 import am2.utility.RecipeUtilities;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 
 public class GuiArcaneCompendium extends GuiScreen {
 
@@ -362,11 +362,9 @@ public class GuiArcaneCompendium extends GuiScreen {
                     recipeHeight = ((ShapedRecipes) recipe).recipeHeight;
                     craftingComponents = ((ShapedRecipes) recipe).recipeItems;
                 } else if (recipe instanceof ShapedOreRecipe) {
-                    recipeWidth = ReflectionHelper
-                        .getPrivateValue(ShapedOreRecipe.class, ((ShapedOreRecipe) recipe), "width");
-
-                    recipeHeight = ReflectionHelper
-                        .getPrivateValue(ShapedOreRecipe.class, ((ShapedOreRecipe) recipe), "height");
+                    ShapedOreRecipeAccessor accessor = (ShapedOreRecipeAccessor) recipe;
+                    recipeWidth = accessor.am2$getWidth();
+                    recipeHeight = accessor.am2$getHeight();
 
                     craftingComponents = ((ShapedOreRecipe) recipe).getInput();
                 } else if (recipe instanceof ShapelessRecipes) {

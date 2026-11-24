@@ -26,6 +26,7 @@ import am2.blocks.BlocksCommonProxy;
 import am2.blocks.tileentities.TileEntityEssenceRefiner;
 import am2.blocks.tileentities.TileEntityManaBattery;
 import am2.blocks.tileentities.TileEntityOcculus;
+import am2.buffs.BuffList;
 import am2.items.ItemOre;
 import am2.items.ItemsCommonProxy;
 import am2.mixins.early.DamageSourceAccessor;
@@ -435,6 +436,14 @@ final class ArsMagicaGameTests {
     }
 
     private static void checksApi() {
+        checkEquals(
+            BuffList.flight.getId(),
+            BuffList.instance.getPotionID("flight"),
+            "BuffList must look up potions by field name");
+        checkEquals(-1, BuffList.instance.getPotionID("not_a_buff"), "unknown buff names must return -1");
+        check(
+            BuffList.buffEffectFromPotionID(BuffList.flight.getId(), 100, 0) != null,
+            "the buff-effect factory must construct a known buff");
         check(ArsMagicaApi.instance != null, "the Ars Magica API singleton must exist");
         check(ArsMagicaApi.instance.getSkillTreeManager() != null, "the skill tree manager must be set");
         check(ArsMagicaApi.instance.getEntityManager() != null, "the entity manager must be set");

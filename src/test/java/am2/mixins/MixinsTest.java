@@ -28,7 +28,7 @@ public class MixinsTest {
 
     @Test
     public void allFeatureGroupsAreDeclaredInOrder() {
-        assertEquals(11, Mixins.values().length);
+        assertEquals(12, Mixins.values().length);
         assertEquals("POTION_IDS", Mixins.values()[0].name());
         assertEquals("REFLECTION_ACCESSORS", Mixins.values()[1].name());
         assertEquals("TICKRATE", Mixins.values()[2].name());
@@ -40,6 +40,7 @@ public class MixinsTest {
         assertEquals("LAVA_ESSENCE", Mixins.values()[8].name());
         assertEquals("CLIENT_ETHEREAL", Mixins.values()[9].name());
         assertEquals("CLIENT_RENDER", Mixins.values()[10].name());
+        assertEquals("CLIENT_ACCESSORS", Mixins.values()[11].name());
     }
 
     @Test
@@ -70,7 +71,7 @@ public class MixinsTest {
         @SuppressWarnings("unchecked")
         List<String> common = (List<String>) read(builder, "commonClasses");
         assertNotNull(common);
-        assertEquals(6, common.size());
+        assertEquals(7, common.size());
         assertTrue(
             common.containsAll(
                 Arrays.asList(
@@ -79,7 +80,8 @@ public class MixinsTest {
                     "EntityLivingInvoker",
                     "EntityCreeperAccessor",
                     "PotionAccessor",
-                    "DamageSourceAccessor")));
+                    "DamageSourceAccessor",
+                    "TileEntityAccessor")));
     }
 
     @Test
@@ -172,6 +174,19 @@ public class MixinsTest {
         assertTrue(
             client.containsAll(
                 Arrays.asList("Vec3Mixin", "EffectRendererMixin", "ModelMagmaCubeMixin", "ModelSkeletonMixin")));
+    }
+
+    @Test
+    public void clientAccessorsAreClientOnly() throws Exception {
+        MixinBuilder builder = Mixins.CLIENT_ACCESSORS.getBuilder();
+        assertNotNull(builder);
+        assertEquals(IBaseTransformer.Phase.EARLY, read(builder, "phase"));
+
+        @SuppressWarnings("unchecked")
+        List<String> client = (List<String>) read(builder, "clientClasses");
+        assertNotNull(client);
+        assertEquals(2, client.size());
+        assertTrue(client.containsAll(Arrays.asList("ShapedOreRecipeAccessor", "MinecraftAccessor")));
     }
 
     @Test
