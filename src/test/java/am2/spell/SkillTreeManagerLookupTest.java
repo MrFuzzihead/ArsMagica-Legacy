@@ -1,6 +1,8 @@
 package am2.spell;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -77,8 +79,8 @@ public class SkillTreeManagerLookupTest {
 
     @Test
     public void treeViewsAreCachedAndUnmodifiable() {
-        List<SkillTreeEntry> first = manager.getTree(SkillTrees.Defense);
-        List<SkillTreeEntry> second = manager.getTree(SkillTrees.Defense);
+        List<SkillTreeEntry> first = manager.getTreeView(SkillTrees.Defense);
+        List<SkillTreeEntry> second = manager.getTreeView(SkillTrees.Defense);
         assertSame(first, second);
 
         boolean threw = false;
@@ -93,8 +95,24 @@ public class SkillTreeManagerLookupTest {
 
     @Test
     public void eachTreeHasItsOwnCachedView() {
-        assertSame(manager.getTree(SkillTrees.Offense), manager.getTree(SkillTrees.Offense));
-        assertSame(manager.getTree(SkillTrees.Utility), manager.getTree(SkillTrees.Utility));
-        assertSame(manager.getTree(SkillTrees.Talents), manager.getTree(SkillTrees.Talents));
+        assertSame(manager.getTreeView(SkillTrees.Offense), manager.getTreeView(SkillTrees.Offense));
+        assertSame(manager.getTreeView(SkillTrees.Utility), manager.getTreeView(SkillTrees.Utility));
+        assertSame(manager.getTreeView(SkillTrees.Talents), manager.getTreeView(SkillTrees.Talents));
+    }
+
+    @Test
+    public void legacyGetTreeStillReturnsAnIndependentCopy() {
+        ISkillTreeEntry part = mock(ISkillTreeEntry.class);
+        manager.RegisterPart(part, 10, 20, SkillTrees.Offense, SkillPointTypes.BLUE);
+
+        List<SkillTreeEntry> first = manager.getTree(SkillTrees.Offense);
+        List<SkillTreeEntry> second = manager.getTree(SkillTrees.Offense);
+        assertNotSame(first, second);
+        assertEquals(1, first.size());
+        first.clear();
+        assertEquals(
+            1,
+            manager.getTreeView(SkillTrees.Offense)
+                .size());
     }
 }

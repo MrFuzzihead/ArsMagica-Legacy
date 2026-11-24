@@ -98,8 +98,33 @@ public class SkillTreeManager implements ISkillTreeManager {
         skillPointTypeList.put(SkillManager.instance.getShiftedPartID(item), requiredPoint);
     }
 
+    /**
+     * Returns a defensive copy of the requested tree. Kept for API compatibility; hot-path callers should use
+     * {@link #getSkillTreeEntry(ISkillTreeEntry)} or {@link #getTreeView(SkillTrees)}.
+     */
     @SuppressWarnings("incomplete-switch")
-    public List<SkillTreeEntry> getTree(SkillTrees tree) {
+    public ArrayList<SkillTreeEntry> getTree(SkillTrees tree) {
+        ArrayList<SkillTreeEntry> safeCopy = new ArrayList<SkillTreeEntry>();
+        switch (tree) {
+            case Defense:
+                safeCopy.addAll(defenseTree);
+                break;
+            case Offense:
+                safeCopy.addAll(offenseTree);
+                break;
+            case Utility:
+                safeCopy.addAll(utilityTree);
+                break;
+            case Talents:
+                safeCopy.addAll(talentTree);
+        }
+
+        return safeCopy;
+    }
+
+    /** Returns the shared, unmodifiable view used by read-only callers such as the skill-tree GUI. */
+    @SuppressWarnings("incomplete-switch")
+    public List<SkillTreeEntry> getTreeView(SkillTrees tree) {
         switch (tree) {
             case Defense:
                 return defenseTreeView;

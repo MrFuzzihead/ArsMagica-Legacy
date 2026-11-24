@@ -87,7 +87,7 @@ public class GuiSkillTrees extends GuiScreen {
 
         this.player = player;
         activeTree = SkillTrees.Offense;
-        skillTree = SkillTreeManager.instance.getTree(activeTree);
+        skillTree = SkillTreeManager.instance.getTreeView(activeTree);
     }
 
     @Override
@@ -135,7 +135,7 @@ public class GuiSkillTrees extends GuiScreen {
     protected void actionPerformed(GuiButton par1GuiButton) {
         if (par1GuiButton instanceof GuiButtonSkillTreeTab) {
             this.activeTree = ((GuiButtonSkillTreeTab) par1GuiButton).getTree();
-            skillTree = SkillTreeManager.instance.getTree(activeTree);
+            skillTree = SkillTreeManager.instance.getTreeView(activeTree);
 
             switch (activeTree) {
                 case Defense:
