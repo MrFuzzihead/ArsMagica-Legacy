@@ -69,7 +69,11 @@ public enum Mixins implements IMixins {
 
     // The True Sight invisibility override targets a @SideOnly(CLIENT) method that is stripped on a dedicated server.
     CLIENT_ETHEREAL(new MixinBuilder().setPhase(Phase.EARLY)
-        .addClientMixins("EntityClientMixin"));
+        .addClientMixins("EntityClientMixin")),
+
+    // Remaining client render @Fix group: ethereal camera distance, cloaked particles and hallucination models.
+    CLIENT_RENDER(new MixinBuilder().setPhase(Phase.EARLY)
+        .addClientMixins("Vec3Mixin", "EffectRendererMixin", "ModelMagmaCubeMixin", "ModelSkeletonMixin"));
 
     // Deliberately not ported: BytecodeTransformers.alterNetHandlerPlayServer overwrote the per-player stance
     // difference with 1.5, which disables vanilla's illegal-stance check for every player. The old coremod was never

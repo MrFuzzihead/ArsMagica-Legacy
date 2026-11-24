@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import am2.guis.AMGuiHelper;
+import am2.utility.ClientEtherealState;
 
 /**
  * Replacements for the three {@code BytecodeTransformers.alterEntityRenderer} insertion points.
@@ -23,6 +24,16 @@ import am2.guis.AMGuiHelper;
  */
 @Mixin(EntityRenderer.class)
 public abstract class EntityRendererMixin {
+
+    @Inject(method = "orientCamera(F)V", at = @At("HEAD"), require = 1)
+    private void arsmagica2$beginEtherealCamera(float partialTicks, CallbackInfo ci) {
+        ClientEtherealState.setOrientingCamera(true);
+    }
+
+    @Inject(method = "orientCamera(F)V", at = @At("RETURN"), require = 1)
+    private void arsmagica2$endEtherealCamera(float partialTicks, CallbackInfo ci) {
+        ClientEtherealState.setOrientingCamera(false);
+    }
 
     @Inject(
         method = "setupCameraTransform(FI)V",

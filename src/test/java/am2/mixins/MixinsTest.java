@@ -28,7 +28,7 @@ public class MixinsTest {
 
     @Test
     public void allFeatureGroupsAreDeclaredInOrder() {
-        assertEquals(10, Mixins.values().length);
+        assertEquals(11, Mixins.values().length);
         assertEquals("POTION_IDS", Mixins.values()[0].name());
         assertEquals("REFLECTION_ACCESSORS", Mixins.values()[1].name());
         assertEquals("TICKRATE", Mixins.values()[2].name());
@@ -39,6 +39,7 @@ public class MixinsTest {
         assertEquals("WATER_ETHEREAL", Mixins.values()[7].name());
         assertEquals("LAVA_ESSENCE", Mixins.values()[8].name());
         assertEquals("CLIENT_ETHEREAL", Mixins.values()[9].name());
+        assertEquals("CLIENT_RENDER", Mixins.values()[10].name());
     }
 
     @Test
@@ -156,6 +157,21 @@ public class MixinsTest {
         assertNotNull(client);
         assertEquals(1, client.size());
         assertTrue(client.contains("EntityClientMixin"));
+    }
+
+    @Test
+    public void clientRenderFixesAreClientOnly() throws Exception {
+        MixinBuilder builder = Mixins.CLIENT_RENDER.getBuilder();
+        assertNotNull(builder);
+        assertEquals(IBaseTransformer.Phase.EARLY, read(builder, "phase"));
+
+        @SuppressWarnings("unchecked")
+        List<String> client = (List<String>) read(builder, "clientClasses");
+        assertNotNull(client);
+        assertEquals(4, client.size());
+        assertTrue(
+            client.containsAll(
+                Arrays.asList("Vec3Mixin", "EffectRendererMixin", "ModelMagmaCubeMixin", "ModelSkeletonMixin")));
     }
 
     @Test
