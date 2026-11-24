@@ -72,9 +72,15 @@ public enum Mixins implements IMixins {
     CLIENT_ETHEREAL(new MixinBuilder().setPhase(Phase.EARLY)
         .addClientMixins("EntityClientMixin")),
 
-    // Remaining client render @Fix group: ethereal camera distance, cloaked particles and hallucination models.
+    // Remaining client render @Fix group: ethereal camera distance, cloaked particles, hallucination models and the
+    // special player renderer.
     CLIENT_RENDER(new MixinBuilder().setPhase(Phase.EARLY)
-        .addClientMixins("Vec3Mixin", "EffectRendererMixin", "ModelMagmaCubeMixin", "ModelSkeletonMixin")),
+        .addClientMixins(
+            "Vec3Mixin",
+            "EffectRendererMixin",
+            "ModelMagmaCubeMixin",
+            "ModelSkeletonMixin",
+            "RenderManagerMixin")),
 
     // Client-only accessors for Forge's ShapedOreRecipe width/height and Minecraft.timer.
     CLIENT_ACCESSORS(new MixinBuilder().setPhase(Phase.EARLY)

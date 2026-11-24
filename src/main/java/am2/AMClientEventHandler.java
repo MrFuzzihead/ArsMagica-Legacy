@@ -30,7 +30,6 @@ import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixesMagicka;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
@@ -49,6 +48,7 @@ import am2.blocks.tileentities.TileEntityCrystalMarker;
 import am2.blocks.tileentities.TileEntityParticleEmitter;
 import am2.buffs.BuffList;
 import am2.entities.EntityShadowHelper;
+import am2.entities.renderers.ClientPlayerModelMap;
 import am2.guis.AMGuiHelper;
 import am2.items.ItemArcaneCompendium;
 import am2.items.ItemsCommonProxy;
@@ -453,8 +453,11 @@ public class AMClientEventHandler {
         if (event.entity instanceof EntityPlayer) {
             if (event.entity != Minecraft.getMinecraft().thePlayer) {
                 AMDataWriter writer = new AMDataWriter();
-                writer.add(MysteriumPatchesFixesMagicka.playerModelMap.size());
-                for (Map.Entry<String, String> entry : MysteriumPatchesFixesMagicka.playerModelMap.entrySet()) {
+                writer.add(
+                    ClientPlayerModelMap.map()
+                        .size());
+                for (Map.Entry<String, String> entry : ClientPlayerModelMap.map()
+                    .entrySet()) {
                     writer.add(entry.getKey());
                     writer.add(entry.getValue());
                 }
@@ -465,7 +468,8 @@ public class AMClientEventHandler {
             ServerData serverData = Minecraft.getMinecraft()
                 .func_147104_D();
             if (serverData == null) {
-                MysteriumPatchesFixesMagicka.playerModelMap.clear();
+                ClientPlayerModelMap.map()
+                    .clear();
                 return; // singleplayer
             }
 
@@ -477,7 +481,8 @@ public class AMClientEventHandler {
             tablist.remove(Minecraft.getMinecraft().thePlayer.getCommandSenderName());
             if (event.entity == Minecraft.getMinecraft().thePlayer && tablist.isEmpty()) { // no players to sync the map
                                                                                            // from, clear it instead
-                MysteriumPatchesFixesMagicka.playerModelMap.clear();
+                ClientPlayerModelMap.map()
+                    .clear();
             }
         }
     }

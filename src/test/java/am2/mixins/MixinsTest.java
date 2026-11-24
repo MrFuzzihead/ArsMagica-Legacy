@@ -170,10 +170,15 @@ public class MixinsTest {
         @SuppressWarnings("unchecked")
         List<String> client = (List<String>) read(builder, "clientClasses");
         assertNotNull(client);
-        assertEquals(4, client.size());
+        assertEquals(5, client.size());
         assertTrue(
             client.containsAll(
-                Arrays.asList("Vec3Mixin", "EffectRendererMixin", "ModelMagmaCubeMixin", "ModelSkeletonMixin")));
+                Arrays.asList(
+                    "Vec3Mixin",
+                    "EffectRendererMixin",
+                    "ModelMagmaCubeMixin",
+                    "ModelSkeletonMixin",
+                    "RenderManagerMixin")));
     }
 
     @Test

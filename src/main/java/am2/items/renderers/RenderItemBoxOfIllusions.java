@@ -16,11 +16,11 @@ import net.minecraftforge.client.IItemRenderer;
 import net.minecraftforge.client.model.AdvancedModelLoader;
 import net.minecraftforge.client.model.IModelCustom;
 import net.minecraftforge.client.model.obj.WavefrontObject;
-import net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixesMagicka;
 
 import org.lwjgl.opengl.GL11;
 
 import am2.blocks.tileentities.TileEntityCelestialPrism;
+import am2.entities.renderers.ClientPlayerModelMap;
 import am2.network.AMDataWriter;
 import am2.network.AMNetHandler;
 import am2.network.AMPacketIDs;
@@ -144,58 +144,62 @@ public class RenderItemBoxOfIllusions implements IItemRenderer {
 
     private void setCustomRenderer() {
         if (cooldown > 0) return;
-        if (MysteriumPatchesFixesMagicka.playerModelMap.get(Minecraft.getMinecraft().thePlayer.getCommandSenderName())
-            != null) {
-            MysteriumPatchesFixesMagicka.playerModelMap
+        if (ClientPlayerModelMap.map()
+            .get(Minecraft.getMinecraft().thePlayer.getCommandSenderName()) != null) {
+            ClientPlayerModelMap.map()
                 .remove(Minecraft.getMinecraft().thePlayer.getCommandSenderName());
             return;
         }
         for (ItemStack stack : Minecraft.getMinecraft().thePlayer.inventory.mainInventory) {
             if (stack != null) {
                 if (stack.getItem() == Items.spider_eye) {
-                    MysteriumPatchesFixesMagicka.playerModelMap
+                    ClientPlayerModelMap.map()
                         .put(Minecraft.getMinecraft().thePlayer.getCommandSenderName(), "spider");
                     return;
                 } else if (stack.getItem() == Items.rotten_flesh) {
-                    MysteriumPatchesFixesMagicka.playerModelMap
+                    ClientPlayerModelMap.map()
                         .put(Minecraft.getMinecraft().thePlayer.getCommandSenderName(), "zombie");
                     return;
                 } else if (stack.getItem() == Items.redstone) {
-                    MysteriumPatchesFixesMagicka.playerModelMap
+                    ClientPlayerModelMap.map()
                         .put(Minecraft.getMinecraft().thePlayer.getCommandSenderName(), "witch");
                     return;
                 } else if (stack.getItem() == Items.snowball) {
-                    MysteriumPatchesFixesMagicka.playerModelMap
+                    ClientPlayerModelMap.map()
                         .put(Minecraft.getMinecraft().thePlayer.getCommandSenderName(), "snowman");
                     return;
                 } else if (stack.getItem() == Items.gunpowder) {
-                    MysteriumPatchesFixesMagicka.playerModelMap
+                    ClientPlayerModelMap.map()
                         .put(Minecraft.getMinecraft().thePlayer.getCommandSenderName(), "creeper");
                     return;
                 } else if (stack.getItem() == Items.feather) {
-                    MysteriumPatchesFixesMagicka.playerModelMap
+                    ClientPlayerModelMap.map()
                         .put(Minecraft.getMinecraft().thePlayer.getCommandSenderName(), "chicken");
                     return;
                 } else if (stack.getItem() == Items.leather) {
-                    MysteriumPatchesFixesMagicka.playerModelMap
+                    ClientPlayerModelMap.map()
                         .put(Minecraft.getMinecraft().thePlayer.getCommandSenderName(), "cow");
                     return;
                 } else if (stack.getItem() == Items.ender_eye) {
-                    MysteriumPatchesFixesMagicka.playerModelMap
+                    ClientPlayerModelMap.map()
                         .put(Minecraft.getMinecraft().thePlayer.getCommandSenderName(), "ender");
                     return;
                 } else if (stack.getItem() == Items.emerald) {
-                    MysteriumPatchesFixesMagicka.playerModelMap.put(
-                        Minecraft.getMinecraft().thePlayer.getCommandSenderName(),
-                        "maid" + Minecraft.getMinecraft().theWorld.rand.nextInt(8));
+                    ClientPlayerModelMap.map()
+                        .put(
+                            Minecraft.getMinecraft().thePlayer.getCommandSenderName(),
+                            "maid" + Minecraft.getMinecraft().theWorld.rand.nextInt(8));
                     return;
                 }
             }
         }
         cooldown = 80;
         AMDataWriter writer = new AMDataWriter();
-        writer.add(MysteriumPatchesFixesMagicka.playerModelMap.size());
-        for (Map.Entry<String, String> entry : MysteriumPatchesFixesMagicka.playerModelMap.entrySet()) {
+        writer.add(
+            ClientPlayerModelMap.map()
+                .size());
+        for (Map.Entry<String, String> entry : ClientPlayerModelMap.map()
+            .entrySet()) {
             writer.add(entry.getKey());
             writer.add(entry.getValue());
         }

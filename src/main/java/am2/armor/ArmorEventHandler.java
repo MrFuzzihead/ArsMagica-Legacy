@@ -57,6 +57,7 @@ import am2.api.items.armor.ArmorTextureEvent;
 import am2.api.items.armor.IArmorImbuement;
 import am2.api.items.armor.ImbuementApplicationTypes;
 import am2.bosses.EntityArcaneGuardian;
+import am2.entities.renderers.ClientPlayerModelMap;
 import am2.items.ItemBoxOfIllusions;
 import am2.items.ItemsCommonProxy;
 import am2.mixins.early.EntityPlayerAccessor;
@@ -229,11 +230,14 @@ public class ArmorEventHandler {
             event.setCanceled(true);
             return;
         }
-        if (MysteriumPatchesFixesMagicka.playerModelMap.get(event.entityPlayer.getCommandSenderName()) != null
-            && !MysteriumPatchesFixesMagicka.playerModelMap.get(event.entityPlayer.getCommandSenderName())
+        if (ClientPlayerModelMap.map()
+            .get(event.entityPlayer.getCommandSenderName()) != null
+            && !ClientPlayerModelMap.map()
+                .get(event.entityPlayer.getCommandSenderName())
                 .startsWith("maid")) {
             // custom mobs
-            String toMob = MysteriumPatchesFixesMagicka.playerModelMap.get(event.entityPlayer.getCommandSenderName());
+            String toMob = ClientPlayerModelMap.map()
+                .get(event.entityPlayer.getCommandSenderName());
             EntityLivingBase elb = new EntityZombie(event.entityPlayer.worldObj);
             if (toMob.equalsIgnoreCase("spider")) {
                 elb = new EntitySpider(event.entityPlayer.worldObj);
@@ -295,8 +299,10 @@ public class ArmorEventHandler {
             event.setCanceled(true);
             return;
         }
-        if (MysteriumPatchesFixesMagicka.playerModelMap.get(event.entityPlayer.getCommandSenderName()) != null
-            && !MysteriumPatchesFixesMagicka.playerModelMap.get(event.entityPlayer.getCommandSenderName())
+        if (ClientPlayerModelMap.map()
+            .get(event.entityPlayer.getCommandSenderName()) != null
+            && !ClientPlayerModelMap.map()
+                .get(event.entityPlayer.getCommandSenderName())
                 .startsWith("maid")) {
             event.setCanceled(true);
             return;

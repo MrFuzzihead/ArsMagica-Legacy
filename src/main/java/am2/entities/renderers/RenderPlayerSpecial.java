@@ -1,7 +1,5 @@
 package am2.entities.renderers;
 
-import static net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixesMagicka.playerModelMap;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -46,7 +44,8 @@ public class RenderPlayerSpecial extends RenderPlayer {
     protected ResourceLocation getEntityTexture(AbstractClientPlayer player) {
         return new ResourceLocation(
             "arsmagica2",
-            "textures/models/" + playerModelMap.get(((EntityPlayer) player).getCommandSenderName()) + ".png");
+            "textures/models/" + ClientPlayerModelMap.map()
+                .get(((EntityPlayer) player).getCommandSenderName()) + ".png");
     }
 
     @Override

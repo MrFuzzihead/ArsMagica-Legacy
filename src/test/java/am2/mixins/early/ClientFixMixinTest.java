@@ -8,6 +8,7 @@ import net.minecraft.client.model.ModelMagmaCube;
 import net.minecraft.client.model.ModelSkeleton;
 import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.client.renderer.EntityRenderer;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.Vec3;
@@ -78,6 +79,18 @@ public class ClientFixMixinTest {
             "RETURN",
             float.class,
             CallbackInfo.class);
+    }
+
+    @Test
+    public void renderManagerUsesTheSpecialPlayerRenderer() throws Exception {
+        assertEquals(RenderManager.class.getName(), mixinTarget(RenderManagerMixin.class));
+        assertInject(
+            RenderManagerMixin.class,
+            "arsmagica2$specialPlayerRenderer",
+            "getEntityRenderObject",
+            "RETURN",
+            Entity.class,
+            CallbackInfoReturnable.class);
     }
 
     private static void assertLivingAnimations(Class<?> mixinClass) throws Exception {
