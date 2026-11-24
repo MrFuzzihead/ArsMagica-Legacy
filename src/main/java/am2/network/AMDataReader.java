@@ -14,6 +14,9 @@ import io.netty.buffer.Unpooled;
 
 public class AMDataReader {
 
+    /** Hard cap for a single NBT payload. Legitimate AM2 packets are far smaller. */
+    public static final int MAX_NBT_BYTES = 1 << 20;
+
     ByteArrayInputStream input;
     DataInputStream dataStream;
     public byte ID;
@@ -126,25 +129,28 @@ public class AMDataReader {
     }
 
     public NBTTagCompound getNBTTagCompound() {
-        NBTTagCompound data = null;
         try {
             int len = dataStream.readInt();
+            if (len < 0 || len > MAX_NBT_BYTES) {
+                LogHelper.error("AMDataReader (getNBTTagCompound): invalid length %d", len);
+                return null;
+            }
             byte[] bytes = new byte[len];
-            dataStream.read(bytes);
+            dataStream.readFully(bytes);
             ByteBuf buf = Unpooled.copiedBuffer(bytes);
-            data = ByteBufUtils.readTag(buf);
+            return ByteBufUtils.readTag(buf);
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getNBTTagCompound): " + e.toString());
             e.printStackTrace();
         }
-        return data;
+        return null;
     }
 
     public byte[] getRemainingBytes() {
         byte[] remaining = null;
         try {
             remaining = new byte[dataStream.available()];
-            dataStream.read(remaining);
+            dataStream.readFully(remaining);
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getRemainingBytes): " + e.toString());
             e.printStackTrace();
@@ -162,7 +168,15 @@ public class AMDataReader {
 
     public int[] getIntArray() {
         try {
-            int[] arr = new int[dataStream.readInt()];
+            int len = dataStream.readInt();
+            if (len < 0 || len > dataStream.available() / 4) {
+                LogHelper.error(
+                    "AMDataReader (getIntArray): invalid length %d for %d available bytes",
+                    len,
+                    dataStream.available());
+                return new int[0];
+            }
+            int[] arr = new int[len];
             for (int i = 0; i < arr.length; ++i) arr[i] = dataStream.readInt();
             return arr;
         } catch (IOException e) {

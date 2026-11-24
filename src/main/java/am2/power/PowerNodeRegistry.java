@@ -471,41 +471,12 @@ public class PowerNodeRegistry {
         return powerNodes.containsKey(chunk.getChunkCoordIntPair());
     }
 
-    private class ChunkCoordComparator implements Comparator<ChunkCoordIntPair> {
+    static class ChunkCoordComparator implements Comparator<ChunkCoordIntPair> {
 
         @Override
         public int compare(ChunkCoordIntPair a, ChunkCoordIntPair b) {
-            if (a.chunkXPos == b.chunkXPos && a.chunkZPos == b.chunkZPos) return 0;
-
-            if (a.chunkXPos > b.chunkXPos) return 1;
-            else if (a.chunkZPos > b.chunkZPos) return 1;
-            return -1;
-        }
-
-    }
-
-    private class IPowerNodeComparer implements Comparator<IPowerNode> {
-
-        @Override
-        public int compare(IPowerNode o1, IPowerNode o2) {
-            TileEntity te1 = (TileEntity) o1;
-            TileEntity te2 = (TileEntity) o2;
-
-            if (te1.xCoord == te2.xCoord && te1.zCoord == te2.zCoord && te1.yCoord == te2.yCoord) return 0;
-
-            if (te1.xCoord > te2.xCoord) {
-                return 1;
-            } else {
-                if (te1.zCoord > te2.zCoord) {
-                    return 1;
-                } else {
-                    if (te1.yCoord > te2.yCoord) {
-                        return 1;
-                    } else {
-                        return -1;
-                    }
-                }
-            }
+            int x = Integer.compare(a.chunkXPos, b.chunkXPos);
+            return x != 0 ? x : Integer.compare(a.chunkZPos, b.chunkZPos);
         }
 
     }

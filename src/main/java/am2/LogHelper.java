@@ -4,14 +4,16 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import cpw.mods.fml.common.Loader;
-
 public class LogHelper {
 
     private static Logger logger = LogManager.getLogger("ArsMagica2");
 
-    /** FML registers a synthetic {@code mcp} mod in a deobfuscated development environment. */
-    private static final boolean isDevEnvironment = Loader.isModLoaded("mcp");
+    /**
+     * RFG puts GradleStart on the development classpath only. Checking the resource avoids touching FML's Loader,
+     * whose singleton cannot be constructed in a plain JUnit JVM.
+     */
+    private static final boolean isDevEnvironment = LogHelper.class.getClassLoader()
+        .getResource("GradleStart.class") != null;
 
     public static void log(Level level, String format, Object... data) {
         logger.log(level, String.format(format, data));

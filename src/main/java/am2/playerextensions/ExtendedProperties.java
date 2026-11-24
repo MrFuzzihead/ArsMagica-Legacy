@@ -475,14 +475,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         }
 
         NBTTagCompound extra_data = new NBTTagCompound();
-        int c = 0;
-        for (String o : extra_properties.keySet()) {
-            String iValue = extra_properties.get(o);
-            extra_data.setString("persistentobj" + c, iValue);
-            extra_data.setString("persistentobjname" + c, o);
-            c++;
-        }
-        extra_data.setInteger("persistentobjsize", extra_properties.size());
+        writeStringMap(extra_data, "persistentobj", "persistentobjname", "persistentobjsize", extra_properties);
         writer.add(extra_data);
 
         this.updateFlags = 0;
@@ -1092,9 +1085,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
         extra_properties.clear();
         NBTTagCompound nbt = rdr.getNBTTagCompound();
-        for (int j = 0; j < nbt.getInteger("persistentobjsize"); j++) {
-            extra_properties.put(nbt.getString("persistentobjname" + j), nbt.getString("persistentobj" + j));
-        }
+        readStringMap(nbt, "persistentobj", "persistentobjname", "persistentobjsize", extra_properties);
 
         return true;
     }
@@ -1167,6 +1158,25 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         return false;
     }
 
+    static void writeStringMap(NBTTagCompound compound, String valuePrefix, String namePrefix, String sizeKey,
+        Map<String, String> values) {
+        int index = 0;
+        for (Map.Entry<String, String> entry : values.entrySet()) {
+            compound.setString(valuePrefix + index, entry.getValue());
+            compound.setString(namePrefix + index, entry.getKey());
+            index++;
+        }
+        compound.setInteger(sizeKey, values.size());
+    }
+
+    static void readStringMap(NBTTagCompound compound, String valuePrefix, String namePrefix, String sizeKey,
+        Map<String, String> target) {
+        int size = compound.getInteger(sizeKey);
+        for (int i = 0; i < size; i++) {
+            target.put(compound.getString(namePrefix + i), compound.getString(valuePrefix + i));
+        }
+    }
+
     @Override
     public void saveNBTData(NBTTagCompound compound) {
         compound.setFloat("curMana", getCurrentMana());
@@ -1207,22 +1217,8 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
             compound.setDouble("marklocationz", this.getMarkZ());
             compound.setInteger("markdimension", this.getMarkDimension());
         }
-        int c = 0;
-        for (String o : extra_properties.keySet()) {
-            String iValue = extra_properties.get(o);
-            compound.setString("persistentobj" + c, iValue);
-            compound.setString("persistentobjname" + c, o);
-            c++;
-        }
-        compound.setInteger("persistentobjsize", extra_properties.size());
-
-        for (String o : compendium_entries.keySet()) {
-            String iValue = compendium_entries.get(o);
-            compound.setString("compentry" + c, iValue);
-            compound.setString("compentryname" + c, o);
-            c++;
-        }
-        compound.setInteger("compendiumsize", compendium_entries.size());
+        writeStringMap(compound, "persistentobj", "persistentobjname", "persistentobjsize", extra_properties);
+        writeStringMap(compound, "compentry", "compentryname", "compendiumsize", compendium_entries);
     }
 
     @Override
@@ -1284,13 +1280,8 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
             }
         }
 
-        for (int j = 0; j < compound.getInteger("persistentobjsize"); j++) {
-            extra_properties.put(compound.getString("persistentobjname" + j), compound.getString("persistentobj" + j));
-        }
-
-        for (int j = 0; j < compound.getInteger("compendiumsize"); j++) {
-            compendium_entries.put(compound.getString("compentryname" + j), compound.getString("compentry" + j));
-        }
+        readStringMap(compound, "persistentobj", "persistentobjname", "persistentobjsize", extra_properties);
+        readStringMap(compound, "compentry", "compentryname", "compendiumsize", compendium_entries);
     }
 
     public void addToExtraVariables(String name, String value) {
@@ -1313,14 +1304,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         AMDataWriter writer = new AMDataWriter();
         NBTTagCompound compendium_data = new NBTTagCompound();
         if (name == null && value == null) {
-            int c = 0;
-            for (String o : compendium_entries.keySet()) {
-                String iValue = compendium_entries.get(o);
-                compendium_data.setString("compentry" + c, iValue);
-                compendium_data.setString("compentryname" + c, o);
-                c++;
-            }
-            compendium_data.setInteger("compendiumsize", compendium_entries.size());
+            writeStringMap(compendium_data, "compentry", "compentryname", "compendiumsize", compendium_entries);
             writer.add(compendium_data);
             AMNetHandler.INSTANCE.sendPacketToServer(AMPacketIDs.SYNCCOMPENDIUM, writer.generate());
         } else {
@@ -1355,9 +1339,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
             setDefaultCompendiumEntryValues();
         }
         if (nbt.getInteger("compendiumsize") > 1) compendium_entries.clear(); // full sync
-        for (int j = 0; j < nbt.getInteger("compendiumsize"); j++) {
-            compendium_entries.put(nbt.getString("compentryname" + j), nbt.getString("compentry" + j));
-        }
+        readStringMap(nbt, "compentry", "compentryname", "compendiumsize", compendium_entries);
     }
 
     private void setDefaultCompendiumEntryValues() {

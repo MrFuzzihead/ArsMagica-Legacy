@@ -499,9 +499,11 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
     }
 
     public void removeMultipleSpellPartsFromStageGroup(int startIndex, int length, int groupIndex) {
+        if (groupIndex < 0 || groupIndex >= this.shapeGroups.size()) return;
         ArrayList<ISpellPart> group = this.shapeGroups.get(groupIndex);
-        if (!currentSpellIsReadOnly) {
-            for (int i = 0; i <= length; ++i) group.remove(startIndex);
+        if (!currentSpellIsReadOnly && startIndex >= 0 && startIndex < group.size()) {
+            int removeCount = Math.min(length, group.size() - startIndex);
+            for (int i = 0; i < removeCount; ++i) group.remove(startIndex);
             countModifiers();
             if (this.worldObj.isRemote) this.sendDataToServer();
         }
@@ -524,9 +526,10 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
     }
 
     public void removeMultipleSpellParts(int startIndex, int length) {
-        if (!currentSpellIsReadOnly) {
-            for (int i = 0; i <= length; ++i) this.getCurrentRecipe()
-                .remove(startIndex);
+        ArrayList<ISpellPart> recipe = this.getCurrentRecipe();
+        if (!currentSpellIsReadOnly && startIndex >= 0 && startIndex < recipe.size()) {
+            int removeCount = Math.min(length, recipe.size() - startIndex);
+            for (int i = 0; i < removeCount; ++i) recipe.remove(startIndex);
             countModifiers();
             if (this.worldObj.isRemote) this.sendDataToServer();
         }
