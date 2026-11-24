@@ -53,6 +53,9 @@ and the automated tests that now cover the fix.
 | 3.6 Wrong enchantment removal | **Fixed** — matching fortune/looting removal | `d72a7d2` | `AMEnchantmentHelperTest` |
 | 3.8 Unset spell-part manager | **Fixed** — SkillManager assigned, clear guard | `d72a7d2` | game-test API assertion |
 | 3.9 IMC blacklist parsing | **Fixed** — literal pipe parser | `d72a7d2` | `AMCoreImcParsingTest` |
+| 3.1 Chunk-loader tickets | **Fixed** — reuse/release/restore map lifecycle and real key equality | `c64bf57` | `AMChunkLoaderTest`, game-test ticket lifecycle |
+| 3.4 TE network floods | **Fixed** — change-gated battery metadata and throttled enervator NBT | `c64bf57` | `TileEntityManaBatteryUpdateTest`, `TileEntityEntropicEnervatorTest` |
+| 3.7 Lingering spells | **Fixed** — one server tick per matching world, clear on unload | `c64bf57` | `SpellHelperLingeringTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -353,6 +356,9 @@ If `length` matches the number of elements to remove, this removes one extra ele
 
 ### 3.1 Chunk-loader tickets leak and never release
 
+> **Status: Fixed** in `c64bf57`; covered by `AMChunkLoaderTest` and the game-test ticket reuse/release check.
+
+
 `AMChunkLoader` has several lifecycle bugs (`AMChunkLoader.java`):
 
 - `requestStaticChunkLoad` always calls `ForgeChunkManager.requestTicket`, even if a ticket for that identifier already exists. `cacheTicket` only warns and returns, but the new ticket has already been created and is then used to force the chunk. The result is an untracked, permanently forced chunk.
@@ -411,6 +417,10 @@ The same code directly uses `cofh.api.energy.IEnergyHandler` (`AMEventHandler.ja
 **Fix:** skip/clean the extra variable when `thisdim == null`; guard the whole CoFH section with `AMCore.cofh` (or put it behind an optional interface implemented by a class that is only loaded when CoFH is present); catch `NoClassDefFoundError` around optional API calls if you must reference them directly.
 
 ### 3.4 Mana battery and enervator re-send block updates every tick
+
+> **Status: Fixed** in `c64bf57`; covered by `TileEntityManaBatteryUpdateTest` and
+> `TileEntityEntropicEnervatorTest`.
+
 
 `TileEntityManaBattery.updateEntity` (`TileEntityManaBattery.java:49-62`) executes this every tick on the server:
 
@@ -493,6 +503,9 @@ Consequences:
 **Fix:** remove the matching enchantment in each helper and add unit tests for `set(level)`, `remove(0)`, and “does not touch the other enchantment”.
 
 ### 3.7 Lingering spells tick per world and on both sides
+
+> **Status: Fixed** in `c64bf57`; covered by `SpellHelperLingeringTest`.
+
 
 `SpellHelper.lingeringSpellList` is a single static list shared by the server and client (in an integrated server they are the same JVM). It is ticked in two places:
 
