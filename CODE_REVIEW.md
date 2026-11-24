@@ -47,6 +47,12 @@ and the automated tests that now cover the fix.
 | 2.5 `PowerNodeRegistry` comparator | **Fixed** — lexicographic comparator | `ceb14c9` | `PowerNodeRegistryComparatorTest` |
 | 2.6 Compendium NBT indices | **Fixed** — per-map index helpers | `ceb14c9` | `ExtendedPropertiesNbtTest` |
 | 2.7 Inscription-table multi-removal | **Fixed** — exact count, clamped bounds | `ceb14c9` | `TileEntityInscriptionTableTest` |
+| 3.2 Fortify-Time expiry NPE | **Fixed** — world/tile null guards | `d72a7d2` | `AMEventHandlerSafetyTest` |
+| 3.3 Spatial-vortex null/CoFH guards | **Fixed** — null-world tile lookups and `AMCore.cofh` short-circuit | `d72a7d2` | `AMEventHandlerSafetyTest` |
+| 3.5 Worldgen config crashes | **Fixed** — bounds-safe chance/ore/meteor rolls | `d72a7d2` | `WorldgenMathTest` |
+| 3.6 Wrong enchantment removal | **Fixed** — matching fortune/looting removal | `d72a7d2` | `AMEnchantmentHelperTest` |
+| 3.8 Unset spell-part manager | **Fixed** — SkillManager assigned, clear guard | `d72a7d2` | game-test API assertion |
+| 3.9 IMC blacklist parsing | **Fixed** — literal pipe parser | `d72a7d2` | `AMCoreImcParsingTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -367,6 +373,9 @@ This should be `clazz.isAssignableFrom(te.getClass())`; the current form rejects
 
 ### 3.2 Time-fortified expiry can NPE and leave chunk loads behind
 
+> **Status: Fixed** in `d72a7d2`; covered by `AMEventHandlerSafetyTest`.
+
+
 `AMEventHandler.java:1250-1272` releases a static chunk load after a Fortify Time effect expires, but it dereferences the tile entity without a null check:
 
 ```java
@@ -383,6 +392,9 @@ If the block was broken, the chunk unloaded, or the TE replaced before the timer
 **Fix:** resolve the world once, return if null, resolve the TE, return if null, and pass a stable class/identifier (or make the release key independent of the TE class). Wrap the whole expiry loop in a defensive `try/catch` that removes the stale extra variable.
 
 ### 3.3 Spatial-vortex handling NPEs when a dimension is unloaded, and RF access is unguarded
+
+> **Status: Fixed** in `d72a7d2`; covered by `AMEventHandlerSafetyTest`.
+
 
 `AMEventHandler.java:957-1000` (and the repeated blocks at `1055-1230`) does:
 
@@ -414,6 +426,9 @@ Both branches do the same, even when the metadata is unchanged. This sends block
 **Fix:** track the last sent metadata/power type and only update on change. For the enervator, send a small progress packet every N ticks (or use `getDescriptionPacket`/`markBlockForUpdate` at a sane interval), and use `sendToAllAround` with a smaller radius.
 
 ### 3.5 Worldgen configuration can crash the game
+
+> **Status: Fixed** in `d72a7d2`; covered by `WorldgenMathTest`.
+
 
 `AM2WorldDecorator.generateOverworld` uses config values directly as RNG bounds:
 
@@ -449,6 +464,9 @@ At moon phase 0, if `moonstoneFrequency < 19` (including the natural “0 to dis
 **Fix:** validate/clamp all RNG bounds in `AMConfig.init` and again at use sites. Use `Math.max(1, bound)` or guard with `> 0`; treat `0` as “feature disabled”. Add unit tests for 0, negative, and equal-min/max values.
 
 ### 3.6 `AMEnchantmentHelper` removes the wrong enchantment
+
+> **Status: Fixed** in `d72a7d2`; covered by `AMEnchantmentHelperTest`.
+
 
 ```java
 // AMEnchantmentHelper.java:41-50
@@ -487,6 +505,9 @@ A lingering/zone spell therefore advances once per tick per loaded world, plus o
 
 ### 3.8 `ArsMagicaApi.spellPartManager` is never initialized
 
+> **Status: Fixed** in `d72a7d2`; the game test asserts the manager is non-null after init.
+
+
 ```java
 // AMCore.java:350 (inside initAPI)
 // ArsMagicaApi.instance.setSpellPartManager(new SpellManager());
@@ -508,6 +529,9 @@ Any addon that uses the documented API to register a spell part will get a `Null
 **Fix:** assign `SkillManager.instance` in `initAPI` (before the API is exposed to addons), add a null guard and a clear log message if it is missing, and add an API smoke test that calls `getSpellPartManager()`.
 
 ### 3.9 IMC blacklist parsing is broken
+
+> **Status: Fixed** in `d72a7d2`; covered by `AMCoreImcParsingTest`.
+
 
 `AMCore.onIMCReceived` parses the `dsb` and `bsb` messages with:
 
