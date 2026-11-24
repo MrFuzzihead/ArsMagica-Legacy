@@ -10,12 +10,8 @@ import cpw.mods.fml.common.registry.LanguageRegistry;
 
 public class AMEnchantments {
 
-    public static EnchantMagicResist magicResist = registerEnchantment(
-        EnchantMagicResist.class,
-        5,
-        "magic_resist",
-        100);
-    public static EnchantmentSoulbound soulbound = registerEnchantment(EnchantmentSoulbound.class, 0, "soulbound", 101);
+    public static EnchantMagicResist magicResist = registerEnchantment(EnchantMagicResist::new, 5, "magic_resist", 100);
+    public static EnchantmentSoulbound soulbound = registerEnchantment(EnchantmentSoulbound::new, 0, "soulbound", 101);
 
     public void Init() {
         int defMR = AMCore.config.getConfigurableEnchantmentID("magic_resist", 100);
@@ -29,8 +25,14 @@ public class AMEnchantments {
             .addStringLocalization("enchantment.soulbound", "en_US", "Soulbound");
     }
 
-    private static <T extends Enchantment> T registerEnchantment(Class<? extends Enchantment> enchantmentClass,
-        int weight, String configID, int default_value) {
+    @FunctionalInterface
+    private interface EnchantmentFactory<T extends Enchantment> {
+
+        T create(int id, int weight);
+    }
+
+    private static <T extends Enchantment> T registerEnchantment(EnchantmentFactory<T> factory, int weight,
+        String configID, int default_value) {
         int start_value = AMCore.config.getConfigurableEnchantmentID(configID, default_value);
         int enchID = start_value;
         boolean fullcircle = true;
@@ -55,8 +57,7 @@ public class AMEnchantments {
         AMCore.config.updateConfigurableEnchantmentID(configID, enchID);
 
         try {
-            T ench = (T) enchantmentClass.getConstructor(int.class, int.class)
-                .newInstance(enchID, weight);
+            T ench = factory.create(enchID, weight);
             LogHelper.info("Successfully registered enchanment!");
             return ench;
         } catch (Throwable t) {

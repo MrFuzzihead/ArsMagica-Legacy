@@ -31,8 +31,7 @@ public enum Mixins implements IMixins {
             "EntityLivingInvoker",
             "EntityCreeperAccessor",
             "PotionAccessor",
-            "DamageSourceAccessor",
-            "TileEntityAccessor")),
+            "DamageSourceAccessor")),
 
     // Replaces BytecodeTransformers.alterServerTickrate. The tick length is owned by TickrateController.
     TICKRATE(new MixinBuilder().setPhase(Phase.EARLY)

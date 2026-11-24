@@ -144,13 +144,8 @@ public abstract class CompendiumEntry implements Comparable<CompendiumEntry> {
                     for (String s : relatedItems) this.relatedItems.add(s.trim());
                     break;
                 case "subitem":
-                    CompendiumEntry subItem;
-                    try {
-                        subItem = this.getClass()
-                            .getConstructor()
-                            .newInstance();
-                    } catch (Throwable t) {
-                        t.printStackTrace();
+                    CompendiumEntry subItem = this.type == null ? null : this.type.createBlank();
+                    if (subItem == null) {
                         continue;
                     }
                     subItem.parse(childNode);

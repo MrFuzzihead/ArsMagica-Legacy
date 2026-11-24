@@ -11,7 +11,6 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.potion.Potion;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Timer;
 import net.minecraftforge.oredict.ShapedOreRecipe;
@@ -81,12 +80,6 @@ public class AccessorMixinTest {
         assertAccessor(
             DamageSourceAccessor.class.getDeclaredMethod("am2$setUnblockable", boolean.class),
             "isUnblockable");
-    }
-
-    @Test
-    public void tileEntityAccessorTargetsNameToClassMap() throws Exception {
-        assertEquals(TileEntity.class.getName(), mixinTarget(TileEntityAccessor.class));
-        assertAccessor(TileEntityAccessor.class.getDeclaredMethod("am2$getNameToClassMap"), "nameToClassMap");
     }
 
     @Test

@@ -1,13 +1,13 @@
 package am2.lore;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import am2.guis.GuiArcaneCompendium;
-import am2.mixins.early.TileEntityAccessor;
 import am2.multiblock.IMultiblockStructureController;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -36,15 +36,11 @@ public class CompendiumEntryStructure extends CompendiumEntry {
     @SideOnly(Side.CLIENT)
     protected GuiArcaneCompendium getCompendiumGui(String searchID, int meta) {
         if (this.controllerClass != null) {
-            Class tileEntityClass = TileEntityAccessor.am2$getNameToClassMap()
-                .get(controllerClass);
-            if (tileEntityClass != null && IMultiblockStructureController.class.isAssignableFrom(tileEntityClass)) {
-                try {
-                    TileEntity te = (TileEntity) tileEntityClass.newInstance();
-                    return new GuiArcaneCompendium(((IMultiblockStructureController) te).getDefinition(), te);
-                } catch (InstantiationException | IllegalAccessException e) {
-                    e.printStackTrace();
-                }
+            NBTTagCompound tag = new NBTTagCompound();
+            tag.setString("id", controllerClass);
+            TileEntity te = TileEntity.createAndLoadEntity(tag);
+            if (te instanceof IMultiblockStructureController) {
+                return new GuiArcaneCompendium(((IMultiblockStructureController) te).getDefinition(), te);
             }
         }
         return new GuiArcaneCompendium(searchID);

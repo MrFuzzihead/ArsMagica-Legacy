@@ -1,6 +1,5 @@
 package am2.buffs;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,7 +56,7 @@ public class BuffList implements IBuffHelper {
     public static final int default_buff_duration = 600;
     private static int potionDefaultOffset = 0;
     public static HashMap<Integer, Integer> particlesForBuffID;
-    private static HashMap<Integer, Class<? extends BuffEffect>> classesForBuffID;
+    private static HashMap<Integer, BuffEffectFactory> classesForBuffID;
     private static final HashMap<String, ArsMagicaPotion> potionsByName = new HashMap<String, ArsMagicaPotion>();
 
     // since sync code only applies the PotionEffect class, any inherited bonuses are lost.
@@ -75,8 +74,14 @@ public class BuffList implements IBuffHelper {
 
     }
 
+    @FunctionalInterface
+    private interface BuffEffectFactory {
+
+        BuffEffect create(int duration, int amplifier);
+    }
+
     private static ArsMagicaPotion createAMPotion(int index, String name, int IIconRow, int iconCol,
-        boolean isBadEffect, Class<? extends BuffEffect> buffEffectClass) {
+        boolean isBadEffect, BuffEffectFactory buffEffectFactory) {
 
         String configID = name.replace(" ", "")
             .toLowerCase()
@@ -95,7 +100,7 @@ public class BuffList implements IBuffHelper {
         ArsMagicaPotion potion = new ArsMagicaPotion(index, isBadEffect, 0x000000);
         potion.setPotionName(name);
         potion._setIconIndex(iconCol, IIconRow);
-        classesForBuffID.put(index, buffEffectClass);
+        classesForBuffID.put(index, buffEffectFactory);
         arsMagicaPotions.add(potion);
         ourInitialPotionAllocations.put(index, potion);
 
@@ -126,20 +131,17 @@ public class BuffList implements IBuffHelper {
         return potion;
     }
 
-    private static void createDummyBuff(Class<? extends BuffEffect> buffEffectClass, int potionID) {
-        try {
-            Constructor ctor = buffEffectClass.getConstructor(Integer.TYPE, Integer.TYPE);
-            BuffEffect utilityBuff = (BuffEffect) ctor.newInstance(0, 0);
+    private static void createDummyBuff(int potionID) {
+        BuffEffect utilityBuff = buffEffectFromPotionID(potionID, 0, 0);
+        if (utilityBuff != null) {
             utilityBuffs.put(potionID, utilityBuff);
-        } catch (Throwable e) {
-            e.printStackTrace();
         }
     }
 
     public static void Init() {
         dispelBlacklist = new ArrayList<Integer>();
         particlesForBuffID = new HashMap<Integer, Integer>();
-        classesForBuffID = new HashMap<Integer, Class<? extends BuffEffect>>();
+        classesForBuffID = new HashMap<Integer, BuffEffectFactory>();
         ourInitialPotionAllocations = new HashMap<Integer, Potion>();
 
         try {
@@ -177,66 +179,66 @@ public class BuffList implements IBuffHelper {
             0,
             0,
             false,
-            BuffEffectWaterBreathing.class);
-        flight = createAMPotion(potionDefaultOffset + 1, "Flight", 0, 1, false, BuffEffectFlight.class);
-        slowfall = createAMPotion(potionDefaultOffset + 2, "Feather Fall", 0, 2, false, BuffEffectSlowfall.class);
-        haste = createAMPotion(potionDefaultOffset + 3, "Haste", 0, 3, false, BuffEffectHaste.class);
-        trueSight = createAMPotion(potionDefaultOffset + 4, "True Sight", 0, 4, false, BuffEffectTrueSight.class);
+            BuffEffectWaterBreathing::new);
+        flight = createAMPotion(potionDefaultOffset + 1, "Flight", 0, 1, false, BuffEffectFlight::new);
+        slowfall = createAMPotion(potionDefaultOffset + 2, "Feather Fall", 0, 2, false, BuffEffectSlowfall::new);
+        haste = createAMPotion(potionDefaultOffset + 3, "Haste", 0, 3, false, BuffEffectHaste::new);
+        trueSight = createAMPotion(potionDefaultOffset + 4, "True Sight", 0, 4, false, BuffEffectTrueSight::new);
         regeneration = createAMPotion(
             potionDefaultOffset + 5,
             "Regeneration",
             0,
             6,
             false,
-            BuffEffectRegeneration.class);
-        magicShield = createAMPotion(potionDefaultOffset + 6, "Magic Shield", 1, 1, false, BuffEffectMagicShield.class);
-        charmed = createAMPotion(potionDefaultOffset + 7, "Charmed", 1, 2, true, BuffEffectCharmed.class);
-        frostSlowed = createAMPotion(potionDefaultOffset + 8, "Frost Slow", 1, 3, true, BuffEffectFrostSlowed.class);
+            BuffEffectRegeneration::new);
+        magicShield = createAMPotion(potionDefaultOffset + 6, "Magic Shield", 1, 1, false, BuffEffectMagicShield::new);
+        charmed = createAMPotion(potionDefaultOffset + 7, "Charmed", 1, 2, true, BuffEffectCharmed::new);
+        frostSlowed = createAMPotion(potionDefaultOffset + 8, "Frost Slow", 1, 3, true, BuffEffectFrostSlowed::new);
         temporalAnchor = createAMPotion(
             potionDefaultOffset + 9,
             "Chrono Anchor",
             1,
             4,
             false,
-            BuffEffectTemporalAnchor.class);
-        manaRegen = createAMPotion(potionDefaultOffset + 10, "Mana Regen", 1, 5, false, BuffEffectManaRegen.class);
-        entangled = createAMPotion(potionDefaultOffset + 11, "Entangled", 1, 7, true, BuffEffectEntangled.class);
-        wateryGrave = createAMPotion(potionDefaultOffset + 12, "Watery Grave", 2, 0, true, BuffEffectWateryGrave.class);
+            BuffEffectTemporalAnchor::new);
+        manaRegen = createAMPotion(potionDefaultOffset + 10, "Mana Regen", 1, 5, false, BuffEffectManaRegen::new);
+        entangled = createAMPotion(potionDefaultOffset + 11, "Entangled", 1, 7, true, BuffEffectEntangled::new);
+        wateryGrave = createAMPotion(potionDefaultOffset + 12, "Watery Grave", 2, 0, true, BuffEffectWateryGrave::new);
         spellReflect = createAMPotion(
             potionDefaultOffset + 13,
             "Spell Reflect",
             2,
             3,
             false,
-            BuffEffectSpellReflect.class);
-        silence = createAMPotion(potionDefaultOffset + 14, "Silence", 2, 6, true, BuffEffectSilence.class);
-        swiftSwim = createAMPotion(potionDefaultOffset + 15, "Swift Swim", 2, 7, false, BuffEffectSwiftSwim.class);
-        agility = createAMPotion(potionDefaultOffset + 16, "Agility", 0, 0, false, BuffEffectAgility.class);
-        leap = createAMPotion(potionDefaultOffset + 17, "Leap", 0, 2, false, BuffEffectLeap.class);
-        manaBoost = createAMPotion(potionDefaultOffset + 18, "Mana Boost", 1, 0, false, BuffMaxManaIncrease.class);
+            BuffEffectSpellReflect::new);
+        silence = createAMPotion(potionDefaultOffset + 14, "Silence", 2, 6, true, BuffEffectSilence::new);
+        swiftSwim = createAMPotion(potionDefaultOffset + 15, "Swift Swim", 2, 7, false, BuffEffectSwiftSwim::new);
+        agility = createAMPotion(potionDefaultOffset + 16, "Agility", 0, 0, false, BuffEffectAgility::new);
+        leap = createAMPotion(potionDefaultOffset + 17, "Leap", 0, 2, false, BuffEffectLeap::new);
+        manaBoost = createAMPotion(potionDefaultOffset + 18, "Mana Boost", 1, 0, false, BuffMaxManaIncrease::new);
         astralDistortion = createAMPotion(
             potionDefaultOffset + 19,
             "Astral Distortion",
             0,
             4,
             true,
-            BuffEffectAstralDistortion.class);
-        manaShield = createAMPotion(potionDefaultOffset + 20, "Mana Shield", 0, 7, false, BuffEffectManaShield.class);
-        fury = createAMPotion(potionDefaultOffset + 21, "Fury", 1, 6, false, BuffEffectFury.class);
+            BuffEffectAstralDistortion::new);
+        manaShield = createAMPotion(potionDefaultOffset + 20, "Mana Shield", 0, 7, false, BuffEffectManaShield::new);
+        fury = createAMPotion(potionDefaultOffset + 21, "Fury", 1, 6, false, BuffEffectFury::new);
         scrambleSynapses = createAMPotion(
             potionDefaultOffset + 22,
             "Scramble Synapses",
             2,
             1,
             true,
-            BuffEffectScrambleSynapses.class);
+            BuffEffectScrambleSynapses::new);
         illumination = createAMPotion(
             potionDefaultOffset + 23,
             "Illuminated",
             1,
             0,
             false,
-            BuffEffectIllumination.class);
+            BuffEffectIllumination::new);
 
         greaterManaPotion = createManaPotion(
             potionDefaultOffset + 24,
@@ -265,24 +267,24 @@ public class BuffList implements IBuffHelper {
         // legendaryManaPotion.setPotionName("Legendary Mana Restoration");
         // legendaryManaPotion._setIconIndex(0, 1);
 
-        gravityWell = createAMPotion(potionDefaultOffset + 27, "Gravity Well", 0, 6, true, BuffEffectGravityWell.class);
-        levitation = createAMPotion(potionDefaultOffset + 28, "Levitation", 0, 7, false, BuffEffectLevitation.class);
+        gravityWell = createAMPotion(potionDefaultOffset + 27, "Gravity Well", 0, 6, true, BuffEffectGravityWell::new);
+        levitation = createAMPotion(potionDefaultOffset + 28, "Levitation", 0, 7, false, BuffEffectLevitation::new);
 
-        clarity = createAMPotion(potionDefaultOffset + 29, "Clarity", 0, 5, false, BuffEffectClarity.class);
-        shrink = createAMPotion(potionDefaultOffset + 30, "Shrunken", 0, 5, false, BuffEffectShrink.class);
+        clarity = createAMPotion(potionDefaultOffset + 29, "Clarity", 0, 5, false, BuffEffectClarity::new);
+        shrink = createAMPotion(potionDefaultOffset + 30, "Shrunken", 0, 5, false, BuffEffectShrink::new);
         burnoutReduction = createAMPotion(
             potionDefaultOffset + 31,
             "Burnout Redux",
             1,
             1,
             false,
-            BuffEffectBurnoutReduction.class);
-        psychedelic = createAMPotion(potionDefaultOffset + 32, "Psychedelic", 1, 2, false, BuffEffectPsychedelic.class);
+            BuffEffectBurnoutReduction::new);
+        psychedelic = createAMPotion(potionDefaultOffset + 32, "Psychedelic", 1, 2, false, BuffEffectPsychedelic::new);
 
         registerPotions();
 
         for (int i : classesForBuffID.keySet()) {
-            createDummyBuff(classesForBuffID.get(i), i);
+            createDummyBuff(i);
         }
     }
 
@@ -408,13 +410,12 @@ public class BuffList implements IBuffHelper {
     }
 
     public static BuffEffect buffEffectFromPotionID(int potionID, int duration, int amplifier) {
-        Class<? extends BuffEffect> buffClass = classesForBuffID.get(potionID);
-        if (buffClass == null) return null;
+        BuffEffectFactory factory = classesForBuffID.get(potionID);
+        if (factory == null) return null;
 
         try {
-            return buffClass.getConstructor(int.class, int.class)
-                .newInstance(duration, amplifier);
-        } catch (ReflectiveOperationException e) {
+            return factory.create(duration, amplifier);
+        } catch (RuntimeException e) {
             LogHelper.error("Could not create potion: " + e.getMessage());
         }
         return null;

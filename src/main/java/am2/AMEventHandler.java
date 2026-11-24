@@ -1,6 +1,5 @@
 package am2;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -1737,9 +1736,8 @@ public class AMEventHandler {
                 if (!world.isAirBlock(nx, ny + hy + 1, nz)) break;
             }
             if (hy >= 2) {
-                try {
-                    Constructor<? extends EntityHallucination> ex = creatureClass.getConstructor(World.class);
-                    EntityHallucination creature = ex.newInstance(world);
+                EntityHallucination creature = EntitySpecificHallucinations.create(creatureClass, world);
+                if (creature != null) {
                     if (target instanceof EntityPlayer) {
                         EntityPlayer player = (EntityPlayer) target;
                         creature.setTarget(player.getCommandSenderName());
@@ -1754,8 +1752,6 @@ public class AMEventHandler {
                     world.spawnEntityInWorld(creature);
 
                     return creature;
-                } catch (ReflectiveOperationException | RuntimeException ignored) {
-
                 }
             }
         }

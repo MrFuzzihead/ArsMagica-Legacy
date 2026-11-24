@@ -28,6 +28,7 @@ import am2.blocks.tileentities.TileEntityEssenceRefiner;
 import am2.blocks.tileentities.TileEntityManaBattery;
 import am2.blocks.tileentities.TileEntityOcculus;
 import am2.buffs.BuffList;
+import am2.enchantments.AMEnchantments;
 import am2.entities.EntityManaCreeper;
 import am2.items.AMSpawnEgg;
 import am2.items.ItemOre;
@@ -446,6 +447,8 @@ final class ArsMagicaGameTests {
     }
 
     private static void checksApi() {
+        check(AMEnchantments.magicResist != null, "the magic-resist enchantment must be registered");
+        check(AMEnchantments.soulbound != null, "the soulbound enchantment must be registered");
         checkEquals(
             BuffList.flight.getId(),
             BuffList.instance.getPotionID("flight"),
