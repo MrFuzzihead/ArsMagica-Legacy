@@ -59,6 +59,7 @@ import am2.api.items.armor.ImbuementApplicationTypes;
 import am2.bosses.EntityArcaneGuardian;
 import am2.items.ItemBoxOfIllusions;
 import am2.items.ItemsCommonProxy;
+import am2.mixins.early.EntityPlayerAccessor;
 import am2.playerextensions.ExtendedProperties;
 import am2.proxy.gui.ModelLibrary;
 import am2.texture.ResourceManager;
@@ -67,7 +68,6 @@ import cpw.mods.fml.common.eventhandler.Event;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -102,10 +102,10 @@ public class ArmorEventHandler {
                 instance.removeModifier(modifier);
             }
 
-            float speedInAirLast = ReflectionHelper
-                .getPrivateValue(EntityPlayer.class, player, "speedInAir", "field_71102_ce");
+            EntityPlayerAccessor accessor = (EntityPlayerAccessor) player;
+            float speedInAirLast = accessor.am2$getSpeedInAir();
             if (speedInAirLast < 0.1F) {
-                ReflectionHelper.setPrivateValue(EntityPlayer.class, player, 0.1F, "speedInAir", "field_71102_ce");
+                accessor.am2$setSpeedInAir(0.1F);
                 setSpeedInAir.put(player, speedInAirLast);
             }
 
@@ -116,12 +116,7 @@ public class ArmorEventHandler {
             }
         } else {
             if (setSpeedInAir.get(player) != null) {
-                ReflectionHelper.setPrivateValue(
-                    EntityPlayer.class,
-                    player,
-                    setSpeedInAir.get(player),
-                    "speedInAir",
-                    "field_71102_ce");
+                ((EntityPlayerAccessor) player).am2$setSpeedInAir(setSpeedInAir.get(player));
             }
         }
     }

@@ -1,7 +1,5 @@
 package am2.lore;
 
-import java.lang.reflect.Field;
-
 import net.minecraft.item.ItemStack;
 
 import org.w3c.dom.Node;
@@ -45,8 +43,7 @@ public class CompendiumEntryRitual extends CompendiumEntry {
     protected GuiArcaneCompendium getCompendiumGui(String searchID, int meta) {
         if (this.ritualShape != null) {
             try {
-                Field f = RitualShapeHelper.class.getField(ritualShape);
-                MultiblockStructureDefinition def = (MultiblockStructureDefinition) f.get(RitualShapeHelper.instance);
+                MultiblockStructureDefinition def = RitualShapeHelper.instance.getRitualShape(this.ritualShape);
                 ISkillTreeEntry entry = SkillManager.instance.getSkill(ritualController);
                 if (entry instanceof IRitualInteraction) {
                     IRitualInteraction controller = (IRitualInteraction) entry;

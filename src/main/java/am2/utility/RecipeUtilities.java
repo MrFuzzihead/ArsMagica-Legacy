@@ -14,8 +14,6 @@ import net.minecraft.item.crafting.ShapelessRecipes;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
-import cpw.mods.fml.relauncher.ReflectionHelper;
-
 public class RecipeUtilities {
 
     public static Object[] getRecipeItems(Object recipe) {
@@ -40,13 +38,12 @@ public class RecipeUtilities {
     }
 
     private static Object[] getShapedOreRecipeItems(ShapedOreRecipe recipe) {
-        Object[] components = ReflectionHelper.getPrivateValue(ShapedOreRecipe.class, recipe, 3);
-        return components;
+        return recipe.getInput();
     }
 
     private static Object[] getShapelessOreRecipeItems(ShapelessOreRecipe recipe) {
-        ArrayList components = ReflectionHelper.getPrivateValue(ShapelessOreRecipe.class, recipe, 1);
-        return components.toArray();
+        return recipe.getInput()
+            .toArray();
     }
 
     public static IRecipe getRecipeFor(ItemStack item) {

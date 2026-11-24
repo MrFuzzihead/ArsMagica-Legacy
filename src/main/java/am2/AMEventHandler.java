@@ -1,7 +1,6 @@
 package am2;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -100,6 +99,7 @@ import am2.entities.EntitySpecificHallucinations;
 import am2.items.ItemOre;
 import am2.items.ItemSoulspike;
 import am2.items.ItemsCommonProxy;
+import am2.mixins.early.EntityInvoker;
 import am2.network.AMNetHandler;
 import am2.playerextensions.AffinityData;
 import am2.playerextensions.ExtendedProperties;
@@ -121,7 +121,6 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 import cpw.mods.fml.relauncher.Side;
 
 public class AMEventHandler {
@@ -1335,14 +1334,7 @@ public class AMEventHandler {
                 true) != null) {
                 if (!ent.onGround) {
                     if (ent.fallDistance > 0) {
-                        try {
-                            Method m = ReflectionHelper
-                                .findMethod(Entity.class, ent, new String[] { "func_70069_a", "fall" }, float.class);
-                            m.setAccessible(true);
-                            m.invoke(ent, ent.fallDistance);
-                        } catch (Throwable e) {
-                            e.printStackTrace();
-                        }
+                        ((EntityInvoker) ent).am2$invokeFall(ent.fallDistance);
                         ent.fallDistance = 0;
                     }
                 }

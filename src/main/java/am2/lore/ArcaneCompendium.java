@@ -39,7 +39,6 @@ import am2.api.spell.component.interfaces.ISpellShape;
 import am2.items.ItemsCommonProxy;
 import am2.playerextensions.ExtendedProperties;
 import am2.proxy.tick.ClientTickHandler;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -74,7 +73,6 @@ public class ArcaneCompendium implements ILoreHelper {
     private boolean hasLoaded = false;
 
     private String languageCode = "";
-    private String MCVersion = "";
 
     private ArcaneCompendium() {
         compendium = new TreeMap<String, CompendiumEntry>();
@@ -142,8 +140,6 @@ public class ArcaneCompendium implements ILoreHelper {
             LogHelper.error("Got a current language of NULL from Minecraft?!?  The compendium cannot load!");
             return;
         }
-        MCVersion = (String) ReflectionHelper
-            .getPrivateValue(Minecraft.class, Minecraft.getMinecraft(), "field_110447_Z", "launchedVersion");
         languageCode = lang.getLanguageCode()
             .trim();
 

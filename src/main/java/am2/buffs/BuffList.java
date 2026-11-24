@@ -3,7 +3,6 @@ package am2.buffs;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -321,46 +320,24 @@ public class BuffList implements IBuffHelper {
         psychedelic.setTextureSheet(ResourceManager.GetGuiTexturePath("buffs_2.png"));
     }
 
-    /*
-     * This is bad. Don't ever use this unless you absolutely HAVE to!
-     * The only reason I did was to remove the need to edit base classes. You can REALLY mess up a program with this if
-     * not used properly...
-     * Technically, you could change false to true. I'm not even kidding. The actual keyword would have a different
-     * value. BE CAREFUL!
+    /**
+     * The number of slots vanilla 1.7.10 allocates in {@code Potion.potionTypes}. AM2's configurable potion IDs start
+     * at the first free slot at or after this offset; {@link am2.mixins.early.PotionMixin} has already grown the array
+     * to 128 by the time this runs.
      */
-    private static void setFinalStatic(Field field, Object newValue) throws Exception {
-        field.setAccessible(true);
+    private static final int VANILLA_POTION_SLOTS = 32;
+    private static final int REQUIRED_POTION_SLOTS = 128;
 
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
-        field.set(null, newValue);
-    }
-
-    private static void extendPotionsArray() throws Exception {
-        LogHelper.info("Extending potions array");
-        LogHelper.info("Injecting potions starting from index " + Potion.potionTypes.length);
-        potionDefaultOffset = Potion.potionTypes.length;
-        setPotionArrayLength(255);
-    }
-
-    private static void setPotionArrayLength(int length) throws Exception {
-        if (length <= Potion.potionTypes.length) return;
-        Potion[] potions = new Potion[length];
-        for (int i = 0; i < Potion.potionTypes.length; ++i) {
-            potions[i] = Potion.potionTypes[i];
+    private static void extendPotionsArray() {
+        potionDefaultOffset = VANILLA_POTION_SLOTS;
+        if (Potion.potionTypes.length < REQUIRED_POTION_SLOTS) {
+            LogHelper.error(
+                "Potion.potionTypes has %d slots, expected at least %d. The PotionMixin did not run; AM2 buff IDs may overwrite vanilla potions.",
+                Potion.potionTypes.length,
+                REQUIRED_POTION_SLOTS);
+        } else {
+            LogHelper.info("Potion array pre-sized to %d slots by PotionMixin", Potion.potionTypes.length);
         }
-        Field field = null;
-        Field[] fields = Potion.class.getDeclaredFields();
-        for (Field f : fields) {
-            if (f.getType()
-                .equals(Potion[].class)) {
-                field = f;
-                break;
-            }
-        }
-        setFinalStatic(field, potions);
     }
 
     public static boolean IDIsAMBuff(int potionID) {

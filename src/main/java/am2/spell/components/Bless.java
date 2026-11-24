@@ -28,6 +28,7 @@ import am2.buffs.BuffList;
 import am2.items.ItemOre;
 import am2.items.ItemRune;
 import am2.items.ItemsCommonProxy;
+import am2.mixins.early.PotionAccessor;
 import am2.particles.AMParticle;
 import am2.particles.ParticleOrbitEntity;
 import am2.spell.SpellUtils;
@@ -66,7 +67,7 @@ public class Bless implements ISpellComponent {
             PotionEffect potion = ((PotionEffect) iter.next());
             int potionID = potion.getPotionID();
             PotionEffect pe = ((EntityLivingBase) target).getActivePotionEffect(Potion.potionTypes[potionID]);
-            if (Potion.potionTypes[potionID].isBadEffect) { // method is clientside only; we need the field
+            if (((PotionAccessor) Potion.potionTypes[potionID]).am2$isBadEffect()) {
                 int magnitudeCost = pe.getAmplifier();
                 if (magnitudeLeft >= magnitudeCost) {
                     magnitudeLeft -= magnitudeCost;

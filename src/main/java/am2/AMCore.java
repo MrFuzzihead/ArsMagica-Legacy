@@ -199,13 +199,13 @@ public class AMCore {
         // if (Loader.isModLoaded("MineFactoryReloaded"))
         // MFRInterop.init();
 
-        try {
-            Class.forName("forestry.api.recipes.RecipeManagers", false, getClass().getClassLoader());
-            Class.forName("magicbees.bees.BeeProductHelper", false, getClass().getClassLoader());
-            Class.forName("magicbees.bees.BeeSpecies", false, getClass().getClassLoader());
-            AMBeeCompat.init();
-        } catch (ClassNotFoundException e) {
-            LogHelper.info("A compatible MagicBees version was not found, compat not loading.");
+        if (Loader.isModLoaded("Forestry") && Loader.isModLoaded("MagicBees")) {
+            try {
+                AMBeeCompat.init();
+            } catch (LinkageError e) {
+                // The mods are present but the API version differs. Keep the rest of AM2 usable.
+                LogHelper.info("A compatible Forestry/MagicBees API was not found, compat not loading.");
+            }
         }
 
         // Reduce onEntityLiving() lag by skipping unnecessary tasks if disabled.

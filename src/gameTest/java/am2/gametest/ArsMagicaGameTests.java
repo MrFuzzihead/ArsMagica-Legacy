@@ -8,7 +8,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.potion.Potion;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
@@ -22,6 +24,8 @@ import am2.blocks.tileentities.TileEntityManaBattery;
 import am2.blocks.tileentities.TileEntityOcculus;
 import am2.items.ItemOre;
 import am2.items.ItemsCommonProxy;
+import am2.mixins.early.DamageSourceAccessor;
+import am2.mixins.early.PotionAccessor;
 import cpw.mods.fml.common.registry.GameRegistry;
 
 /**
@@ -94,6 +98,21 @@ final class ArsMagicaGameTests {
         check(AMCore.proxy != null, "AMCore.proxy must be set");
         check(AMCore.proxy.blocks != null, "the block proxy must be constructed");
         check(AMCore.proxy.items != null, "the item proxy must be constructed");
+
+        // Proves the Mixin loader, manifest entry and refmap are active. Before the migration the ASM coremod was
+        // silently absent and nothing noticed; this assertion fails loudly if the same happens to the Mixins.
+        check(
+            Potion.potionTypes.length >= 128,
+            "PotionMixin must grow Potion.potionTypes to at least 128 (got " + Potion.potionTypes.length + ")");
+
+        // One runtime check per accessor/invoker feature group, so a missing refmap mapping fails here instead of
+        // surfacing later as a ClassCastException in combat or armor handling.
+        check(
+            !((PotionAccessor) Potion.potionTypes[Potion.moveSpeed.id]).am2$isBadEffect(),
+            "PotionAccessor must report move speed as a good effect");
+        DamageSource testSource = new DamageSource("am2gametest");
+        ((DamageSourceAccessor) testSource).am2$setUnblockable(true);
+        check(testSource.isUnblockable(), "DamageSourceAccessor must set isUnblockable");
 
         check(
             AMCore.proxy.blocks.getArsMagicaBlocks() != null && !AMCore.proxy.blocks.getArsMagicaBlocks()

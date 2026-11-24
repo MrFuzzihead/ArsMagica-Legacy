@@ -1418,21 +1418,51 @@ public class AMConfig extends Configuration {
         return freeID;
     }
 
+    // Potion IDs are written as a single byte to NBT and the effect packets, so 127 is the highest representable ID.
+    // The PotionMixin grows Potion.potionTypes to this size; an ID at or above it would be truncated as a byte.
+    static final int MAX_POTION_ID = 128;
+
+    /**
+     * Returns a valid potion ID, preferring {@code configured} when it is in range and otherwise using
+     * {@code fallback}.
+     * Package-private so it can be unit-tested without constructing a Forge {@code Configuration}.
+     */
+    static int validatePotionId(int configured, int fallback) {
+        if (fallback < 1 || fallback >= MAX_POTION_ID) {
+            fallback = 1;
+        }
+        if (configured < 1 || configured >= MAX_POTION_ID) {
+            return fallback;
+        }
+        return configured;
+    }
+
     public int getConfigurablePotionID(String id, int default_value) {
         // because we auto-configure, default_value is ignored
         int val = getNextFreePotionID();
 
-        if (val == -1 && !hasKey(CATEGORY_POTIONS, id)) {
+        if (val == -1) {
             LogHelper.error("Cannot find a free potion ID for the %s effect. This will cause severe problems!", id);
             LogHelper.error(
                 "Effect %s has been assigned to a default of potion ID 1 (movement speed). Erroneous behaviour *will* result.",
                 id);
             val = 1;
         }
+
         Property prop = get(CATEGORY_POTIONS, id, val);
-        val = prop.getInt(val);
+        int configured = prop.getInt(val);
+        int sanitized = validatePotionId(configured, val);
+        if (sanitized != configured) {
+            LogHelper.error(
+                "Potion ID %d configured for the %s effect is outside 1..%d; using %d instead.",
+                configured,
+                id,
+                MAX_POTION_ID - 1,
+                sanitized);
+            prop.set(sanitized);
+        }
         save();
-        return val;
+        return sanitized;
     }
 
     // ====================================================================================
