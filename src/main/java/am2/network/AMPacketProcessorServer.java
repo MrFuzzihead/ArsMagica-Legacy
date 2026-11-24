@@ -195,7 +195,7 @@ public class AMPacketProcessorServer {
         World world = player.worldObj;
         AMDataReader rdr = new AMDataReader(data, false);
         TileEntity te = world.getTileEntity(rdr.getInt(), rdr.getInt(), rdr.getInt());
-        if (!(te instanceof TileEntityBlockCaster)) return;
+        if (!(te instanceof TileEntityBlockCaster) || !PacketAuthority.isWithinReach(player, te)) return;
         AMDataWriter writer = new AMDataWriter();
         writer.add(te.xCoord);
         writer.add(te.yCoord);
@@ -229,7 +229,7 @@ public class AMPacketProcessorServer {
         if (nom == 1) {
             AMVector3 loc = new AMVector3(rdr.getFloat(), rdr.getFloat(), rdr.getFloat());
             TileEntity te = player.worldObj.getTileEntity((int) loc.x, (int) loc.y, (int) loc.z);
-            if (te instanceof IPowerNode) {
+            if (te instanceof IPowerNode && PacketAuthority.isWithinReach(player, te)) {
                 AMNetHandler.INSTANCE.sendPowerResponseToClient(
                     PowerNodeRegistry.For(player.worldObj)
                         .getDataCompoundForNode((IPowerNode) te),
@@ -242,7 +242,7 @@ public class AMPacketProcessorServer {
     private void handleImbueArmor(byte[] data, EntityPlayerMP player) {
         AMDataReader rdr = new AMDataReader(data, false);
         TileEntity te = player.worldObj.getTileEntity(rdr.getInt(), rdr.getInt(), rdr.getInt());
-        if (te instanceof TileEntityArmorImbuer) {
+        if (te instanceof TileEntityArmorImbuer && PacketAuthority.isWithinReach(player, te)) {
             ((TileEntityArmorImbuer) te).imbueCurrentArmor(rdr.getString());
         }
     }
@@ -254,7 +254,7 @@ public class AMPacketProcessorServer {
         int z = rdr.getInt();
 
         TileEntity te = player.worldObj.getTileEntity(x, y, z);
-        if (te instanceof TileEntityMagiciansWorkbench) {
+        if (te instanceof TileEntityMagiciansWorkbench && PacketAuthority.isWithinReach(player, te)) {
             ((TileEntityMagiciansWorkbench) te).setRecipeLocked(rdr.getInt(), rdr.getBoolean());
             te.getWorldObj()
                 .markBlockForUpdate(te.xCoord, te.yCoord, te.zCoord);
@@ -311,8 +311,11 @@ public class AMPacketProcessorServer {
         AMDataReader rdr = new AMDataReader(data, false);
         TileEntity te = world.getTileEntity(rdr.getInt(), rdr.getInt(), rdr.getInt());
         if (!(te instanceof TileEntityInscriptionTable)) return;
-        ((TileEntityInscriptionTable) te).HandleUpdatePacket(rdr.getRemainingBytes());
 
+        TileEntityInscriptionTable table = (TileEntityInscriptionTable) te;
+        if (!PacketAuthority.isUsingInscriptionTable(player, table)) return;
+
+        table.HandleUpdatePacket(rdr.getRemainingBytes(), player);
         world.markBlockForUpdate(te.xCoord, te.yCoord, te.zCoord);
     }
 
@@ -320,15 +323,17 @@ public class AMPacketProcessorServer {
         World world = player.worldObj;
         AMDataReader rdr = new AMDataReader(data, false);
         TileEntity te = world.getTileEntity(rdr.getInt(), rdr.getInt(), rdr.getInt());
-        if (!(te instanceof TileEntityParticleEmitter)) return;
-        te.readFromNBT(rdr.getNBTTagCompound());
+        if (!(te instanceof TileEntityParticleEmitter) || !PacketAuthority.isWithinReach(player, te)) return;
 
+        NBTTagCompound compound = rdr.getNBTTagCompound();
+        if (compound == null) return;
+        te.readFromNBT(compound);
         world.markBlockForUpdate(te.xCoord, te.yCoord, te.zCoord);
     }
 
     private void handleSyncSpellKnowledge(byte[] data, EntityPlayerMP player) {
         SkillData.For(player)
-            .handlePacketData(data);
+            .handlePacketDataFromClient(data);
     }
 
     private void handleSpellBookChangeActiveSlot(byte[] data, EntityPlayerMP player) {

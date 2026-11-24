@@ -33,8 +33,8 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
 
     private Entity entity;
 
-    private static final byte SPELL_LEARNED = 0x01;
-    private static final byte CLIENT_SYNC = 0x02;
+    static final byte SPELL_LEARNED = 0x01;
+    static final byte CLIENT_SYNC = 0x02;
 
     private static final byte KNOWN_SHAPE_UPDATE = 0x1;
     private static final byte KNOWN_COMPONENT_UPDATE = 0x2;
@@ -316,11 +316,25 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
         return talentsKnown.toArray(new Integer[talentsKnown.size()]);
     }
 
+    /** Server-to-client sync path; accepts both sub-packet types. */
     public boolean handlePacketData(byte[] data) {
+        return handlePacketData(data, true);
+    }
+
+    /** Client-to-server path; only a validated spell-learn request is allowed. */
+    public boolean handlePacketDataFromClient(byte[] data) {
+        return handlePacketData(data, false);
+    }
+
+    private boolean handlePacketData(byte[] data, boolean allowClientSync) {
         try {
             AMDataReader rdr = new AMDataReader(data, false);
             byte subID = rdr.getByte();
             int entityID = rdr.getInt();
+            if (player != null && entityID != player.getEntityId()) {
+                LogHelper.warn("Rejected skill packet for entity %d from player %d", entityID, player.getEntityId());
+                return false;
+            }
             switch (subID) {
                 case SPELL_LEARNED:
                     int id = rdr.getInt();
@@ -329,6 +343,10 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
                     if (!entity.worldObj.isRemote) forceSync();
                     break;
                 case CLIENT_SYNC:
+                    if (!allowClientSync) {
+                        LogHelper.warn("Rejected client-authoritative skill sync from player %d", entityID);
+                        return false;
+                    }
                     int flags = rdr.getInt();
 
                     if (rdr.getBoolean()) {

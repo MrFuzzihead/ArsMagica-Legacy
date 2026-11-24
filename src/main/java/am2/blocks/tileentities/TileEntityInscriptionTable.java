@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
@@ -77,9 +76,9 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
     private String currentSpellName;
     private boolean currentSpellIsReadOnly;
 
-    private static final byte FULL_UPDATE = 0x1;
-    private static final byte MAKE_SPELL = 0x2;
-    private static final byte RESET_NAME = 0x4;
+    static final byte FULL_UPDATE = 0x1;
+    static final byte MAKE_SPELL = 0x2;
+    static final byte RESET_NAME = 0x4;
 
     public TileEntityInscriptionTable() {
         inscriptionTableItemStacks = new ItemStack[getSizeInventory()];
@@ -366,22 +365,14 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
         return false;
     }
 
-    public void HandleUpdatePacket(byte[] data) {
+    public void HandleUpdatePacket(byte[] data, EntityPlayer actor) {
         if (this.worldObj == null) return;
         AMDataReader rdr = new AMDataReader(data);
         switch (rdr.ID) {
             case FULL_UPDATE:
-                if (!rdr.getBoolean()) {
-                    Entity e = this.worldObj.getEntityByID(rdr.getInt());
-                    if (e instanceof EntityPlayer) {
-                        EntityPlayer player = (EntityPlayer) e;
-                        this.setInUse(player);
-                    } else {
-                        this.setInUse(null);
-                    }
-                } else {
-                    this.setInUse(null);
-                }
+                boolean notInUse = rdr.getBoolean();
+                rdr.getInt(); // legacy client entity id; the sender is authoritative
+                this.setInUse(notInUse ? null : actor);
 
                 currentRecipe.clear();
 
@@ -408,17 +399,18 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
                 this.currentSpellIsReadOnly = rdr.getBoolean();
                 break;
             case MAKE_SPELL:
-                int entityID = rdr.getInt();
-                EntityPlayer player = (EntityPlayer) worldObj.getEntityByID(entityID);
-                if (player != null) {
-                    createSpellForPlayer(player);
+                rdr.getInt(); // legacy client entity id; the sender is authoritative
+                if (actor != null && actor == getCurrentPlayerUsing()
+                    && actor.capabilities.isCreativeMode
+                    && isUseableByPlayer(actor)) {
+                    createSpellForPlayer(actor);
                 }
                 break;
             case RESET_NAME:
-                entityID = rdr.getInt();
-                player = (EntityPlayer) worldObj.getEntityByID(entityID);
-                if (player != null) {
-                    ((ContainerInscriptionTable) player.openContainer).resetSpellNameAndIcon();
+                rdr.getInt(); // legacy client entity id; the sender is authoritative
+                if (actor != null && actor.openContainer instanceof ContainerInscriptionTable
+                    && ((ContainerInscriptionTable) actor.openContainer).getTable() == this) {
+                    ((ContainerInscriptionTable) actor.openContainer).resetSpellNameAndIcon();
                 }
                 break;
         }
@@ -586,6 +578,9 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
             writer.add(player.getEntityId());
             AMNetHandler.INSTANCE.sendPacketToServer(AMPacketIDs.INSCRIPTION_TABLE_UPDATE, writer.generate());
         } else {
+            if (!player.capabilities.isCreativeMode || !currentRecipeIsValid().valid) {
+                return;
+            }
 
             ArrayList<ArrayList<KeyValuePair<ISpellPart, byte[]>>> shapeGroupSetup = new ArrayList<ArrayList<KeyValuePair<ISpellPart, byte[]>>>();
             ArrayList<KeyValuePair<ISpellPart, byte[]>> curRecipeSetup = new ArrayList<KeyValuePair<ISpellPart, byte[]>>();

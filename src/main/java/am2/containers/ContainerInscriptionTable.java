@@ -117,6 +117,10 @@ public class ContainerInscriptionTable extends Container {
         return false;
     }
 
+    public TileEntityInscriptionTable getTable() {
+        return table;
+    }
+
     public int getCurrentRecipeSize() {
         return table.getCurrentRecipe()
             .size();
