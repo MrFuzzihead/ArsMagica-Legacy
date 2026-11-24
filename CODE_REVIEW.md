@@ -64,6 +64,9 @@ and the automated tests that now cover the fix.
 | 4.4 Item-frame keys | **Fixed** — dimension in the key, cleared on unload/disconnect | `a24ebad` | `ItemFrameWatcherKeyTest` |
 | 4.8 Optional dependencies | **Fixed** — CoFH short-circuit plus unused Baubles/Thermal deps removed | `a24ebad` | `RedstoneFluxDrainTest` |
 | 4.11 Malformed player NBT | **Fixed** — contingency default, null-safe save, skill-tree/affinity bounds | `a24ebad` | `ExtendedPropertiesNbtTest`, `SkillDataTest` |
+| 4.6 Static state/leaks | **Fixed** — world-scoped cleanup, Set shields, real extra-property removal | `4c806ab` | `AMEventHandlerStateTest`, `ExtendedPropertiesNbtTest` |
+| 4.9 Potion ID validation | **Fixed** — free-slot resolution, null-safe clash check, single config save | `4c806ab` | `AMConfigPotionIdTest` |
+| 4.10 Dimension/biome registration | **Fixed** — reserved/occupied IDs validated with fallbacks | `4c806ab` | `AMConfigIdTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -644,6 +647,9 @@ if (bd.block == originalBlock && bd.meta == originalMeta || originalMeta == WILD
 
 ### 4.6 Static state, leaks and thread-safety in event handlers
 
+> **Status: Fixed** in `4c806ab`; covered by `AMEventHandlerStateTest` and `ExtendedPropertiesNbtTest`.
+
+
 `AMEventHandler` has several mutable static collections:
 
 ```java
@@ -693,6 +699,9 @@ Also:
 
 ### 4.9 Configurable potion IDs are not validated
 
+> **Status: Fixed** in `4c806ab`; covered by `AMConfigPotionIdTest`.
+
+
 `AMConfig.getConfigurablePotionID` (`1410-1436`):
 
 - `getNextFreePotionID` returns `-1` when the array is full. If the config key exists, the `-1` fallback branch is skipped and `prop.getInt(-1)` can return `-1`; `createAMPotion` then indexes `Potion.potionTypes[-1]`.
@@ -703,6 +712,9 @@ Also:
 **Fix:** validate range, skip occupied slots instead of overwriting, choose a config default that is actually free, handle the null case in the clash check, and batch the config save.
 
 ### 4.10 Dimension/biome registration is unvalidated
+
+> **Status: Fixed** in `4c806ab`; covered by `AMConfigIdTest`.
+
 
 ```java
 // AMCore.java:162-163
