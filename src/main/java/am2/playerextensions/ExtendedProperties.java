@@ -1,6 +1,7 @@
 package am2.playerextensions;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -1381,11 +1382,17 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     }
 
     public Map<String, String> getExtraVariablesContains(String contains) {
-        Map<String, String> toReturn = new HashMap<>();
-        for (String key : extra_properties.keySet()) {
-            if (key.contains(contains)) toReturn.put(key, extra_properties.get(key));
+        if (contains == null || extra_properties.isEmpty()) return Collections.emptyMap();
+
+        Map<String, String> toReturn = null;
+        for (Map.Entry<String, String> entry : extra_properties.entrySet()) {
+            String key = entry.getKey();
+            if (key != null && key.contains(contains)) {
+                if (toReturn == null) toReturn = new HashMap<>();
+                toReturn.put(key, entry.getValue());
+            }
         }
-        return toReturn;
+        return toReturn == null ? Collections.emptyMap() : toReturn;
     }
 
     public String getExtraVariable(String name) {

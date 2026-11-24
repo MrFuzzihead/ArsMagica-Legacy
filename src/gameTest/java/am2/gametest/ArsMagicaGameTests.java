@@ -26,7 +26,9 @@ import net.minecraftforge.oredict.OreDictionary;
 import am2.AMChunkLoader;
 import am2.AMCore;
 import am2.api.ArsMagicaApi;
+import am2.api.blocks.MultiblockStructureDefinition;
 import am2.blocks.BlocksCommonProxy;
+import am2.blocks.tileentities.TileEntityCraftingAltar;
 import am2.blocks.tileentities.TileEntityEssenceRefiner;
 import am2.blocks.tileentities.TileEntityManaBattery;
 import am2.blocks.tileentities.TileEntityOcculus;
@@ -256,10 +258,26 @@ final class ArsMagicaGameTests {
         check(
             BlocksCommonProxy.manaBattery.createTileEntity(pWorld, 0) instanceof TileEntityManaBattery,
             "the mana battery must create a TileEntityManaBattery");
+        check(
+            BlocksCommonProxy.craftingAltar.createTileEntity(pWorld, 0) instanceof TileEntityCraftingAltar,
+            "the crafting altar must create a TileEntityCraftingAltar");
 
         checkTileEntityMapping("TileEntityOcculus", TileEntityOcculus.class);
         checkTileEntityMapping("TileEntityEssenceRefiner", TileEntityEssenceRefiner.class);
         checkTileEntityMapping("TileEntityManaBattery", TileEntityManaBattery.class);
+        checkTileEntityMapping("TileEntityCraftingAltar", TileEntityCraftingAltar.class);
+
+        TileEntityCraftingAltar altarA = (TileEntityCraftingAltar) BlocksCommonProxy.craftingAltar
+            .createTileEntity(pWorld, 0);
+        TileEntityCraftingAltar altarB = (TileEntityCraftingAltar) BlocksCommonProxy.craftingAltar
+            .createTileEntity(pWorld, 0);
+        if (altarA != null && altarB != null) {
+            MultiblockStructureDefinition fake = altarA.getDefinition();
+            check(fake != null, "the altar must expose its fake multiblock");
+            check(fake == altarB.getDefinition(), "all altars must share the cached fake multiblock");
+            check(fake == altarA.getDefinition(), "the fake multiblock must be cached across calls");
+            checkEquals("fakeAltar", fake.getID(), "the fake altar definition must be cached");
+        }
 
         TileEntity occulus = createTileEntity("TileEntityOcculus");
         if (occulus instanceof TileEntityOcculus) {

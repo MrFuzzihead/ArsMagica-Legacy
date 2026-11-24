@@ -277,8 +277,10 @@ public class TileEntityArcaneReconstructor extends TileEntityAMPower
                 return true;
             }
         }
-        this.active = false;
-        if (!worldObj.isRemote) worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+        if (this.active) {
+            this.active = false;
+            if (!worldObj.isRemote) worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+        }
         return true;
     }
 
