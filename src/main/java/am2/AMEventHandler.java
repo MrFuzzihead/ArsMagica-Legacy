@@ -632,7 +632,6 @@ public class AMEventHandler {
     }
 
     public static List<String> forceShielded = new ArrayList<>();
-    public static Map<String, Integer> slowedTiles = new HashMap<>();
     public static Map<UUID, Integer> acceleratedEntitiesUUIDs = new HashMap<>();
     public static Map<UUID, Integer> slowedEntitiesUUIDs = new HashMap<>();
 
@@ -924,21 +923,9 @@ public class AMEventHandler {
                     }
 
                     for (Map.Entry<String, String> entry : slowedBlocks.entrySet()) {
-                        String[] entryvalues = entry.getKey()
-                            .split("_");
                         if (Integer.parseInt(entry.getValue()) < 3) {
                             extendedProperties.removeFromExtraVariables(entry.getKey());
-                            slowedTiles.remove(
-                                entryvalues[3] + "_" + entryvalues[4] + "_" + entryvalues[5] + "_" + entryvalues[6]);
                         } else {
-                            String represent = Integer.valueOf(entryvalues[3]) + "_"
-                                + Integer.valueOf(entryvalues[4])
-                                + "_"
-                                + Integer.valueOf(entryvalues[5])
-                                + "_"
-                                + Integer.valueOf(entryvalues[6]);
-                            if (!(slowedTiles.containsKey(represent)))
-                                slowedTiles.put(represent, Integer.valueOf(entryvalues[7])); // 7 is power
                             extendedProperties.addToExtraVariables(
                                 entry.getKey(),
                                 String.valueOf(Integer.parseInt(entry.getValue()) - 5));

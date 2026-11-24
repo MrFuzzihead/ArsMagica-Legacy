@@ -20,6 +20,7 @@ import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.jvm.toolchain.JavaLanguageVersion
@@ -173,6 +174,41 @@ tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
 tasks.named("check").configure {
     dependsOn(tasks.named("jacocoTestCoverageVerification"))
     dependsOn(tasks.named("jacocoTestReport"))
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Mixin packaging guard
+// ---------------------------------------------------------------------------------------------------------
+// The old coremod was silently absent from the shipped manifest for an entire release cycle. This asserts the
+// replacement is actually advertised by the jar that is produced by `jar` (the release jar is reobfed from it).
+tasks.register("verifyMixinManifest") {
+    group = "verification"
+    description = "Fails when the built jar is missing the Mixin coremod loader or config entries"
+
+    val jarTask = tasks.named<Jar>("jar")
+    dependsOn(jarTask)
+    val archive = jarTask.flatMap { it.archiveFile }
+    inputs.file(archive)
+
+    doLast {
+        val file = archive.get().asFile
+        java.util.jar.JarFile(file).use { jar ->
+            val attributes = jar.manifest.mainAttributes
+            fun requireAttribute(name: String, expected: String) {
+                val actual = attributes.getValue(name)
+                check(actual == expected) {
+                    "$file is missing Mixin packaging metadata: $name was '$actual', expected '$expected'"
+                }
+            }
+            requireAttribute("FMLCorePlugin", "am2.mixins.EarlyMixinsLoader")
+            requireAttribute("MixinConfigs", "mixins.arsmagica2.json")
+            requireAttribute("TweakClass", "org.spongepowered.asm.launch.MixinTweaker")
+        }
+    }
+}
+
+tasks.named("check").configure {
+    dependsOn(tasks.named("verifyMixinManifest"))
 }
 
 // ---------------------------------------------------------------------------------------------------------

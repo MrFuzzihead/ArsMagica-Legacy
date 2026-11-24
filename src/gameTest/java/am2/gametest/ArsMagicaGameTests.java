@@ -3,6 +3,7 @@ package am2.gametest;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
@@ -27,6 +28,8 @@ import am2.blocks.tileentities.TileEntityEssenceRefiner;
 import am2.blocks.tileentities.TileEntityManaBattery;
 import am2.blocks.tileentities.TileEntityOcculus;
 import am2.buffs.BuffList;
+import am2.entities.EntityManaCreeper;
+import am2.items.AMSpawnEgg;
 import am2.items.ItemOre;
 import am2.items.ItemsCommonProxy;
 import am2.mixins.early.DamageSourceAccessor;
@@ -380,6 +383,13 @@ final class ArsMagicaGameTests {
             pWorld.isBlockIndirectlyGettingPowered(x, y, z),
             "WorldRedstoneMixin must report an active Redstone Signal inlay");
         check(!pWorld.isBlockIndirectlyGettingPowered(x, y, z), "WorldRedstoneMixin must consume the inlay tick");
+
+        // The spawn egg now uses EntityList.createEntityByName instead of reflected constructors.
+        Entity spawned = AMSpawnEgg.spawnCreature(pWorld, 0, x, y, z);
+        check(spawned instanceof EntityManaCreeper, "AMSpawnEgg must create a registered entity through EntityList");
+        if (spawned != null) {
+            spawned.setDead();
+        }
     }
 
     /**

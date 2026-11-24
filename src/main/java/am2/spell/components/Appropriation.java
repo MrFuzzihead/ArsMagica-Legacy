@@ -2,10 +2,12 @@ package am2.spell.components;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.boss.IBossDisplayData;
 import net.minecraft.entity.player.EntityPlayer;
@@ -337,12 +339,24 @@ public class Appropriation implements ISpellComponent {
                     String clazz = storageCompound.getString("class");
                     NBTTagCompound entData = storageCompound.getCompoundTag("targetNBT");
                     try {
-                        Entity ent = (Entity) Class.forName(clazz)
-                            .getConstructor(World.class)
-                            .newInstance(world);
-                        ent.readFromNBT(entData);
-                        ent.setPosition(hitX, hitY, hitZ);
-                        world.spawnEntityInWorld(ent);
+                        Class<?> entityClass = null;
+                        for (Map.Entry<String, Class<? extends Entity>> entry : EntityList.stringToClassMapping
+                            .entrySet()) {
+                            if (entry.getValue()
+                                .getName()
+                                .equals(clazz)) {
+                                entityClass = entry.getValue();
+                                break;
+                            }
+                        }
+                        String entityName = entityClass == null ? null
+                            : EntityList.classToStringMapping.get(entityClass);
+                        Entity ent = entityName == null ? null : EntityList.createEntityByName(entityName, world);
+                        if (ent != null) {
+                            ent.readFromNBT(entData);
+                            ent.setPosition(hitX, hitY, hitZ);
+                            world.spawnEntityInWorld(ent);
+                        }
                     } catch (Throwable t) {
                         t.printStackTrace();
                     }

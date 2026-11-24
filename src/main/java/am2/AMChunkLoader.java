@@ -107,9 +107,17 @@ public class AMChunkLoader implements LoadingCallback {
                 ForgeChunkManager.releaseTicket(ticket);
                 continue;
             }
+            if (!TileEntity.class.isAssignableFrom(clazz)) {
+                LogHelper.info(
+                    "Cached class %s is not a TileEntity when loading a chunk loading ticket.  This ticket will be discarded.  Block Coords: %d, %d",
+                    clazzName,
+                    coords[0],
+                    coords[2]);
+                ForgeChunkManager.releaseTicket(ticket);
+                continue;
+            }
             TileEntity te = world.getTileEntity(coords[0], coords[1], coords[2]);
-            if (te != null && te.getClass()
-                .isAssignableFrom(clazz)) {
+            if (te != null && clazz.isAssignableFrom(te.getClass())) {
                 ChunkCoordIntPair pair = new ChunkCoordIntPair(coords[0] >> 4, coords[2] >> 4);
                 ForgeChunkManager.forceChunk(ticket, pair);
             } else {

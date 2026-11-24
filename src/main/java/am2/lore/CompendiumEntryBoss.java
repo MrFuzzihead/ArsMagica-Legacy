@@ -1,13 +1,9 @@
 package am2.lore;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
 
 import org.w3c.dom.Node;
 
@@ -28,24 +24,9 @@ public class CompendiumEntryBoss extends CompendiumEntry {
     @SideOnly(Side.CLIENT)
     protected GuiArcaneCompendium getCompendiumGui(String searchID, int meta) {
         String modEntityID = "arsmagica2." + searchID;
-        Class entityClass = (Class) EntityList.stringToClassMapping.get(modEntityID);
-        if (entityClass != null) {
-            try {
-                Constructor ctor = entityClass.getConstructor(World.class);
-                return new GuiArcaneCompendium((Entity) ctor.newInstance(Minecraft.getMinecraft().theWorld));
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (SecurityException e) {
-                e.printStackTrace();
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
+        Entity entity = EntityList.createEntityByName(modEntityID, Minecraft.getMinecraft().theWorld);
+        if (entity != null) {
+            return new GuiArcaneCompendium(entity);
         }
         return new GuiArcaneCompendium(searchID);
     }

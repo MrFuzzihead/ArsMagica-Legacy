@@ -3,6 +3,7 @@ package am2.configuration;
 import java.io.File;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.potion.Potion;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
@@ -841,7 +842,13 @@ public class AMConfig extends Configuration {
         for (String s : split) {
             if (s.isEmpty()) continue;
             try {
-                appropriationMobBlacklist[count] = Class.forName(s);
+                Class<?> clazz = Class.forName(s);
+                if (!Entity.class.isAssignableFrom(clazz)) {
+                    LogHelper.info("Class %s in the appropriation entity blacklist is not an Entity.  Skipping.", s);
+                    appropriationMobBlacklist[count] = null;
+                } else {
+                    appropriationMobBlacklist[count] = clazz;
+                }
             } catch (Throwable t) {
                 LogHelper.info("Malformed item in appropriation entity blacklist (%s).  Skipping.", s);
                 t.printStackTrace();
