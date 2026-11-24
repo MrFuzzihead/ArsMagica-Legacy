@@ -286,7 +286,12 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     }
 
     public ItemStack getContingencyEffect(int num) {
-        return this.contingencyStacks[num];
+        ItemStack effect = this.contingencyStacks[num];
+        if (effect == null) {
+            effect = new ItemStack(Items.snowball);
+            this.contingencyStacks[num] = effect;
+        }
+        return effect;
     }
 
     public int getFallProtection() {
@@ -1206,8 +1211,10 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         compound.setFloat("magicXP", magicXP);
 
         for (int i = 0; i < 5; i++) {
-            NBTTagCompound effectSave = contingencyStacks[i].writeToNBT(new NBTTagCompound());
-            compound.setTag("contingency_effect" + i, effectSave);
+            if (contingencyStacks[i] != null) {
+                NBTTagCompound effectSave = contingencyStacks[i].writeToNBT(new NBTTagCompound());
+                compound.setTag("contingency_effect" + i, effectSave);
+            }
         }
 
         // mark location

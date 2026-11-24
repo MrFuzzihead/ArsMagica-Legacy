@@ -11,6 +11,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import org.junit.Test;
 
 import am2.api.spell.enums.SkillPointTypes;
+import am2.api.spell.enums.SkillTrees;
 import am2.network.AMDataWriter;
 
 /**
@@ -45,6 +46,13 @@ public class SkillDataTest {
     public void packetsForAnotherEntityAreRejected() {
         SkillData data = dataFor(42);
         assertFalse(data.handlePacketDataFromClient(clientSyncPacket(7, 1, 2, 3)));
+    }
+
+    @Test
+    public void invalidPrimaryTreeOrdinalsFallBackToNone() {
+        assertEquals(SkillTrees.None, SkillData.treeByOrdinal(-1));
+        assertEquals(SkillTrees.None, SkillData.treeByOrdinal(999));
+        assertEquals(SkillTrees.values()[0], SkillData.treeByOrdinal(0));
     }
 
     private static SkillData dataFor(int entityId) {

@@ -1,6 +1,9 @@
 package am2.blocks.tileentities.flickers;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -15,13 +18,31 @@ import am2.items.ItemsCommonProxy;
 
 public class FlickerOperatorMoonstoneAttractor implements IFlickerFunctionality {
 
-    private static final ArrayList<AMVector3> attractors = new ArrayList<AMVector3>();
+    private static final Map<Integer, List<AMVector3>> attractors = new HashMap<Integer, List<AMVector3>>();
 
-    public static AMVector3 getMeteorAttractor(AMVector3 target) {
-        for (AMVector3 attractor : attractors.toArray(new AMVector3[attractors.size()])) {
+    public static AMVector3 getMeteorAttractor(int dimension, AMVector3 target) {
+        List<AMVector3> dimensionAttractors = attractors.get(dimension);
+        if (dimensionAttractors == null) {
+            return null;
+        }
+        for (AMVector3 attractor : dimensionAttractors.toArray(new AMVector3[dimensionAttractors.size()])) {
             if (attractor.distanceSqTo(target) <= 16384) return attractor.copy();
         }
         return null;
+    }
+
+    private static List<AMVector3> listFor(int dimension) {
+        List<AMVector3> list = attractors.get(dimension);
+        if (list == null) {
+            list = new ArrayList<AMVector3>();
+            attractors.put(dimension, list);
+        }
+        return list;
+    }
+
+    /** Package-private test/reset hook. */
+    static void clearAttractors() {
+        attractors.clear();
     }
 
     @Override
@@ -37,13 +58,15 @@ public class FlickerOperatorMoonstoneAttractor implements IFlickerFunctionality 
     @Override
     public boolean DoOperation(World worldObj, IFlickerController habitat, boolean powered) {
         AMVector3 vec = new AMVector3((TileEntity) habitat);
+        int dimension = worldObj.provider.dimensionId;
         if (powered) {
-            if (!attractors.contains(vec)) {
-                attractors.add(vec);
+            List<AMVector3> list = listFor(dimension);
+            if (!list.contains(vec)) {
+                list.add(vec);
             }
             return true;
         } else {
-            attractors.remove(vec);
+            listFor(dimension).remove(vec);
         }
         return false;
     }
@@ -56,7 +79,7 @@ public class FlickerOperatorMoonstoneAttractor implements IFlickerFunctionality 
     @Override
     public void RemoveOperator(World worldObj, IFlickerController habitat, boolean powered) {
         AMVector3 vec = new AMVector3((TileEntity) habitat);
-        attractors.remove(vec);
+        listFor(worldObj.provider.dimensionId).remove(vec);
     }
 
     @Override

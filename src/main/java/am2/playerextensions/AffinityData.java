@@ -170,7 +170,9 @@ public class AffinityData implements IExtendedEntityProperties, IAffinityData {
     public void saveNBTData(NBTTagCompound compound) {
         NBTTagCompound tags = new NBTTagCompound();
         for (Integer affinity : affinityDepths.keySet()) {
-            tags.setDouble(Affinity.values()[affinity].name(), affinityDepths.get(affinity));
+            if (affinity != null && affinity >= 0 && affinity < Affinity.values().length) {
+                tags.setDouble(Affinity.values()[affinity].name(), affinityDepths.get(affinity));
+            }
         }
         compound.setTag("AffinityDepthData", tags);
         compound.setBoolean("AffinityLocked", isLocked);

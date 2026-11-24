@@ -65,6 +65,11 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
         return (SkillData) player.getExtendedProperties(identifier);
     }
 
+    static SkillTrees treeByOrdinal(int ordinal) {
+        SkillTrees[] trees = SkillTrees.values();
+        return ordinal >= 0 && ordinal < trees.length ? trees[ordinal] : SkillTrees.None;
+    }
+
     public SkillData(EntityPlayer player) {
         shapesKnown = new ArrayList<Integer>();
         componentsKnown = new ArrayList<Integer>();
@@ -350,7 +355,7 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
                     int flags = rdr.getInt();
 
                     if (rdr.getBoolean()) {
-                        this.primaryTree = SkillTrees.values()[rdr.getInt()];
+                        this.primaryTree = treeByOrdinal(rdr.getInt());
                     }
 
                     if ((flags & KNOWN_SHAPE_UPDATE) == KNOWN_SHAPE_UPDATE) {
@@ -547,9 +552,7 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
             }
 
             int ordinal = spellKnowledgeData.getInteger("PrimarySkillTree");
-            if (ordinal > -1) {
-                this.primaryTree = SkillTrees.values()[ordinal];
-            }
+            this.primaryTree = treeByOrdinal(ordinal);
         }
     }
 

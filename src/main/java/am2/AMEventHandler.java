@@ -733,6 +733,7 @@ public class AMEventHandler {
                                                                                        // disconnecting
         TickrateController.setServerTickrate(TickrateController.DEFAULT_TICKS_PER_SECOND);
         TickrateController.changeClientTickratePublic(null, TickrateController.DEFAULT_TICKS_PER_SECOND);
+        AMCore.proxy.itemFrameWatcher.clear();
     }
 
     @SubscribeEvent

@@ -73,6 +73,7 @@ public class ServerTickHandler {
     @SubscribeEvent
     public void onWorldUnload(net.minecraftforge.event.world.WorldEvent.Unload event) {
         SpellHelper.clearLingeringSpells(event.world);
+        AMCore.proxy.itemFrameWatcher.clearWorld(event.world);
     }
 
     @SubscribeEvent

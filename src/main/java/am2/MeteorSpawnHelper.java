@@ -95,7 +95,8 @@ public class MeteorSpawnHelper {
             boolean found = false;
             int meteorOffsetRadius = 64;
 
-            AMVector3 attractorCoord = FlickerOperatorMoonstoneAttractor.getMeteorAttractor(spawnCoord);
+            AMVector3 attractorCoord = FlickerOperatorMoonstoneAttractor
+                .getMeteorAttractor(ws.provider.dimensionId, spawnCoord);
             if (attractorCoord != null) {
                 spawnCoord = attractorCoord;
                 meteorOffsetRadius = 4;

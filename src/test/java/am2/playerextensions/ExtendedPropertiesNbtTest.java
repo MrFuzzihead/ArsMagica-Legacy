@@ -1,11 +1,15 @@
 package am2.playerextensions;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
 import org.junit.Test;
@@ -15,6 +19,28 @@ import org.junit.Test;
  * index counter, so they were written at index N.. but read from index 0...
  */
 public class ExtendedPropertiesNbtTest {
+
+    @Test
+    public void missingContingencyStackIsRestoredToSnowball() throws Exception {
+        ExtendedProperties properties = new ExtendedProperties();
+        Field field = ExtendedProperties.class.getDeclaredField("contingencyStacks");
+        field.setAccessible(true);
+        ((ItemStack[]) field.get(properties))[0] = null;
+
+        ItemStack effect = properties.getContingencyEffect(0);
+        assertNotNull(effect);
+        assertEquals(Items.snowball, effect.getItem());
+    }
+
+    @Test
+    public void savingWithANullContingencyDoesNotThrow() throws Exception {
+        ExtendedProperties properties = new ExtendedProperties();
+        Field field = ExtendedProperties.class.getDeclaredField("contingencyStacks");
+        field.setAccessible(true);
+        ((ItemStack[]) field.get(properties))[0] = null;
+
+        properties.saveNBTData(new NBTTagCompound());
+    }
 
     @Test
     public void compendiumEntriesAreWrittenFromIndexZero() {
