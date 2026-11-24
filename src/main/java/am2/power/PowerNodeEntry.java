@@ -224,7 +224,9 @@ public class PowerNodeEntry {
 
         // power paths
         // locate list of power paths
-        NBTTagList powerPathList = compound.getTagList("powerPathList", Constants.NBT.TAG_COMPOUND);
+        // removeTag(0) below drains the list while walking it; copy so the caller's NBT is not destroyed.
+        NBTTagList powerPathList = (NBTTagList) compound.getTagList("powerPathList", Constants.NBT.TAG_COMPOUND)
+            .copy();
         // sanity check
         if (powerPathList != null) {
             // spin through list
