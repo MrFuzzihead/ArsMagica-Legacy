@@ -203,6 +203,13 @@ tasks.register("verifyMixinManifest") {
             requireAttribute("FMLCorePlugin", "am2.mixins.EarlyMixinsLoader")
             requireAttribute("MixinConfigs", "mixins.arsmagica2.json")
             requireAttribute("TweakClass", "org.spongepowered.asm.launch.MixinTweaker")
+
+            // All access transformers have been migrated to accessor mixins. Keep it that way unless a future
+            // narrow AT is deliberately introduced and documented.
+            val accessTransformers = attributes.getValue("FMLAT")
+            check(accessTransformers == null || accessTransformers.isBlank()) {
+                "$file still declares access transformers: $accessTransformers"
+            }
         }
     }
 }

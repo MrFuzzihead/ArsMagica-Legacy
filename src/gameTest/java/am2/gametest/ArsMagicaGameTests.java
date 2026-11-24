@@ -5,6 +5,8 @@ import java.util.List;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.projectile.EntityArrow;
+import net.minecraft.entity.projectile.EntityFishHook;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryCrafting;
@@ -34,6 +36,8 @@ import am2.items.AMSpawnEgg;
 import am2.items.ItemOre;
 import am2.items.ItemsCommonProxy;
 import am2.mixins.early.DamageSourceAccessor;
+import am2.mixins.early.EntityArrowAccessor;
+import am2.mixins.early.EntityFishHookAccessor;
 import am2.mixins.early.PotionAccessor;
 import am2.utility.RedstoneInlayState;
 import am2.utility.TickrateController;
@@ -391,6 +395,23 @@ final class ArsMagicaGameTests {
         if (spawned != null) {
             spawned.setDead();
         }
+
+        // The projectile subclasses now use accessor mixins instead of access transformers.
+        EntityFishHook hook = new EntityFishHook(pWorld);
+        EntityFishHookAccessor hookAccessor = (EntityFishHookAccessor) hook;
+        hookAccessor.am2$setX(123);
+        hookAccessor.am2$setInGround(true);
+        check(
+            hookAccessor.am2$getX() == 123 && hookAccessor.am2$isInGround(),
+            "EntityFishHookAccessor must expose the private fish-hook state");
+
+        EntityArrow arrow = new EntityArrow(pWorld);
+        EntityArrowAccessor arrowAccessor = (EntityArrowAccessor) arrow;
+        arrowAccessor.am2$setInGround(true);
+        arrowAccessor.am2$setInData(7);
+        check(
+            arrowAccessor.am2$isInGround() && arrowAccessor.am2$getInData() == 7,
+            "EntityArrowAccessor must expose the private arrow state");
     }
 
     /**

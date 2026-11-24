@@ -71,7 +71,7 @@ public class MixinsTest {
         @SuppressWarnings("unchecked")
         List<String> common = (List<String>) read(builder, "commonClasses");
         assertNotNull(common);
-        assertEquals(6, common.size());
+        assertEquals(8, common.size());
         assertTrue(
             common.containsAll(
                 Arrays.asList(
@@ -80,7 +80,9 @@ public class MixinsTest {
                     "EntityLivingInvoker",
                     "EntityCreeperAccessor",
                     "PotionAccessor",
-                    "DamageSourceAccessor")));
+                    "DamageSourceAccessor",
+                    "EntityFishHookAccessor",
+                    "EntityArrowAccessor")));
     }
 
     @Test

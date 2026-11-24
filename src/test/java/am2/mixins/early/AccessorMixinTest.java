@@ -10,6 +10,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.projectile.EntityArrow;
+import net.minecraft.entity.projectile.EntityFishHook;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Timer;
@@ -87,6 +89,35 @@ public class AccessorMixinTest {
         assertEquals(ShapedOreRecipe.class.getName(), mixinTarget(ShapedOreRecipeAccessor.class));
         assertAccessor(ShapedOreRecipeAccessor.class.getDeclaredMethod("am2$getWidth"), "width");
         assertAccessor(ShapedOreRecipeAccessor.class.getDeclaredMethod("am2$getHeight"), "height");
+    }
+
+    @Test
+    public void fishHookAccessorsTargetThePrivateProjectileState() throws Exception {
+        assertEquals(EntityFishHook.class.getName(), mixinTarget(EntityFishHookAccessor.class));
+
+        assertAccessor(EntityFishHookAccessor.class.getDeclaredMethod("am2$getX"), "field_146037_g");
+        assertAccessor(
+            EntityFishHookAccessor.class.getDeclaredMethod("am2$setInGround", boolean.class),
+            "field_146051_au");
+        assertAccessor(
+            EntityFishHookAccessor.class.getDeclaredMethod("am2$setFishApproachAngle", float.class),
+            "field_146054_aA");
+        assertAccessor(
+            EntityFishHookAccessor.class.getDeclaredMethod("am2$setCaughtEntityPitch", double.class),
+            "field_146060_aG");
+    }
+
+    @Test
+    public void arrowAccessorsTargetThePrivateProjectileState() throws Exception {
+        assertEquals(EntityArrow.class.getName(), mixinTarget(EntityArrowAccessor.class));
+
+        assertAccessor(EntityArrowAccessor.class.getDeclaredMethod("am2$getXTile"), "field_145791_d");
+        assertAccessor(EntityArrowAccessor.class.getDeclaredMethod("am2$setInGround", boolean.class), "inGround");
+        assertAccessor(EntityArrowAccessor.class.getDeclaredMethod("am2$setInData", int.class), "inData");
+        assertAccessor(EntityArrowAccessor.class.getDeclaredMethod("am2$setDamage", double.class), "damage");
+        assertAccessor(
+            EntityArrowAccessor.class.getDeclaredMethod("am2$setKnockbackStrength", int.class),
+            "knockbackStrength");
     }
 
     @Test
