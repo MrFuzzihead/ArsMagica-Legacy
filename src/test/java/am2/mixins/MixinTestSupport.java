@@ -12,6 +12,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.spongepowered.asm.mixin.injection.Inject;
 
 /**
  * Reads the class-level {@code @Mixin} annotation, which has {@code CLASS} retention and therefore cannot be read
@@ -59,5 +60,16 @@ public final class MixinTestSupport {
         assertEquals("@Mixin must declare exactly one target class", 1, targets.size());
         return targets.iterator()
             .next();
+    }
+
+    /**
+     * Reads an {@code @Inject} handler. The caller supplies the full handler signature, including the
+     * {@code CallbackInfo}/{@code CallbackInfoReturnable} parameter.
+     */
+    public static Inject inject(Class<?> mixinClass, String handlerName, Class<?>... parameterTypes) throws Exception {
+        java.lang.reflect.Method handler = mixinClass.getDeclaredMethod(handlerName, parameterTypes);
+        Inject inject = handler.getAnnotation(Inject.class);
+        assertNotNull("@Inject is missing on " + handlerName, inject);
+        return inject;
     }
 }

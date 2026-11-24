@@ -28,12 +28,17 @@ public class MixinsTest {
 
     @Test
     public void allFeatureGroupsAreDeclaredInOrder() {
-        assertEquals(5, Mixins.values().length);
+        assertEquals(10, Mixins.values().length);
         assertEquals("POTION_IDS", Mixins.values()[0].name());
         assertEquals("REFLECTION_ACCESSORS", Mixins.values()[1].name());
         assertEquals("TICKRATE", Mixins.values()[2].name());
         assertEquals("SOUND_PITCH", Mixins.values()[3].name());
         assertEquals("SHRINK_FLIP", Mixins.values()[4].name());
+        assertEquals("ETHEREAL", Mixins.values()[5].name());
+        assertEquals("REDSTONE_INLAY", Mixins.values()[6].name());
+        assertEquals("WATER_ETHEREAL", Mixins.values()[7].name());
+        assertEquals("LAVA_ESSENCE", Mixins.values()[8].name());
+        assertEquals("CLIENT_ETHEREAL", Mixins.values()[9].name());
     }
 
     @Test
@@ -103,6 +108,54 @@ public class MixinsTest {
         @SuppressWarnings("unchecked")
         List<String> common = (List<String>) read(builder, "commonClasses");
         assertTrue(common == null || common.isEmpty());
+    }
+
+    @Test
+    public void etherealFixesAreCommon() throws Exception {
+        MixinBuilder builder = Mixins.ETHEREAL.getBuilder();
+        assertNotNull(builder);
+        assertEquals(IBaseTransformer.Phase.EARLY, read(builder, "phase"));
+
+        @SuppressWarnings("unchecked")
+        List<String> common = (List<String>) read(builder, "commonClasses");
+        assertNotNull(common);
+        assertEquals(4, common.size());
+        assertTrue(
+            common.containsAll(
+                Arrays.asList(
+                    "WorldEntityQueryMixin",
+                    "EntityMixin",
+                    "EntityLivingBaseMixin",
+                    "NetHandlerPlayServerMixin")));
+    }
+
+    @Test
+    public void elementalFixesAreCommon() throws Exception {
+        assertCommonEarly(Mixins.REDSTONE_INLAY, "WorldRedstoneMixin");
+        assertCommonEarly(Mixins.WATER_ETHEREAL, "BlockLiquidMixin");
+
+        MixinBuilder lava = Mixins.LAVA_ESSENCE.getBuilder();
+        assertNotNull(lava);
+        assertEquals(IBaseTransformer.Phase.EARLY, read(lava, "phase"));
+
+        @SuppressWarnings("unchecked")
+        List<String> common = (List<String>) read(lava, "commonClasses");
+        assertNotNull(common);
+        assertEquals(2, common.size());
+        assertTrue(common.containsAll(Arrays.asList("BlockDynamicLiquidMixin", "BlockLiquidInvoker")));
+    }
+
+    @Test
+    public void clientEtherealVisibilityIsClientOnly() throws Exception {
+        MixinBuilder builder = Mixins.CLIENT_ETHEREAL.getBuilder();
+        assertNotNull(builder);
+        assertEquals(IBaseTransformer.Phase.EARLY, read(builder, "phase"));
+
+        @SuppressWarnings("unchecked")
+        List<String> client = (List<String>) read(builder, "clientClasses");
+        assertNotNull(client);
+        assertEquals(1, client.size());
+        assertTrue(client.contains("EntityClientMixin"));
     }
 
     @Test

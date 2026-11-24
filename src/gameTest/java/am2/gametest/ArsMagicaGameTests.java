@@ -26,6 +26,7 @@ import am2.items.ItemOre;
 import am2.items.ItemsCommonProxy;
 import am2.mixins.early.DamageSourceAccessor;
 import am2.mixins.early.PotionAccessor;
+import am2.utility.RedstoneInlayState;
 import am2.utility.TickrateController;
 import cpw.mods.fml.common.registry.GameRegistry;
 
@@ -88,6 +89,7 @@ final class ArsMagicaGameTests {
         checksOreDictionary();
         checksRecipes();
         checksApi();
+        checksFixMixins(pWorld);
     }
 
     // -------------------------------------------------------------------------------------------------------
@@ -356,6 +358,23 @@ final class ArsMagicaGameTests {
     // -------------------------------------------------------------------------------------------------------
     // API
     // -------------------------------------------------------------------------------------------------------
+
+    /**
+     * Runtime proof for one ported {@code @Fix} group. The unit tests pin the annotations; this proves the mixin is
+     * actually applied to the live world class.
+     */
+    private static void checksFixMixins(WorldServer pWorld) {
+        int x = 0;
+        int y = TEST_HEIGHT + 5;
+        int z = 0;
+
+        RedstoneInlayState.clear();
+        RedstoneInlayState.add(0, x, y, z, 1);
+        check(
+            pWorld.isBlockIndirectlyGettingPowered(x, y, z),
+            "WorldRedstoneMixin must report an active Redstone Signal inlay");
+        check(!pWorld.isBlockIndirectlyGettingPowered(x, y, z), "WorldRedstoneMixin must consume the inlay tick");
+    }
 
     private static void checksApi() {
         check(ArsMagicaApi.instance != null, "the Ars Magica API singleton must exist");

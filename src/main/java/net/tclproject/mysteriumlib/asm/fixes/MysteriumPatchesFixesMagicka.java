@@ -69,6 +69,8 @@ import am2.items.ItemsCommonProxy;
 import am2.items.SpellBase;
 import am2.network.AMPacketProcessorClient;
 import am2.network.TickrateMessage;
+import am2.utility.EtherealState;
+import am2.utility.RedstoneInlayState;
 import am2.utility.TickrateController;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.EventBus;
@@ -77,7 +79,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class MysteriumPatchesFixesMagicka {
 
-    public static List<int[]> providingRedstone = new ArrayList<int[]>();
+    public static List<int[]> providingRedstone = RedstoneInlayState.backingList();
     static int staffSlotTo = -1, staffSlotColumnTo = -1, staffSlotFrom = -1, staffSlotColumnFrom = -1;
     static int armorSlotTo = -1, armorSlotColumnTo = -1;
     static int spellSlotFrom = -1, spellSlotColumnFrom = -1;
@@ -86,14 +88,7 @@ public class MysteriumPatchesFixesMagicka {
     public static int countdownToChangeBack = -1;
 
     public static boolean isPlayerEthereal(EntityPlayer entityPlayer) {
-        if (entityPlayer == null) return false;
-        if (entityPlayer.inventory == null) return false;
-        if (entityPlayer.inventory.armorInventory[0] != null) {
-            if (ItemSoulspike.bootsHaveEtherealTag(entityPlayer.inventory.armorInventory[0])) {
-                return true;
-            }
-        }
-        return false;
+        return EtherealState.isEthereal(entityPlayer);
     }
 
     // IEntitySelector impl. is useless because that'd make it incompatible in this case

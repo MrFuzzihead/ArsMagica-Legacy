@@ -48,7 +48,28 @@ public enum Mixins implements IMixins {
             "EntityRendererMixin",
             "EntityRendererAccessor",
             "EntityPlayerSPMixin",
-            "RendererLivingEntityMixin"));
+            "RendererLivingEntityMixin")),
+
+    // Replaces the ethereal @Fix group: entity-query filtering, no-clip collision, water movement, true sight and the
+    // ethereal inventory-click guard. All targets are common classes.
+    ETHEREAL(new MixinBuilder().setPhase(Phase.EARLY)
+        .addCommonMixins("WorldEntityQueryMixin", "EntityMixin", "EntityLivingBaseMixin", "NetHandlerPlayServerMixin")),
+
+    // Replaces the isBlockIndirectlyGettingPowered @Fix used by the Redstone Signal spell component.
+    REDSTONE_INLAY(new MixinBuilder().setPhase(Phase.EARLY)
+        .addCommonMixins("WorldRedstoneMixin")),
+
+    // Replaces the water-affinity parts of the Entity/BlockLiquid @Fix group (Archmage leggings).
+    WATER_ETHEREAL(new MixinBuilder().setPhase(Phase.EARLY)
+        .addCommonMixins("BlockLiquidMixin")),
+
+    // Replaces the BlockDynamicLiquid.updateTick @Fix (lava + liquid essence).
+    LAVA_ESSENCE(new MixinBuilder().setPhase(Phase.EARLY)
+        .addCommonMixins("BlockDynamicLiquidMixin", "BlockLiquidInvoker")),
+
+    // The True Sight invisibility override targets a @SideOnly(CLIENT) method that is stripped on a dedicated server.
+    CLIENT_ETHEREAL(new MixinBuilder().setPhase(Phase.EARLY)
+        .addClientMixins("EntityClientMixin"));
 
     // Deliberately not ported: BytecodeTransformers.alterNetHandlerPlayServer overwrote the per-player stance
     // difference with 1.5, which disables vanilla's illegal-stance check for every player. The old coremod was never
