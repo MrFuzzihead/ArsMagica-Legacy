@@ -56,6 +56,10 @@ and the automated tests that now cover the fix.
 | 3.1 Chunk-loader tickets | **Fixed** — reuse/release/restore map lifecycle and real key equality | `c64bf57` | `AMChunkLoaderTest`, game-test ticket lifecycle |
 | 3.4 TE network floods | **Fixed** — change-gated battery metadata and throttled enervator NBT | `c64bf57` | `TileEntityManaBatteryUpdateTest`, `TileEntityEntropicEnervatorTest` |
 | 3.7 Lingering spells | **Fixed** — one server tick per matching world, clear on unload | `c64bf57` | `SpellHelperLingeringTest` |
+| 4.1 Item NBT bounds/casts | **Fixed** — clamped spell-book slot, guarded cast, reagent triples, stable NBT key | `6641377` | `ItemSpellBookTest`, `SpellUtilsReagentTest` |
+| 4.2 Flicker out-marker removal | **Fixed** — removes the vector from every priority list | `6641377` | `TileEntityFlickerHabitatTest` |
+| 4.5 Multiblock replacement precedence | **Fixed** — block/meta condition parenthesised | `6641377` | `MultiblockStructureDefinitionTest` |
+| 4.7 Collection contracts | **Fixed** — RegionCoordinates, CompoundKey and ManaStack equals/hashCode aligned | `6641377` | `CompoundKeyTest`, `ManaStackTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -563,12 +567,18 @@ Use `split("\\|")` or `Pattern.quote("|")`. Add a unit test around the parser (e
 
 ### 4.1 Item NBT bounds / casts
 
+> **Status: Fixed** in `6641377`; covered by `ItemSpellBookTest` and `SpellUtilsReagentTest`.
+
+
 - **`ItemSpellBook.GetActiveSlot`** (`ItemSpellBook.java:305-311`) returns the raw `spellbookactiveslot` NBT value. `GetActiveItemStack`/`GetActiveScroll` immediately index a 40-element array with it (`216-230`). A book with `spellbookactiveslot: -1` or `100` (NBT-edited, copied from an old version, or produced by another mod) throws `ArrayIndexOutOfBoundsException` on right-click/scroll. Clamp to `0..7` in `GetActiveSlot`, and validate it when loading the book.
 - **`ItemSpellBook.GetActiveScroll`** casts the active item to `ItemSpellBase` (`221`). `ContainerSpellBook` normally prevents non-spells, but crafted NBT can place any item in the book inventory. Use `instanceof` and treat a non-spell as empty.
 - **`SpellUtils.parseSpellRequirements`** (`SpellUtils.java:524-528`) iterates the reagent array with `i += 3` and reads `i+1`, `i+2` with no length check. A spell NBT array with length not divisible by 3 crashes when the tooltip/cast requirements are read. Validate `reagentList.length % 3 == 0`.
 - **`RiftStorage`/`TileEntityCrystalMarker`/`TileEntityEntropicEnervator`** use `String.format("ArrayIndex", i)` as an NBT key (`RiftStorage.java:40,56`, `TileEntityCrystalMarker.java:172`, `TileEntityEntropicEnervator.java:148`). It works because the key is constant and the index is stored in the value, but it is confusing and easy to break. Use a plain constant (`"ArrayIndex"`) or store the index in a normal field.
 
 ### 4.2 Flicker out-marker removal is a no-op
+
+> **Status: Fixed** in `6641377`; covered by `TileEntityFlickerHabitatTest`.
+
 
 `TileEntityFlickerHabitat` stores outputs in `HashMap<Integer, ArrayList<AMVector3>> outList`, but removal does:
 
@@ -606,6 +616,9 @@ The coordinates have no dimension. An attractor in the Nether can redirect an Ov
 The watcher is also not cleared on `WorldEvent.Unload`/disconnect. It removes invalid frames on its next tick, but a client that disconnects from a world leaves the `watchedFrames` map holding entities/worlds until the next world. Add a `clear()` call on unload and keep the existing `lock`.
 
 ### 4.5 `MultiblockStructureDefinition.replaceAllBlocksOfType` has a precedence bug
+
+> **Status: Fixed** in `6641377`; covered by `MultiblockStructureDefinitionTest`.
+
 
 ```java
 // MultiblockStructureDefinition.java:388-398
@@ -646,6 +659,10 @@ Also:
 - `getExtraVariablesContains` returns a fresh `HashMap` every call (`ExtendedProperties.java:1387-1393`). `AMEventHandler` calls it 1–6 times per entity per tick, even for empty maps. The code then calls `.clear()` on some of these copies (`AMEventHandler.java:874-877`), believing it clears the real data; it does not. If the intent is “disable the effect when the skill is off”, remove the keys from `extra_properties` instead.
 
 ### 4.7 `RegionCoordinates`/`CompoundKey`/`ManaStack` collection contracts
+
+> **Status: Fixed** in `6641377`; covered by `CompoundKeyTest` and `ManaStackTest`, with `RegionCoordinates`
+> fixed alongside the power cache. `AMVector3` keys in the registry are freshly constructed per lookup.
+
 
 - `RegionCoordinates.equals` (`RegionCoordinates.java:19-23`) has an unchecked cast and bitwise `&`; `hashCode` is `x + z + dimension`. Add `instanceof`, use `&&`, and use `Objects.hash`/a proper mix. (This map is not hot enough for the collisions to be critical, but it is a correctness smell.)
 - `CompoundKey.equals` (`CompoundKey.java:20-30`) treats meta `-1` as a wildcard, but `hashCode` uses the actual meta. Two “equal” keys can have different hashes; any `HashMap` use will fail to find a wildcard key. It is only used in an `ArrayList` today, but the contract is broken.
