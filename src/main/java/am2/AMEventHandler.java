@@ -630,7 +630,7 @@ public class AMEventHandler {
         }
     }
 
-    public static List<String> forceShielded = new ArrayList<>();
+    public static java.util.Set<String> forceShielded = new java.util.HashSet<>();
     public static Map<UUID, Integer> acceleratedEntitiesUUIDs = new HashMap<>();
     public static Map<UUID, Integer> slowedEntitiesUUIDs = new HashMap<>();
 
@@ -734,6 +734,7 @@ public class AMEventHandler {
         TickrateController.setServerTickrate(TickrateController.DEFAULT_TICKS_PER_SECOND);
         TickrateController.changeClientTickratePublic(null, TickrateController.DEFAULT_TICKS_PER_SECOND);
         AMCore.proxy.itemFrameWatcher.clear();
+        clearAllTransientState();
     }
 
     @SubscribeEvent
@@ -918,6 +919,8 @@ public class AMEventHandler {
                         .getExtraVariablesContains("accelerated_slow_entity_");
 
                     if (SkillTreeManager.instance.isSkillDisabled(SkillManager.instance.getSkill("DiluteTime"))) {
+                        extendedProperties.removeExtraVariablesContaining("accelerated_slow_entity_");
+                        extendedProperties.removeExtraVariablesContaining("accelerated_slow_tile_");
                         slowedEntities.clear();
                         slowedBlocks.clear();
                     }
@@ -1540,6 +1543,28 @@ public class AMEventHandler {
     public static Map<EntityPlayer, ArrayList<EntityCreature>> hallucinationMap = new HashMap<EntityPlayer, ArrayList<EntityCreature>>();
     public static Map<EntityPlayer, ArrayList<EntityItem>> dustMap = new HashMap<EntityPlayer, ArrayList<EntityItem>>();
     public static Map<EntityCreature, Integer> tempCurseMap = new HashMap<EntityCreature, Integer>();
+
+    /** Drops world-bound transient state when a dimension unloads. */
+    public static void clearWorldState(World world) {
+        hallucinationMap.entrySet()
+            .removeIf(entry -> entry.getKey() == null || entry.getKey().worldObj == world);
+        dustMap.entrySet()
+            .removeIf(entry -> entry.getKey() == null || entry.getKey().worldObj == world);
+        tempCurseMap.entrySet()
+            .removeIf(entry -> entry.getKey() == null || entry.getKey().worldObj == world);
+        forceShielded.removeIf(key -> key.endsWith("_" + world.provider.dimensionId));
+    }
+
+    /** Clears all transient state on server stop or client disconnect. */
+    public static void clearAllTransientState() {
+        hallucinationMap.clear();
+        dustMap.clear();
+        tempCurseMap.clear();
+        forceShielded.clear();
+        acceleratedEntitiesUUIDs.clear();
+        slowedEntitiesUUIDs.clear();
+        tempFlipped.clear();
+    }
 
     private void cleanupLowerHallucination(EntityPlayer player) {
         player.removePotionEffect(BuffList.scrambleSynapses.id);

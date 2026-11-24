@@ -5,6 +5,7 @@ import java.io.File;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.potion.Potion;
+import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
@@ -485,6 +486,8 @@ public class AMConfig extends Configuration {
             110,
             "The biome ID for Moo Moo Farm. Change this if you run into issues with other mods that add biomes.")
                 .getInt();
+        witchwoodForestID = sanitizeBiomeId(witchwoodForestID, 100, id -> BiomeGenBase.getBiome(id) != null);
+        mmfBiomeID = sanitizeBiomeId(mmfBiomeID, 110, id -> BiomeGenBase.getBiome(id) != null);
         mmfDimensionID = get(
             CATEGORY_GENERAL,
             KEY_MMFDimensionID,
@@ -1444,6 +1447,44 @@ public class AMConfig extends Configuration {
         return configured;
     }
 
+    /** Chooses a free potion ID, preferring the configured value and then the first free slot. */
+    /** Falls back when a dimension ID is reserved or already registered. */
+    public static int sanitizeDimensionId(int configured, int fallback, java.util.function.IntPredicate isRegistered) {
+        if (configured == 0 || configured == -1 || configured == 1 || isRegistered.test(configured)) {
+            return fallback;
+        }
+        return configured;
+    }
+
+    /** Falls back when a biome ID is outside 1..255 or already occupied. */
+    public static int sanitizeBiomeId(int configured, int fallback, java.util.function.IntPredicate isOccupied) {
+        if (configured >= 1 && configured <= 255 && !isOccupied.test(configured)) {
+            return configured;
+        }
+        if (fallback >= 1 && fallback <= 255 && !isOccupied.test(fallback)) {
+            return fallback;
+        }
+        for (int i = 40; i <= 255; i++) {
+            if (!isOccupied.test(i)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    static int resolvePotionId(int configured, int fallback, java.util.function.IntPredicate isOccupied) {
+        int sanitized = validatePotionId(configured, fallback);
+        if (!isOccupied.test(sanitized)) {
+            return sanitized;
+        }
+        for (int i = 1; i < MAX_POTION_ID; i++) {
+            if (!isOccupied.test(i)) {
+                return i;
+            }
+        }
+        return sanitized;
+    }
+
     public int getConfigurablePotionID(String id, int default_value) {
         // because we auto-configure, default_value is ignored
         int val = getNextFreePotionID();
@@ -1458,17 +1499,19 @@ public class AMConfig extends Configuration {
 
         Property prop = get(CATEGORY_POTIONS, id, val);
         int configured = prop.getInt(val);
-        int sanitized = validatePotionId(configured, val);
+        int sanitized = resolvePotionId(configured, val, index -> Potion.potionTypes[index] != null);
         if (sanitized != configured) {
             LogHelper.error(
-                "Potion ID %d configured for the %s effect is outside 1..%d; using %d instead.",
+                "Potion ID %d configured for the %s effect is unavailable; using %d instead.",
                 configured,
                 id,
-                MAX_POTION_ID - 1,
                 sanitized);
             prop.set(sanitized);
         }
-        save();
+        if (Potion.potionTypes[sanitized] != null) {
+            LogHelper
+                .error("No free potion ID remains for the %s effect; the configured slot is already occupied.", id);
+        }
         return sanitized;
     }
 

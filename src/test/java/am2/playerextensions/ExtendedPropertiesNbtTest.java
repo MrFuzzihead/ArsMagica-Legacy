@@ -1,7 +1,9 @@
 package am2.playerextensions;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -40,6 +42,18 @@ public class ExtendedPropertiesNbtTest {
         ((ItemStack[]) field.get(properties))[0] = null;
 
         properties.saveNBTData(new NBTTagCompound());
+    }
+
+    @Test
+    public void removeExtraVariablesContainingRemovesMatchingKeys() {
+        ExtendedProperties properties = new ExtendedProperties();
+        properties.addToExtraVariables("accelerated_slow_entity_1", "5");
+        properties.addToExtraVariables("other", "1");
+
+        properties.removeExtraVariablesContaining("accelerated_slow_entity_");
+
+        assertFalse(properties.hasExtraVariable("accelerated_slow_entity_1"));
+        assertTrue(properties.hasExtraVariable("other"));
     }
 
     @Test

@@ -41,4 +41,15 @@ public class AMConfigPotionIdTest {
         assertEquals(1, AMConfig.validatePotionId(0, 0));
         assertEquals(1, AMConfig.validatePotionId(0, 200));
     }
+
+    @Test
+    public void occupiedConfiguredSlotsFallBackToAFreeSlot() {
+        assertEquals(2, AMConfig.resolvePotionId(1, 2, id -> id == 1));
+        assertEquals(5, AMConfig.resolvePotionId(5, 2, id -> id == 1));
+    }
+
+    @Test
+    public void aCompletelyFullArrayReturnsTheSanitizedValue() {
+        assertEquals(5, AMConfig.resolvePotionId(5, 2, id -> true));
+    }
 }

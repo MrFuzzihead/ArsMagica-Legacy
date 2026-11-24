@@ -1373,6 +1373,13 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         setFullSync();
     }
 
+    /** Removes every extra property whose key contains {@code contains}. */
+    public void removeExtraVariablesContaining(String contains) {
+        extra_properties.keySet()
+            .removeIf(key -> key != null && key.contains(contains));
+        setFullSync();
+    }
+
     public Map<String, String> getExtraVariablesContains(String contains) {
         Map<String, String> toReturn = new HashMap<>();
         for (String key : extra_properties.keySet()) {

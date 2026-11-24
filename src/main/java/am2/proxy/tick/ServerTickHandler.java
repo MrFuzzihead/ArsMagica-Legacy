@@ -17,6 +17,7 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 
 import am2.AMCore;
+import am2.AMEventHandler;
 import am2.EntityItemWatcher;
 import am2.MeteorSpawnHelper;
 import am2.bosses.BossSpawnHelper;
@@ -74,6 +75,7 @@ public class ServerTickHandler {
     public void onWorldUnload(net.minecraftforge.event.world.WorldEvent.Unload event) {
         SpellHelper.clearLingeringSpells(event.world);
         AMCore.proxy.itemFrameWatcher.clearWorld(event.world);
+        AMEventHandler.clearWorldState(event.world);
     }
 
     @SubscribeEvent

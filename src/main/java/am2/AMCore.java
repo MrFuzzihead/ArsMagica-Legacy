@@ -160,8 +160,23 @@ public class AMCore {
 
         initAPI();
 
-        DimensionManager.registerProviderType(config.getMMFDimensionID(), SCLWorldProvider.class, false);
-        DimensionManager.registerDimension(config.getMMFDimensionID(), config.getMMFDimensionID());
+        int mmfDimensionId = AMConfig
+            .sanitizeDimensionId(config.getMMFDimensionID(), -31, DimensionManager::isDimensionRegistered);
+        if (mmfDimensionId != config.getMMFDimensionID()) {
+            LogHelper.warn(
+                "MMF dimension ID %d is reserved or already registered; using %d instead.",
+                config.getMMFDimensionID(),
+                mmfDimensionId);
+        }
+        if (!DimensionManager.isDimensionRegistered(mmfDimensionId)) {
+            if (DimensionManager.registerProviderType(mmfDimensionId, SCLWorldProvider.class, false)) {
+                DimensionManager.registerDimension(mmfDimensionId, mmfDimensionId);
+            } else {
+                LogHelper.error(
+                    "Unable to register the MMF dimension provider type for ID %d; the MMF dimension is unavailable.",
+                    mmfDimensionId);
+            }
+        }
 
         if (AMCore.config.getEnableWitchwoodForest()) {
             BiomeDictionary.registerBiomeType(BiomeWitchwoodForest.instance, Type.FOREST, Type.MAGICAL);
@@ -284,6 +299,7 @@ public class AMCore {
         }
         // custom data
         CustomWorldData.saveAllWorldData();
+        AMEventHandler.clearAllTransientState();
     }
 
     @EventHandler

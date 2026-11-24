@@ -167,7 +167,8 @@ public class BuffList implements IBuffHelper {
                     entry.getValue()
                         .getName(),
                     entry.getKey(),
-                    Potion.potionTypes[entry.getKey()].getName());
+                    Potion.potionTypes[entry.getKey()] == null ? "<null>"
+                        : Potion.potionTypes[entry.getKey()].getName());
             }
         }
     }
@@ -285,6 +286,11 @@ public class BuffList implements IBuffHelper {
 
         for (int i : classesForBuffID.keySet()) {
             createDummyBuff(i);
+        }
+
+        if (AMCore.config != null) {
+            // Persist all auto-assigned potion IDs in one write instead of one save per buff.
+            AMCore.config.save();
         }
     }
 
