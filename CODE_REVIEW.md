@@ -70,6 +70,8 @@ and the automated tests that now cover the fix.
 | 5.1 Skill-tree hot path | **Fixed** — identity index and cached unmodifiable tree views | `f65e0ae` | `SkillTreeManagerLookupTest` |
 | 5.5 `PowerTypes` allocation/lookup | **Fixed** — shared cached array plus concurrent ID map | `f65e0ae` | `PowerTypesTest` |
 | 5.6 Retroactive worldgen | **Fixed** — FIFO deque, server-only, END phase only | `f65e0ae` | `RetroactiveWorldgeneratorTest` |
+| 5.4 Altar multiblock rebuild | **Fixed** — shared static primary/fake definitions built once | `6e968e0` | game-test altar definition checks |
+| 5.7 Arcane reconstructor sync | **Fixed** — marks the block only on active-state transitions | `6e968e0` | `TileEntityArcaneReconstructorUpdateTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -766,6 +768,11 @@ A single spell cast can allocate hundreds of `ArrayList`s and scan thousands of 
 
 **Fix:** store effects in typed data structures (for example `Map<BlockPos, Effect>` keyed by dimension) instead of encoded strings; at minimum return `Collections.emptyMap()` when there are no matches and use a cached parsed representation. Move the “accelerated blocks/entities” bookkeeping out of `LivingUpdateEvent` into a server-side manager.
 
+> **Status: Partially fixed.** `getExtraVariablesContains` now returns the shared empty map when there is no match,
+> handles null prefixes, and uses one `entrySet` walk instead of `keySet` plus a second lookup. The encoded-string
+> parsing in `AMEventHandler.onEntityLiving` and typed effect storage remain open. Covered by
+> `ExtendedPropertiesExtraVariablesTest` (`6e968e0`).
+
 ### 5.3 Mana battery / enervator network spam
 
 See 3.4. Every tick, per block. This is likely the single largest source of packet traffic in a developed base.
@@ -775,6 +782,10 @@ See 3.4. Every tick, per block. This is likely the single largest source of pack
 `TileEntityCraftingAltar` (`120-139`) calls `setupMultiblock()` in its constructor. `setupMultiblock` (`141-230`) creates a new `MultiblockStructureDefinition`, iterates `OreDictionary.getOres` for plank/sandstone/cobble/stairs/magical wood/quartz, and adds well over a hundred allowed blocks. This runs for every altar tile entity on load, on both sides. The `getFakeMultiblock()` method (`1297-1348`) rebuilds another ~60-block definition on every `getDefinition()` call.
 
 **Fix:** build the static definition once (pre-init/init), cache the `BlockDec` lists, and share immutable copies. `getFakeMultiblock` should be a cached field.
+
+> **Status: Fixed.** The primary and fake altar definitions are built once in `SharedStructure` and shared by every
+> altar tile entity; `getDefinition()` returns the cached fake definition. Covered by the altar checks in the server
+> game test (`6e968e0`).
 
 ### 5.5 `PowerTypes.all()` allocates a new array on every call
 
@@ -798,6 +809,10 @@ See 3.4. Every tick, per block. This is likely the single largest source of pack
 - `AM2WorldDecorator` creates a new `WitchwoodTreeHuge`/`WitchwoodTreeEvenMoreHuge` per generated tree (`AM2WorldDecorator.java:168-175`), and each constructor allocates arrays and a `Random`. Reuse a single generator instance (they reseed from the chunk random).
 - `TileEntityManaBattery.updateEntity` also calls `worldObj.notifyBlockChange` every 600 ticks; that's fine, but combined with the per-tick update spam it is noise.
 - `TileEntityArcaneReconstructor.queueRepairableItem` calls `markBlockForUpdate` every time it finds no valid item, even when the state did not change (`TileEntityArcaneReconstructor.java:260-282`).
+
+> **Status: Partially fixed.** The arcane reconstructor now only marks the block when its active state changes, and the
+> extra-properties no-match fast path is in place. The remaining 5.7 items (living-update splitting, power-node NBT
+> allocation, worldgen tree reuse) are still open. Covered by `TileEntityArcaneReconstructorUpdateTest` (`6e968e0`).
 
 ---
 
