@@ -634,6 +634,28 @@ public class AMEventHandler {
     public static Map<UUID, Integer> acceleratedEntitiesUUIDs = new HashMap<>();
     public static Map<UUID, Integer> slowedEntitiesUUIDs = new HashMap<>();
 
+    /** Null-safe tile lookup for the spatial-vortex bookkeeping; an unloaded dimension yields a null world. */
+    static TileEntity getTileEntitySafe(World world, int x, int y, int z) {
+        return world == null ? null : world.getTileEntity(x, y, z);
+    }
+
+    /** CoFH is compileOnly; short-circuit before resolving IEnergyHandler when the mod is absent. */
+    static boolean isEnergyHandler(Object te) {
+        return AMCore.cofh && te instanceof IEnergyHandler;
+    }
+
+    /** Releases a Fortify Time chunk ticket only when the world and tile entity still exist. */
+    static void releaseFortifiedChunk(World world, int x, int y, int z) {
+        if (world == null) {
+            return;
+        }
+        TileEntity te = world.getTileEntity(x, y, z);
+        if (te == null) {
+            return;
+        }
+        AMChunkLoader.INSTANCE.releaseStaticChunkLoad(te.getClass(), x, y, z, world);
+    }
+
     /**
      * Apply extra entity ticks once per server tick.
      *
@@ -954,9 +976,9 @@ public class AMEventHandler {
                             totaletheriumlight[vIndex] = 0;
                             for (int xadd = -1; xadd <= 1; xadd += 2) {
                                 for (int zadd = -1; zadd <= 1; zadd += 2) {
-                                    TileEntity te = thisdim.getTileEntity(x + xadd, y, z + zadd);
+                                    TileEntity te = getTileEntitySafe(thisdim, x + xadd, y, z + zadd);
                                     if (te != null) {
-                                        if (te instanceof IEnergyHandler) {
+                                        if (isEnergyHandler(te)) {
                                             totalenergy[vIndex] += ((IEnergyHandler) te)
                                                 .getEnergyStored(ForgeDirection.UNKNOWN);
                                             totalenergyExternallyLimited[vIndex] += ((IEnergyHandler) te)
@@ -1033,9 +1055,9 @@ public class AMEventHandler {
                                     World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
                                     for (int xadd = -1; xadd <= 1; xadd += 2) {
                                         for (int zadd = -1; zadd <= 1; zadd += 2) {
-                                            TileEntity te = thisdim.getTileEntity(x + xadd, y, z + zadd);
+                                            TileEntity te = getTileEntitySafe(thisdim, x + xadd, y, z + zadd);
                                             if (te != null) {
-                                                if (te instanceof IEnergyHandler) {
+                                                if (isEnergyHandler(te)) {
                                                     if (AMCore.config.getDebugVortex()) {
                                                         System.out.println("got here!");
                                                     }
@@ -1074,9 +1096,9 @@ public class AMEventHandler {
                                     World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
                                     for (int xadd = -1; xadd <= 1; xadd += 2) {
                                         for (int zadd = -1; zadd <= 1; zadd += 2) {
-                                            TileEntity te = thisdim.getTileEntity(x + xadd, y, z + zadd);
+                                            TileEntity te = getTileEntitySafe(thisdim, x + xadd, y, z + zadd);
                                             if (te != null) {
-                                                if (te instanceof IEnergyHandler) {
+                                                if (isEnergyHandler(te)) {
                                                     if (toSubtractE > 0) toSubtractE -= ((IEnergyHandler) te)
                                                         .extractEnergy(ForgeDirection.UNKNOWN, toSubtractE, false); // real
                                                 }
@@ -1100,7 +1122,7 @@ public class AMEventHandler {
                                     World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
                                     for (int xadd = -1; xadd <= 1; xadd += 2) {
                                         for (int zadd = -1; zadd <= 1; zadd += 2) {
-                                            TileEntity te = thisdim.getTileEntity(x + xadd, y, z + zadd);
+                                            TileEntity te = getTileEntitySafe(thisdim, x + xadd, y, z + zadd);
                                             if (te != null) {
                                                 if (te instanceof IPowerNode) {
                                                     if (toSubtractD > 0) toSubtractD -= (int) PowerNodeRegistry
@@ -1127,7 +1149,7 @@ public class AMEventHandler {
                                     World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
                                     for (int xadd = -1; xadd <= 1; xadd += 2) {
                                         for (int zadd = -1; zadd <= 1; zadd += 2) {
-                                            TileEntity te = thisdim.getTileEntity(x + xadd, y, z + zadd);
+                                            TileEntity te = getTileEntitySafe(thisdim, x + xadd, y, z + zadd);
                                             if (te != null) {
                                                 if (te instanceof IPowerNode) {
                                                     if (toSubtractL > 0) toSubtractL -= (int) PowerNodeRegistry
@@ -1156,9 +1178,9 @@ public class AMEventHandler {
                                     World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
                                     for (int xadd = -1; xadd <= 1; xadd += 2) {
                                         for (int zadd = -1; zadd <= 1; zadd += 2) {
-                                            TileEntity te = thisdim.getTileEntity(x + xadd, y, z + zadd);
+                                            TileEntity te = getTileEntitySafe(thisdim, x + xadd, y, z + zadd);
                                             if (te != null) {
-                                                if (te instanceof IEnergyHandler) {
+                                                if (isEnergyHandler(te)) {
                                                     if (toTransferEActual > 0)
                                                         toTransferEActual -= ((IEnergyHandler) te).receiveEnergy(
                                                             ForgeDirection.UNKNOWN,
@@ -1182,7 +1204,7 @@ public class AMEventHandler {
                                     World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
                                     for (int xadd = -1; xadd <= 1; xadd += 2) {
                                         for (int zadd = -1; zadd <= 1; zadd += 2) {
-                                            TileEntity te = thisdim.getTileEntity(x + xadd, y, z + zadd);
+                                            TileEntity te = getTileEntitySafe(thisdim, x + xadd, y, z + zadd);
                                             if (te != null) {
                                                 if (te instanceof IPowerNode) {
                                                     if (toTransferD > 0)
@@ -1206,7 +1228,7 @@ public class AMEventHandler {
                                     World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
                                     for (int xadd = -1; xadd <= 1; xadd += 2) {
                                         for (int zadd = -1; zadd <= 1; zadd += 2) {
-                                            TileEntity te = thisdim.getTileEntity(x + xadd, y, z + zadd);
+                                            TileEntity te = getTileEntitySafe(thisdim, x + xadd, y, z + zadd);
                                             if (te != null) {
                                                 if (te instanceof IPowerNode) {
                                                     if (toTransferL > 0) toTransferL -= (int) PowerNodeRegistry
@@ -1238,15 +1260,7 @@ public class AMEventHandler {
                                 int y = Integer.parseInt(entryvalues[3]);
                                 int z = Integer.parseInt(entryvalues[4]);
                                 int dim = Integer.parseInt(entryvalues[5]);
-                                if (DimensionManager.getWorld(dim) != null)
-                                    AMChunkLoader.INSTANCE.releaseStaticChunkLoad(
-                                        DimensionManager.getWorld(dim)
-                                            .getTileEntity(x, y, z)
-                                            .getClass(),
-                                        x,
-                                        y,
-                                        z,
-                                        DimensionManager.getWorld(dim));
+                                releaseFortifiedChunk(DimensionManager.getWorld(dim), x, y, z);
                             }
                         } else {
                             extendedProperties.addToExtraVariables(

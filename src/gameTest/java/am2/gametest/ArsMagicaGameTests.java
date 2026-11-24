@@ -468,6 +468,7 @@ final class ArsMagicaGameTests {
     }
 
     private static void checksApi() {
+        check(ArsMagicaApi.instance.getSpellPartManager() != null, "the spell part manager must be initialised");
         check(AMEnchantments.magicResist != null, "the magic-resist enchantment must be registered");
         check(AMEnchantments.soulbound != null, "the soulbound enchantment must be registered");
         checkEquals(

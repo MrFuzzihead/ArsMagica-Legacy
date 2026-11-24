@@ -204,6 +204,10 @@ public class ArsMagicaApi {
      */
     public final void registerSkillTreeEntry(ISkillTreeEntry entry, String name, SkillTrees tree, int x, int y,
         SkillPointTypes point, ISkillTreeEntry... prereqs) {
+        if (spellPartManager == null) {
+            throw new IllegalStateException(
+                "Ars Magica's spell part manager is not initialised yet; register skill tree entries during init or later.");
+        }
         spellPartManager.registerSkillTreeEntry(entry, name);
         skillTreeManager.RegisterPart(entry, x, y, tree, point, prereqs);
     }

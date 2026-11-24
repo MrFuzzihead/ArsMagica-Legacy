@@ -14,6 +14,7 @@ import am2.api.math.AMVector3;
 import am2.blocks.tileentities.flickers.FlickerOperatorMoonstoneAttractor;
 import am2.entities.EntityThrownRock;
 import am2.playerextensions.ExtendedProperties;
+import am2.worldgen.WorldgenMath;
 
 public class MeteorSpawnHelper {
 
@@ -49,10 +50,10 @@ public class MeteorSpawnHelper {
             if (MinecraftServer.getServer() == null) return;
             if (MinecraftServer.getServer().worldServers.length < 1) return;
             WorldServer ws = MinecraftServer.getServer().worldServers[0];
-            if (rand.nextInt(
-                (AMCore.config.getMoonstoneFrequency() / 19)
-                    + (1000 * ws.provider.getMoonPhase(ws.provider.getWorldTime())))
-                == 0) {
+            if (WorldgenMath.meteorRoll(
+                rand,
+                AMCore.config.getMoonstoneFrequency(),
+                ws.provider.getMoonPhase(ws.provider.getWorldTime()))) {
                 spawnMeteor();
             }
         } else {

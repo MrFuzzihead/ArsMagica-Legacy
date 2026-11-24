@@ -72,6 +72,7 @@ import am2.playerextensions.RiftStorage;
 import am2.playerextensions.SkillData;
 import am2.power.PowerNodeCache;
 import am2.proxy.CommonProxy;
+import am2.spell.SkillManager;
 import am2.spell.SkillTreeManager;
 import am2.spell.SpellUtils;
 import am2.utility.KeystoneUtilities;
@@ -291,9 +292,8 @@ public class AMCore {
             switch (msg.key) {
                 case "dsb": {
                     LogHelper.info("Received dimension spawn blacklist IMC!  Processing.");
-                    String[] split = msg.getStringValue()
-                        .split("|");
-                    if (split.length != 2) {
+                    String[] split = parseBlacklistImc(msg.getStringValue());
+                    if (split == null) {
                         LogHelper.warn(
                             "Could not parse dsb IMC - malformed identifiers!  Syntax is 'ClassName|DimensionID', for example:  EntityDryad|22");
                         continue;
@@ -308,9 +308,8 @@ public class AMCore {
                 }
                 case "bsb": {
                     LogHelper.info("Received biome spawn blacklist IMC!  Processing.");
-                    String[] split = msg.getStringValue()
-                        .split("|");
-                    if (split.length != 2) {
+                    String[] split = parseBlacklistImc(msg.getStringValue());
+                    if (split == null) {
                         LogHelper.warn(
                             "Could not parse bsb IMC - malformed identifiers!  Syntax is 'ClassName|BiomeID', for example:  EntityDryad|22");
                         continue;
@@ -345,9 +344,29 @@ public class AMCore {
         }
     }
 
+    /**
+     * Parses the documented {@code ClassName|ID} IMC syntax. {@code split("|")} treats the pipe as a regex
+     * alternation and returns every character, which made every blacklist message look malformed.
+     */
+    static String[] parseBlacklistImc(String value) {
+        if (value == null) {
+            return null;
+        }
+        String[] split = value.split("\\|");
+        if (split.length != 2) {
+            return null;
+        }
+        String className = split[0].trim();
+        String id = split[1].trim();
+        if (className.isEmpty() || id.isEmpty()) {
+            return null;
+        }
+        return new String[] { className, id };
+    }
+
     public void initAPI() {
         LogHelper.info("Initializing API Hooks...");
-        // ArsMagicaApi.instance.setSpellPartManager(new SpellManager());
+        ArsMagicaApi.instance.setSpellPartManager(SkillManager.instance);
         ArsMagicaApi.instance.setEnchantmentHelper(new AMEnchantmentHelper());
         ArsMagicaApi.instance.setSkillTreeManager(SkillTreeManager.instance);
         ArsMagicaApi.instance.setKeystoneHelper(KeystoneUtilities.instance);
