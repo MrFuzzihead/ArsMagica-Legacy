@@ -67,6 +67,9 @@ and the automated tests that now cover the fix.
 | 4.6 Static state/leaks | **Fixed** — world-scoped cleanup, Set shields, real extra-property removal | `4c806ab` | `AMEventHandlerStateTest`, `ExtendedPropertiesNbtTest` |
 | 4.9 Potion ID validation | **Fixed** — free-slot resolution, null-safe clash check, single config save | `4c806ab` | `AMConfigPotionIdTest` |
 | 4.10 Dimension/biome registration | **Fixed** — reserved/occupied IDs validated with fallbacks | `4c806ab` | `AMConfigIdTest` |
+| 5.1 Skill-tree hot path | **Fixed** — identity index and cached unmodifiable tree views | `f65e0ae` | `SkillTreeManagerLookupTest` |
+| 5.5 `PowerTypes` allocation/lookup | **Fixed** — shared cached array plus concurrent ID map | `f65e0ae` | `PowerTypesTest` |
+| 5.6 Retroactive worldgen | **Fixed** — FIFO deque, server-only, END phase only | `f65e0ae` | `RetroactiveWorldgeneratorTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -753,6 +756,10 @@ A single spell cast can allocate hundreds of `ArrayList`s and scan thousands of 
 
 **Fix:** build a `HashMap<ISkillTreeEntry, SkillTreeEntry>` once in `SkillTreeManager.init`, use it for `getSkillTreeEntry`/`isSkillDisabled`, and cache the `AugmentedCasting` entry in `SpellUtils` (or in a per-player cached skill snapshot). Return an unmodifiable view from `getTree` instead of a copy if callers only read.
 
+> **Status: Fixed.** `SkillTreeManager` now maintains an identity-keyed index as parts are registered and returns cached
+> unmodifiable tree views, so `getSkillTreeEntry`/`isSkillDisabled` are O(1) with no per-call list copies. Covered by
+> `SkillTreeManagerLookupTest` (`f65e0ae`).
+
 ### 5.2 `getExtraVariablesContains` allocates a map per call and parses strings every tick
 
 `ExtendedProperties.getExtraVariablesContains` (`1387-1393`) creates a new `HashMap` and scans/allocates keys. `AMEventHandler.onEntityLiving` calls it up to six times per entity per tick, then `split("_")` and `Integer.parseInt` each key and value (`825-1310`). For a server with many entities/players this is a large, constant allocation and parsing load.
@@ -773,9 +780,16 @@ See 3.4. Every tick, per block. This is likely the single largest source of pack
 
 `PowerTypes.all()` returns `allPowerTypes.toArray(new PowerTypes[...])`, and `getByID` (`src/main/java/am2/api/power/PowerTypes.java:82-91`) calls `all()` for every lookup. `PowerTypes.all()` is used in hot paths (power ticks, NBT, request loops). Return a cached array (or an unmodifiable list) and use a `HashMap<Integer, PowerTypes>` for `getByID`. This also fixes the O(n) lookup that grows when addons register new types.
 
+> **Status: Fixed.** `PowerTypes` builds its array and ID map once, rebuilds both on registration, and `getByID` is a
+> constant-time map lookup. Covered by `PowerTypesTest` (`f65e0ae`).
+
 ### 5.6 Retroactive worldgen is O(n) and runs twice
 
 `RetroactiveWorldgenerator.continueRetrogen` (`18-42`) processes up to 5 chunks per call and uses `chunks.remove(0)` on an `ArrayList`, which shifts the whole remaining list every time. It is called from `ServerTickHandler.onWorldTick` for every world and from `ClientTickHandler.onWorldTick` when the integrated server is running (`ServerTickHandler.java:76`, `ClientTickHandler.java:430-434`). In a single-player world it can process the queue twice per tick; in a dedicated server it runs on both `WorldTickEvent` phases because there is no phase check. Use an `ArrayDeque`/index cursor, process only on `Phase.END`, only on the server, and throttle with a time budget rather than a fixed count.
+
+> **Status: Fixed.** The queue is an `ArrayDeque` drained FIFO with O(1) removal, `continueRetrogen` rejects remote
+> worlds, `ServerTickHandler` calls it only at `Phase.END`, and `ClientTickHandler` no longer drives retro-gen. Covered
+> by `RetroactiveWorldgeneratorTest` (`f65e0ae`).
 
 ### 5.7 Other allocation hot spots
 
