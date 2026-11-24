@@ -21,6 +21,19 @@ Ars Magica 2.5 - Carrying the Torch of True Magic
 - See the Arcane Compendium in-game: for a detailed and thorough documentation
 - See the commits and release notes: for a better and more specific summary
 
+### Testing
+
+Unit tests live in `src/test/java` and run on a Java 8 toolchain. The non-shipped in-game test mod lives in
+`src/gameTest/java` and is only added to the classpath by the game-test tasks.
+
+```sh
+./gradlew check                 # unit tests, JaCoCo report/floor, Spotless and Checkstyle
+./gradlew gameTestServer        # boots a real dedicated server and exits with the result
+./gradlew gameTestClient        # boots the client and exits with the result (needs a display)
+./gradlew jacocoTestReport      # HTML/XML coverage for the unit tests
+./gradlew jacocoGameTestReport  # coverage from the in-game run
+```
+
 ### License
 This mod is open sourced under the Creative Commons 3.0 Attribution Non-Commercial License
 https://creativecommons.org/licenses/by-nc/3.0/legalcode

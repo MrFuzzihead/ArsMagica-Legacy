@@ -44,4 +44,11 @@ dependencies {
     compileOnly("curse.maven:cofh-core-69162:2388751")
     compileOnly("curse.maven:thermal-expansion-69163:2388759")
     compileOnly("curse.maven:thermal-foundation-222880:2388753")
+
+    // Unit tests. JUnit 4.13.2 is the newest 4.x; the suite runs on a Java 8 toolchain because the mod targets
+    // Java 8 bytecode and Mockito 4.11.0 is the newest Mockito that still runs there (5.x needs Java 11).
+    // mockito-inline lets us mock final Minecraft classes (ItemStack and friends) on Java 8.
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.mockito:mockito-core:4.11.0")
+    testImplementation("org.mockito:mockito-inline:4.11.0")
 }
