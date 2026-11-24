@@ -67,7 +67,7 @@ and the automated tests that now cover the fix.
 | 4.6 Static state/leaks | **Fixed** — world-scoped cleanup, Set shields, real extra-property removal | `4c806ab` | `AMEventHandlerStateTest`, `ExtendedPropertiesNbtTest` |
 | 4.9 Potion ID validation | **Fixed** — free-slot resolution, null-safe clash check, single config save | `4c806ab` | `AMConfigPotionIdTest` |
 | 4.10 Dimension/biome registration | **Fixed** — reserved/occupied IDs validated with fallbacks | `4c806ab` | `AMConfigIdTest` |
-| 5.1 Skill-tree hot path | **Fixed** — identity index and cached unmodifiable tree views | `f65e0ae` | `SkillTreeManagerLookupTest` |
+| 5.1 Skill-tree hot path | **Fixed** — identity index and cached unmodifiable tree views (`getTree` copy kept for API compatibility) | `f65e0ae`, `994404e` | `SkillTreeManagerLookupTest` |
 | 5.5 `PowerTypes` allocation/lookup | **Fixed** — shared cached array plus concurrent ID map | `f65e0ae` | `PowerTypesTest` |
 | 5.6 Retroactive worldgen | **Fixed** — FIFO deque, server-only, END phase only | `f65e0ae` | `RetroactiveWorldgeneratorTest` |
 | 5.4 Altar multiblock rebuild | **Fixed** — shared static primary/fake definitions built once | `6e968e0` | game-test altar definition checks |
@@ -758,9 +758,10 @@ A single spell cast can allocate hundreds of `ArrayList`s and scan thousands of 
 
 **Fix:** build a `HashMap<ISkillTreeEntry, SkillTreeEntry>` once in `SkillTreeManager.init`, use it for `getSkillTreeEntry`/`isSkillDisabled`, and cache the `AugmentedCasting` entry in `SpellUtils` (or in a per-player cached skill snapshot). Return an unmodifiable view from `getTree` instead of a copy if callers only read.
 
-> **Status: Fixed.** `SkillTreeManager` now maintains an identity-keyed index as parts are registered and returns cached
-> unmodifiable tree views, so `getSkillTreeEntry`/`isSkillDisabled` are O(1) with no per-call list copies. Covered by
-> `SkillTreeManagerLookupTest` (`f65e0ae`).
+> **Status: Fixed.** `SkillTreeManager` now maintains an identity-keyed index as parts are registered and exposes cached
+> unmodifiable tree views through `getTreeView`, so `getSkillTreeEntry`/`isSkillDisabled` are O(1) with no per-call list
+> copies. The public `getTree` keeps its original defensive-copy contract for addon compatibility. Covered by
+> `SkillTreeManagerLookupTest` (`f65e0ae`, `994404e`).
 
 ### 5.2 `getExtraVariablesContains` allocates a map per call and parses strings every tick
 
