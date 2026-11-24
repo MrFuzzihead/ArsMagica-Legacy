@@ -621,6 +621,35 @@ public class SpellHelper {
     }
 
     public static List<LingeringSpell> lingeringSpellList = new ArrayList<LingeringSpell>();
+
+    /**
+     * Advances only the lingering spells that belong to {@code world}. Call this from one place (the server END
+     * world tick) so a spell's timers do not depend on how many dimensions are loaded.
+     */
+    public static void tickLingeringSpells(World world) {
+        if (lingeringSpellList.isEmpty()) {
+            return;
+        }
+        for (int i = lingeringSpellList.size() - 1; i >= 0; i--) {
+            LingeringSpell spell = lingeringSpellList.get(i);
+            if (spell.world != world) {
+                continue;
+            }
+            if (spell.doUpdate()) {
+                lingeringSpellList.remove(i);
+            }
+        }
+    }
+
+    /** Drops spells when their world unloads so the static list cannot retain old worlds. */
+    public static void clearLingeringSpells(World world) {
+        for (int i = lingeringSpellList.size() - 1; i >= 0; i--) {
+            if (lingeringSpellList.get(i).world == world) {
+                lingeringSpellList.remove(i);
+            }
+        }
+    }
+
     // used to not add zone spells twice
     public static List<ItemStack> lingeringSpellZoneList = new ArrayList<ItemStack>();
 

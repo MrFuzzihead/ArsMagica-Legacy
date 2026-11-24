@@ -1,7 +1,6 @@
 package am2.proxy.tick;
 
 import static am2.AMEventHandler.tempCurseMap;
-import static am2.spell.SpellHelper.lingeringSpellList;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,6 +71,11 @@ public class ServerTickHandler {
     }
 
     @SubscribeEvent
+    public void onWorldUnload(net.minecraftforge.event.world.WorldEvent.Unload event) {
+        SpellHelper.clearLingeringSpells(event.world);
+    }
+
+    @SubscribeEvent
     public void onWorldTick(TickEvent.WorldTickEvent event) {
         if (AMCore.config.retroactiveWorldgen()) RetroactiveWorldgenerator.instance.continueRetrogen(event.world);
 
@@ -85,21 +89,9 @@ public class ServerTickHandler {
             }
         }
 
-        // update lingering spells
-        if (lingeringSpellList.size() > 0) {
-            SpellHelper.LingeringSpell[] toRemove = new SpellHelper.LingeringSpell[lingeringSpellList.size()];
-            for (int i = 0; i < lingeringSpellList.size(); i++) {
-                boolean toRemoveThis = lingeringSpellList.get(i)
-                    .doUpdate();
-                if (toRemoveThis) toRemove[i] = lingeringSpellList.get(i);
-                else toRemove[i] = null;
-            }
-
-            for (int j = 0; j < toRemove.length; j++) {
-                if (toRemove[j] != null) {
-                    lingeringSpellList.remove(toRemove[j]);
-                }
-            }
+        // Update lingering spells exactly once per world tick, on the server only.
+        if (event.phase == TickEvent.Phase.END && !event.world.isRemote) {
+            SpellHelper.tickLingeringSpells(event.world);
         }
 
         // handle temporary curses

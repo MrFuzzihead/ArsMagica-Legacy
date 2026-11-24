@@ -1,7 +1,5 @@
 package am2.proxy.tick;
 
-import static am2.spell.SpellHelper.lingeringSpellList;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -50,7 +48,6 @@ import am2.particles.AMParticle;
 import am2.particles.ParticleFadeOut;
 import am2.playerextensions.ExtendedProperties;
 import am2.power.PowerNodeEntry;
-import am2.spell.SpellHelper;
 import am2.spell.SpellUtils;
 import am2.spell.components.Telekinesis;
 import am2.utility.EtherealState;
@@ -394,24 +391,6 @@ public class ClientTickHandler {
                 }
             }
 
-            if (Minecraft.getMinecraft().theWorld != null) {
-                // update lingering spells
-                if (!lingeringSpellList.isEmpty()) {
-                    SpellHelper.LingeringSpell[] toRemove = new SpellHelper.LingeringSpell[lingeringSpellList.size()];
-                    for (int i = 0; i < lingeringSpellList.size(); i++) {
-                        boolean toRemoveThis = lingeringSpellList.get(i)
-                            .doUpdate();
-                        if (toRemoveThis) toRemove[i] = lingeringSpellList.get(i);
-                        else toRemove[i] = null;
-                    }
-
-                    for (SpellHelper.LingeringSpell lingeringSpell : toRemove) {
-                        if (lingeringSpell != null) {
-                            lingeringSpellList.remove(lingeringSpell);
-                        }
-                    }
-                }
-            }
         }
     }
 

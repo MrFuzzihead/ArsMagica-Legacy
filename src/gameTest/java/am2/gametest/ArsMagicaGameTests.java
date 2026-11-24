@@ -23,6 +23,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.oredict.OreDictionary;
 
+import am2.AMChunkLoader;
 import am2.AMCore;
 import am2.api.ArsMagicaApi;
 import am2.blocks.BlocksCommonProxy;
@@ -412,6 +413,21 @@ final class ArsMagicaGameTests {
         check(
             arrowAccessor.am2$isInGround() && arrowAccessor.am2$getInData() == 7,
             "EntityArrowAccessor must expose the private arrow state");
+
+        // Chunk-loader tickets are reused and released instead of leaking a new ticket per request.
+        int ticketsBefore = AMChunkLoader.INSTANCE.cachedTicketCount();
+        AMChunkLoader.INSTANCE.requestStaticChunkLoad(TileEntityManaBattery.class, x, y, z, pWorld);
+        check(
+            AMChunkLoader.INSTANCE.cachedTicketCount() == ticketsBefore + 1,
+            "the chunk loader must track a requested ticket");
+        AMChunkLoader.INSTANCE.requestStaticChunkLoad(TileEntityManaBattery.class, x, y, z, pWorld);
+        check(
+            AMChunkLoader.INSTANCE.cachedTicketCount() == ticketsBefore + 1,
+            "the chunk loader must reuse an existing ticket");
+        AMChunkLoader.INSTANCE.releaseStaticChunkLoad(TileEntityManaBattery.class, x, y, z, pWorld);
+        check(
+            AMChunkLoader.INSTANCE.cachedTicketCount() == ticketsBefore,
+            "the chunk loader must release and forget a ticket");
     }
 
     /**
