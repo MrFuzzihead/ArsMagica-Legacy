@@ -51,7 +51,6 @@ import am2.power.PowerNodeEntry;
 import am2.spell.SpellUtils;
 import am2.spell.components.Telekinesis;
 import am2.utility.EtherealState;
-import am2.worldgen.RetroactiveWorldgenerator;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -407,10 +406,9 @@ public class ClientTickHandler {
 
     @SubscribeEvent
     public void onWorldTick(TickEvent.WorldTickEvent event) {
-        if (Minecraft.getMinecraft()
-            .isIntegratedServerRunning()) {
-            if (AMCore.config.retroactiveWorldgen()) RetroactiveWorldgenerator.instance.continueRetrogen(event.world);
-        }
+        // Retroactive worldgen is driven by ServerTickHandler on the logical server. The client world shares the
+        // dimension id with the integrated server world, so processing it here would generate the same chunks twice
+        // (and from the client thread).
         // Dimension transfers are server-authoritative: doDimensionTransfer calls
         // MinecraftServer.getServer() and removes/spawns entities in WorldServer instances. It is
         // drained by ServerTickHandler, never from here.

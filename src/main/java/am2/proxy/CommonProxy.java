@@ -2,8 +2,10 @@ package am2.proxy;
 
 import static am2.blocks.BlocksCommonProxy.AMOres;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -251,15 +253,13 @@ public class CommonProxy {
     }
 
     public void addQueuedRetrogen(int dimensionID, ChunkCoordIntPair pair) {
-        ArrayList<ChunkCoordIntPair> chunks;
-        if (RetroactiveWorldgenerator.deferredChunkGeneration.containsKey(dimensionID)) {
-            chunks = RetroactiveWorldgenerator.deferredChunkGeneration.get(dimensionID);
-        } else {
-            chunks = new ArrayList<ChunkCoordIntPair>();
+        Deque<ChunkCoordIntPair> chunks = RetroactiveWorldgenerator.deferredChunkGeneration.get(dimensionID);
+        if (chunks == null) {
+            chunks = new ArrayDeque<ChunkCoordIntPair>();
+            RetroactiveWorldgenerator.deferredChunkGeneration.put(dimensionID, chunks);
         }
 
         chunks.add(pair);
-        RetroactiveWorldgenerator.deferredChunkGeneration.put(dimensionID, chunks);
     }
 
     public void flashManaBar() {}

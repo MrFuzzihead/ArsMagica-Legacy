@@ -63,7 +63,7 @@ public class GuiSkillTrees extends GuiScreen {
     private SkillTreeEntry hoveredItem;
     private Affinity hoveredAffinity;
 
-    private ArrayList<SkillTreeEntry> skillTree;
+    private List<SkillTreeEntry> skillTree;
 
     private static final ResourceLocation rl_background = new ResourceLocation(
         "arsmagica2",

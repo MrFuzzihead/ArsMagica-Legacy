@@ -80,7 +80,9 @@ public class ServerTickHandler {
 
     @SubscribeEvent
     public void onWorldTick(TickEvent.WorldTickEvent event) {
-        if (AMCore.config.retroactiveWorldgen()) RetroactiveWorldgenerator.instance.continueRetrogen(event.world);
+        if (event.phase == TickEvent.Phase.END && !event.world.isRemote && AMCore.config.retroactiveWorldgen()) {
+            RetroactiveWorldgenerator.instance.continueRetrogen(event.world);
+        }
 
         // WorldTickEvent is also fired for the client world, which in an integrated server means it
         // can arrive on the client thread. Both queues below end up mutating server entities, so
