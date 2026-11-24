@@ -309,7 +309,7 @@ public class ArsMagicaApi {
     }
 
     public final void setEssenceRecipeHandler(IAMRecipeManager manager) {
-        if (this.essenceRecipes != null) this.essenceRecipes = manager;
+        if (this.essenceRecipes == null) this.essenceRecipes = manager;
     }
 
     public final void setColourblindMode(boolean colourblindMode) {

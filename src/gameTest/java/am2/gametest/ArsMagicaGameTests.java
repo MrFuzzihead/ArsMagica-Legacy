@@ -342,9 +342,8 @@ final class ArsMagicaGameTests {
         check(ArsMagicaApi.instance.getBuffHelper() != null, "the buff helper must be set");
         check(ArsMagicaApi.instance.getSpellUtils() != null, "the spell utils helper must be set");
         check(ArsMagicaApi.instance.getKeystoneHelper() != null, "the keystone helper must be set");
+        check(ArsMagicaApi.instance.getEssenceRecipeManager() != null, "the essence recipe manager must be set");
 
-        // ArsMagicaApi.setEssenceRecipeHandler() only assigns when the field is already non-null, so the essence
-        // recipe manager is null for every launch today. Do not gate the harness on that pre-existing bug.
         checkEquals(38F, ArsMagicaApi.getBurnoutFromMana(100F), "the burnout ratio");
     }
 
