@@ -54,6 +54,8 @@ jobs:
           grep -hE "\[ARSMAGICA-GAMETEST\] [0-9]+/[0-9]+ checks passed" run/server/logs/*.log || true
           grep -hq "ARSMAGICA_GAMETEST_OK" run/server/logs/*.log
           ! grep -hq "ARSMAGICA_GAMETEST_FAILED" run/server/logs/*.log
+          grep -hq "mixins.arsmagica2.early.json" run/server/logs/*.log
+          ! grep -hqE "MixinApplyError|InvalidInjectionException|MixinTransformerError" run/server/logs/*.log
 
       - name: Upload the server log
         if: always()
@@ -90,6 +92,8 @@ jobs:
           grep -hE "\[ARSMAGICA-CLIENTTEST\] [0-9]+/[0-9]+ checks passed" run/client/logs/*.log || true
           grep -hq "ARSMAGICA_CLIENTTEST_OK" run/client/logs/*.log
           ! grep -hq "ARSMAGICA_CLIENTTEST_FAILED" run/client/logs/*.log
+          grep -hq "mixins.arsmagica2.early.json" run/client/logs/*.log
+          ! grep -hqE "MixinApplyError|InvalidInjectionException|MixinTransformerError" run/client/logs/*.log
 
       - name: Upload the client log
         if: always()
