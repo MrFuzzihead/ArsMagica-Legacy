@@ -60,6 +60,10 @@ and the automated tests that now cover the fix.
 | 4.2 Flicker out-marker removal | **Fixed** — removes the vector from every priority list | `6641377` | `TileEntityFlickerHabitatTest` |
 | 4.5 Multiblock replacement precedence | **Fixed** — block/meta condition parenthesised | `6641377` | `MultiblockStructureDefinitionTest` |
 | 4.7 Collection contracts | **Fixed** — RegionCoordinates, CompoundKey and ManaStack equals/hashCode aligned | `6641377` | `CompoundKeyTest`, `ManaStackTest` |
+| 4.3 Moonstone attractor scoping | **Fixed** — attractors keyed by dimension | `a24ebad` | `FlickerOperatorMoonstoneAttractorTest` |
+| 4.4 Item-frame keys | **Fixed** — dimension in the key, cleared on unload/disconnect | `a24ebad` | `ItemFrameWatcherKeyTest` |
+| 4.8 Optional dependencies | **Fixed** — CoFH short-circuit plus unused Baubles/Thermal deps removed | `a24ebad` | `RedstoneFluxDrainTest` |
+| 4.11 Malformed player NBT | **Fixed** — contingency default, null-safe save, skill-tree/affinity bounds | `a24ebad` | `ExtendedPropertiesNbtTest`, `SkillDataTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -595,6 +599,9 @@ public void removeOutMarkerLocation(int x, int y, int z) {
 
 ### 4.3 `FlickerOperatorMoonstoneAttractor.attractors` is global and dimension-blind
 
+> **Status: Fixed** in `a24ebad`; covered by `FlickerOperatorMoonstoneAttractorTest`.
+
+
 ```java
 // FlickerOperatorMoonstoneAttractor.java:20-26
 private static final ArrayList<AMVector3> attractors = new ArrayList<AMVector3>();
@@ -610,6 +617,9 @@ public static AMVector3 getMeteorAttractor(AMVector3 target) {
 The coordinates have no dimension. An attractor in the Nether can redirect an Overworld meteor (and vice versa) if the X/Z happen to be within 128 blocks. The list is also only cleaned when the operator ticks without power or is removed; a chunk unload/world switch leaves stale entries. The linear scan is fine for a handful of attractors, but use a world-keyed map to make the semantics correct.
 
 ### 4.4 Item-frame watcher keys collide across dimensions
+
+> **Status: Fixed** in `a24ebad`; covered by `ItemFrameWatcherKeyTest`.
+
 
 `EntityItemFrameComparator.equals` and `hashCode` (`ItemFrameWatcher.java:263-279`) use only `frame.getEntityId()` and `worldObj.isRemote`. Entity IDs are per-world, so a frame in the Nether and a frame in the Overworld with the same ID compare equal on the server. One frame's watched-time counter can overwrite the other's. Include `worldObj` identity/dimension in the key (or use the frame's UUID).
 
@@ -671,6 +681,10 @@ Also:
 
 ### 4.8 Optional-dependency handling is inconsistent
 
+> **Status: Fixed** in `a24ebad`; covered by `RedstoneFluxDrainTest`. Unused Baubles/Thermal dependencies
+> were removed.
+
+
 - **CoFH:** `AMEventHandler` imports and uses `cofh.api.energy.IEnergyHandler` directly, and `RedstoneFluxDrain` does the same. Neither checks `AMCore.cofh` / `Loader.isModLoaded("CoFHCore")`. The `@Mod` dependency is only `after:CoFHCore` (not required), so this is a real crash path on servers without CoFH (see 3.3).
 - **Thaumcraft:** `TileEntityLectern.getValidItems` is guarded with `Loader.isModLoaded("Thaumcraft")` but still references `thaumcraft.api.ItemApi` in the bytecode; `ItemMageHood` uses `@Optional.Interface(striprefs = true)`. This pattern works in practice but deserves a smoke test with Thaumcraft absent.
 - **Baubles:** `dependencies.gradle` declares `Baubles-Expanded`, but there are no `baubles` references in the source. Remove the dependency or implement the integration.
@@ -701,6 +715,9 @@ DimensionManager.registerDimension(config.getMMFDimensionID(), config.getMMFDime
 **Fix:** validate the IDs at config load, log a clear error and fall back to the default, and check `DimensionManager.isDimensionRegistered`/provider-type registration before registering.
 
 ### 4.11 Possible NPEs on malformed player NBT
+
+> **Status: Fixed** in `a24ebad`; covered by `ExtendedPropertiesNbtTest` and `SkillDataTest`.
+
 
 - `ExtendedProperties.loadNBTData` (`1278-1285`) catches `NullPointerException` while loading contingency stacks but can still assign `null`; `getContingencyEffect(n).getItem()` is then called on every tick in `AMEventHandler`. A save with a missing/invalid contingency tag can crash the player's tick loop. Guard the getters or restore the snowball default.
 - `ExtendedProperties.saveNBTData` (`1198-1201`) writes `contingencyStacks[i].writeToNBT(...)` with no null check; the same corrupt state crashes on logout/save.
