@@ -35,6 +35,17 @@ public class ItemSoulspike extends ItemSword {
         return false;
     }
 
+    /**
+     * Soulspikes store their power in NBT, not durability. The old coremod patch suppressed {@code Item.setDamage}
+     * for them except for the two sentinel values other code relies on: 0 (clear) and 66.
+     */
+    @Override
+    public void setDamage(ItemStack stack, int damage) {
+        if (damage == 0 || damage == 66) {
+            super.setDamage(stack, damage);
+        }
+    }
+
     @Override
     public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean par4) {
         list.add(String.format(StatCollector.translateToLocal("am2.tooltip.containedMana"), getManaInSpike(stack)));

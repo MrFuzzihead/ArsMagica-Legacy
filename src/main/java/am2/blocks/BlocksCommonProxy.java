@@ -16,6 +16,7 @@ import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.oredict.RecipeSorter;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
@@ -64,6 +65,7 @@ import am2.blocks.tileentities.TileEntitySpatialVortex;
 import am2.blocks.tileentities.TileEntitySpellReplicator;
 import am2.blocks.tileentities.TileEntitySpellSealedDoor;
 import am2.blocks.tileentities.TileEntitySummoner;
+import am2.crafting.SpellCraftingRecipe;
 import am2.items.ItemEssence;
 import am2.items.ItemOre;
 import am2.items.ItemsCommonProxy;
@@ -404,6 +406,14 @@ public class BlocksCommonProxy {
 
         List recipes = CraftingManager.getInstance()
             .getRecipeList();
+
+        // Dynamic staff/scroll/armor combinations have priority over the static recipe list.
+        recipes.add(0, SpellCraftingRecipe.INSTANCE);
+        RecipeSorter.register(
+            "arsmagica2:spell_crafting",
+            SpellCraftingRecipe.class,
+            RecipeSorter.Category.SHAPELESS,
+            "after:minecraft:shapeless");
 
         // essence refiner
         GameRegistry.addRecipe(

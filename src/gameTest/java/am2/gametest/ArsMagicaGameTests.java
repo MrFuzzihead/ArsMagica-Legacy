@@ -3,6 +3,10 @@ package am2.gametest;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
@@ -88,6 +92,7 @@ final class ArsMagicaGameTests {
         checksWorldPlacement(pWorld);
         checksOreDictionary();
         checksRecipes();
+        checksSpellCraftingRecipe(pWorld);
         checksApi();
         checksFixMixins(pWorld);
     }
@@ -374,6 +379,59 @@ final class ArsMagicaGameTests {
             pWorld.isBlockIndirectlyGettingPowered(x, y, z),
             "WorldRedstoneMixin must report an active Redstone Signal inlay");
         check(!pWorld.isBlockIndirectlyGettingPowered(x, y, z), "WorldRedstoneMixin must consume the inlay tick");
+    }
+
+    /**
+     * Runtime proof for the dynamic staff/scroll/armor recipe that replaced the global
+     * {@code CraftingManager.findMatchingRecipe} patch.
+     */
+    private static void checksSpellCraftingRecipe(WorldServer pWorld) {
+        InventoryCrafting grid = new InventoryCrafting(new Container() {
+
+            @Override
+            public void onCraftMatrixChanged(IInventory inventory) {}
+
+            @Override
+            public boolean canInteractWith(EntityPlayer player) {
+                return true;
+            }
+        }, 3, 3);
+
+        // One staff plus one spell scroll puts the spell on the staff.
+        grid.setInventorySlotContents(0, new ItemStack(ItemsCommonProxy.spellStaffNovice));
+        grid.setInventorySlotContents(4, new ItemStack(ItemsCommonProxy.spell));
+        ItemStack result = CraftingManager.getInstance()
+            .findMatchingRecipe(grid, pWorld);
+        check(
+            result != null && result.getItem() == ItemsCommonProxy.spellStaffNovice,
+            "a staff plus a spell scroll must craft a staff");
+
+        // Two staffs copy the charge from the second to the first.
+        ItemStack source = new ItemStack(ItemsCommonProxy.spellStaffNovice);
+        source.setTagCompound(new NBTTagCompound());
+        source.getTagCompound()
+            .setFloat("current_charge", 123.0F);
+        grid.setInventorySlotContents(0, new ItemStack(ItemsCommonProxy.spellStaffNovice));
+        grid.setInventorySlotContents(4, source);
+        result = CraftingManager.getInstance()
+            .findMatchingRecipe(grid, pWorld);
+        check(result != null && result.getItem() == ItemsCommonProxy.spellStaffNovice, "two staffs must craft a staff");
+        check(
+            result != null && result.getTagCompound() != null
+                && Math.abs(
+                    result.getTagCompound()
+                        .getFloat("current_charge") - 123.0F)
+                    < 0.01F,
+            "two staffs must copy the source charge");
+
+        // Bound armor plus a spell scroll puts the spell on the armor.
+        grid.setInventorySlotContents(0, new ItemStack(ItemsCommonProxy.BoundArmor));
+        grid.setInventorySlotContents(4, new ItemStack(ItemsCommonProxy.spell));
+        result = CraftingManager.getInstance()
+            .findMatchingRecipe(grid, pWorld);
+        check(
+            result != null && result.getItem() == ItemsCommonProxy.BoundArmor,
+            "bound armor plus a spell scroll must craft bound armor");
     }
 
     private static void checksApi() {

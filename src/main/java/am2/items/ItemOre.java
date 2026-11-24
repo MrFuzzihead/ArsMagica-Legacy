@@ -1,9 +1,12 @@
 package am2.items;
 
+import static am2.blocks.liquid.BlockLiquidEssence.liquidEssenceMaterial;
+
 import java.util.List;
 
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -152,6 +155,42 @@ public class ItemOre extends ArsMagicaItem {
                 return "+0-1+2+3&4-4+13";
         }
         return "";
+    }
+
+    /**
+     * Replaces the global {@code EntityItem.onUpdate} coremod patch. Cognitive dust drifts upward and ItemOre stacks
+     * float in liquid etherium; returning false lets vanilla's normal item physics continue afterwards, matching the
+     * old patch's insertion point.
+     */
+    @Override
+    public boolean onEntityItemUpdate(EntityItem entityItem) {
+        ItemStack stack = entityItem.getEntityItem();
+        if (stack != null && stack.getItemDamage() == META_COGNITIVEDUST) {
+            entityItem.moveEntity(entityItem.motionX, entityItem.motionY, entityItem.motionZ);
+            entityItem.motionY *= 0.0500000011920929D;
+            entityItem.motionY += 0.025D;
+        }
+
+        if (entityItem.worldObj != null && entityItem.worldObj.isMaterialInBB(
+            entityItem.boundingBox.expand(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D),
+            liquidEssenceMaterial)) {
+            double startY = entityItem.posY;
+            entityItem.moveEntity(entityItem.motionX, entityItem.motionY, entityItem.motionZ);
+            entityItem.motionX *= 0.500000011920929D;
+            entityItem.motionY *= 0.0500000011920929D;
+            entityItem.motionZ *= 0.500000011920929D;
+            entityItem.motionY += 0.05D;
+
+            if (entityItem.isCollidedHorizontally && entityItem.isOffsetPositionInLiquid(
+                entityItem.motionX,
+                entityItem.motionY + 0.6000000238418579D - entityItem.posY + startY,
+                entityItem.motionZ)) {
+                entityItem.motionY = 0.30000001192092896D;
+            }
+            entityItem.fallDistance = 0;
+        }
+
+        return false;
     }
 
     @SideOnly(Side.CLIENT)
