@@ -113,6 +113,7 @@ import am2.utility.EntityUtilities;
 import am2.utility.InventoryUtilities;
 import am2.utility.KeystoneUtilities;
 import am2.utility.MathUtilities;
+import am2.utility.TickrateController;
 import cofh.api.energy.IEnergyHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.Event.Result;
@@ -741,7 +742,7 @@ public class AMEventHandler {
     public void connect(PlayerEvent.PlayerLoggedInEvent event) {
         if (FMLCommonHandler.instance()
             .getEffectiveSide() == Side.SERVER) {
-            float tickrate = (float) 1000L / MysteriumPatchesFixesMagicka.servertickrate; // 1000/50 = 20 ticks, etc
+            float tickrate = (float) 1000L / TickrateController.getServerTickrate(); // 1000/50 = 20 ticks, etc
             MysteriumPatchesFixesMagicka.changeClientTickratePublic(event.player, tickrate);
         }
     }

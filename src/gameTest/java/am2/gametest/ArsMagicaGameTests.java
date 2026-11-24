@@ -26,6 +26,7 @@ import am2.items.ItemOre;
 import am2.items.ItemsCommonProxy;
 import am2.mixins.early.DamageSourceAccessor;
 import am2.mixins.early.PotionAccessor;
+import am2.utility.TickrateController;
 import cpw.mods.fml.common.registry.GameRegistry;
 
 /**
@@ -113,6 +114,11 @@ final class ArsMagicaGameTests {
         DamageSource testSource = new DamageSource("am2gametest");
         ((DamageSourceAccessor) testSource).am2$setUnblockable(true);
         check(testSource.isUnblockable(), "DamageSourceAccessor must set isUnblockable");
+
+        // The tick-loop mixin runs on every server tick, so this is a real proof that MinecraftServer.run() was
+        // transformed rather than a check that the class merely loaded.
+        check(TickrateController.isMixinApplied(), "MinecraftServerMixin must run on the server tick loop");
+        check(TickrateController.getServerTickrate() > 0L, "the server tick length must be positive");
 
         check(
             AMCore.proxy.blocks.getArsMagicaBlocks() != null && !AMCore.proxy.blocks.getArsMagicaBlocks()

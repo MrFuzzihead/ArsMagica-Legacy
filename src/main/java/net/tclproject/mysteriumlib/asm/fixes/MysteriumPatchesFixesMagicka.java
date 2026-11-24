@@ -69,6 +69,7 @@ import am2.items.ItemsCommonProxy;
 import am2.items.SpellBase;
 import am2.network.AMPacketProcessorClient;
 import am2.network.TickrateMessage;
+import am2.utility.TickrateController;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.EventBus;
 import cpw.mods.fml.relauncher.Side;
@@ -438,9 +439,6 @@ public class MysteriumPatchesFixesMagicka {
         return false;
     }
 
-    public static long servertickrate = 50L; // changing
-    public static long servertickratedefault = 50L; // default
-
     public static float clienttickrate = 20; // stored in ticks as opposed to milis
     public static float clienttickratedefault = 20;
 
@@ -564,8 +562,7 @@ public class MysteriumPatchesFixesMagicka {
     }
 
     public static void changeServerTickrate(float newtickrate) {
-        servertickrate = (long) (1000L / newtickrate); // 1000 milis in a second. 20 ticks a second. = 50 milis per
-                                                       // tick.
+        TickrateController.setServerTickrate(newtickrate);
     }
 
     @Fix(returnSetting = EnumReturnSetting.ON_TRUE, booleanAlwaysReturned = true)

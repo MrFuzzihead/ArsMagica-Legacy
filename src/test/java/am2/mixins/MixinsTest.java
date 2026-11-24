@@ -27,10 +27,13 @@ import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
 public class MixinsTest {
 
     @Test
-    public void bothFeatureGroupsAreDeclared() {
-        assertEquals(2, Mixins.values().length);
+    public void allFeatureGroupsAreDeclaredInOrder() {
+        assertEquals(5, Mixins.values().length);
         assertEquals("POTION_IDS", Mixins.values()[0].name());
         assertEquals("REFLECTION_ACCESSORS", Mixins.values()[1].name());
+        assertEquals("TICKRATE", Mixins.values()[2].name());
+        assertEquals("SOUND_PITCH", Mixins.values()[3].name());
+        assertEquals("SHRINK_FLIP", Mixins.values()[4].name());
     }
 
     @Test
@@ -74,6 +77,35 @@ public class MixinsTest {
     }
 
     @Test
+    public void serverSideCoreTransformsAreCommon() throws Exception {
+        assertCommonEarly(Mixins.TICKRATE, "MinecraftServerMixin");
+        assertCommonEarly(Mixins.SOUND_PITCH, "WorldMixin");
+    }
+
+    @Test
+    public void clientRenderTransformsAreClientOnly() throws Exception {
+        MixinBuilder builder = Mixins.SHRINK_FLIP.getBuilder();
+        assertNotNull(builder);
+        assertEquals(IBaseTransformer.Phase.EARLY, read(builder, "phase"));
+
+        @SuppressWarnings("unchecked")
+        List<String> client = (List<String>) read(builder, "clientClasses");
+        assertNotNull(client);
+        assertEquals(4, client.size());
+        assertTrue(
+            client.containsAll(
+                Arrays.asList(
+                    "EntityRendererMixin",
+                    "EntityRendererAccessor",
+                    "EntityPlayerSPMixin",
+                    "RendererLivingEntityMixin")));
+
+        @SuppressWarnings("unchecked")
+        List<String> common = (List<String>) read(builder, "commonClasses");
+        assertTrue(common == null || common.isEmpty());
+    }
+
+    @Test
     public void loaderPointsAtTheEarlyMixinConfig() {
         EarlyMixinsLoader loader = new EarlyMixinsLoader();
         assertEquals("mixins.arsmagica2.early.json", loader.getMixinConfig());
@@ -82,6 +114,18 @@ public class MixinsTest {
         assertNull(loader.getAccessTransformerClass());
         assertNull(loader.getModContainerClass());
         assertNull(loader.getSetupClass());
+    }
+
+    private static void assertCommonEarly(Mixins group, String mixinName) throws Exception {
+        MixinBuilder builder = group.getBuilder();
+        assertNotNull(builder);
+        assertEquals(IBaseTransformer.Phase.EARLY, read(builder, "phase"));
+
+        @SuppressWarnings("unchecked")
+        List<String> common = (List<String>) read(builder, "commonClasses");
+        assertNotNull(common);
+        assertEquals(1, common.size());
+        assertTrue(common.contains(mixinName));
     }
 
     private static Object read(Object target, String fieldName) throws Exception {

@@ -3,6 +3,7 @@ package am2.gametest;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
 
+import am2.utility.TickrateController;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -27,8 +28,8 @@ import cpw.mods.fml.relauncher.SideOnly;
  *
  * <p>
  * The assertions themselves live in {@link ArsMagicaGameTests} and {@link ClientGameTests}; this class owns the
- * lifecycle and the exit code. Every server assertion runs on the server thread at {@link FMLServerStartedEvent},
- * where the overworld exists and block mutations are legal.
+ * lifecycle and the exit code. Every server assertion runs on the server thread after the first server tick, so mixins
+ * applied to the tick loop have demonstrably executed before the checks run.
  * </p>
  */
 @Mod(
@@ -43,7 +44,12 @@ public class GameTestMod {
     static final String OK_MARKER = "ARSMAGICA_GAMETEST_OK";
     static final String FAIL_MARKER = "ARSMAGICA_GAMETEST_FAILED";
 
+    /** Stop waiting for the tick-loop mixin after this many ticks so a broken transform fails instead of hanging. */
+    private static final int MIXIN_GRACE_TICKS = 20;
+
+    private boolean serverStarted;
     private boolean ran;
+    private int serverTicks;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
@@ -66,18 +72,35 @@ public class GameTestMod {
 
     @Mod.EventHandler
     public void onServerStarted(FMLServerStartedEvent event) {
-        if (ran) {
-            return;
-        }
-        ran = true;
-
         // The test mod only runs when the build actually asked for it, so a stray copy on a normal dev classpath is
         // inert instead of failing a launch.
         if (!Boolean.getBoolean("arsmagica2.gameTest")) {
             System.out.println("[ARSMAGICA-GAMETEST] arsmagica2.gameTest is not set, skipping");
             return;
         }
+        serverStarted = true;
+    }
 
+    /**
+     * Runs the server assertions after at least one server tick. That gives the {@code MinecraftServerMixin} a chance
+     * to run, so {@link TickrateController#isMixinApplied()} is a real check that the transform loaded.
+     */
+    @SubscribeEvent
+    public void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || !serverStarted || ran) {
+            return;
+        }
+
+        ++serverTicks;
+        if (!TickrateController.isMixinApplied() && serverTicks < MIXIN_GRACE_TICKS) {
+            return;
+        }
+
+        ran = true;
+        runServerTests();
+    }
+
+    private void runServerTests() {
         WorldServer overworld = MinecraftServer.getServer()
             .worldServerForDimension(0);
         if (overworld == null) {
