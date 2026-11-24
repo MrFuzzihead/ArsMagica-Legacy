@@ -20,7 +20,6 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.sound.PlaySoundEvent17;
-import net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixesMagicka;
 
 import am2.AMCore;
 import am2.EntityItemWatcher;
@@ -54,6 +53,7 @@ import am2.power.PowerNodeEntry;
 import am2.spell.SpellHelper;
 import am2.spell.SpellUtils;
 import am2.spell.components.Telekinesis;
+import am2.utility.EtherealState;
 import am2.worldgen.RetroactiveWorldgenerator;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -128,8 +128,8 @@ public class ClientTickHandler {
 
     @SubscribeEvent
     public void onGuiOpen(GuiOpenEvent event) { // you're a ghost, how are you looking inside yourself
-        if (MysteriumPatchesFixesMagicka.isPlayerEthereal(Minecraft.getMinecraft().thePlayer)
-            && event.gui instanceof GuiInventory) event.setCanceled(true);
+        if (EtherealState.isEthereal(Minecraft.getMinecraft().thePlayer) && event.gui instanceof GuiInventory)
+            event.setCanceled(true);
     }
 
     @SubscribeEvent

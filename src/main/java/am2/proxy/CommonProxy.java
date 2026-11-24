@@ -264,6 +264,9 @@ public class CommonProxy {
 
     public void flashManaBar() {}
 
+    /** Client-only timer replacement for the time-manipulation spells. */
+    public void changeClientTickrate(float ticksPerSecond) {}
+
     public void blackoutArmorPiece(EntityPlayerMP player, int slot, int cooldown) {
         serverTickHandler.blackoutArmorPiece(player, slot, cooldown);
     }

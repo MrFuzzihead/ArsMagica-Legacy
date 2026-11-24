@@ -47,7 +47,6 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
-import net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixesMagicka;
 
 import org.lwjgl.opengl.GL11;
 
@@ -64,6 +63,7 @@ import am2.mixins.early.EntityPlayerAccessor;
 import am2.playerextensions.ExtendedProperties;
 import am2.proxy.gui.ModelLibrary;
 import am2.texture.ResourceManager;
+import am2.utility.EtherealState;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.eventhandler.Event;
 import cpw.mods.fml.common.eventhandler.EventPriority;
@@ -226,7 +226,7 @@ public class ArmorEventHandler {
     @SideOnly(Side.CLIENT)
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onPlayerRenderPre(RenderPlayerEvent.Pre event) { // true invis
-        if (MysteriumPatchesFixesMagicka.isPlayerEthereal(event.entityPlayer)) {
+        if (EtherealState.isEthereal(event.entityPlayer)) {
             event.setCanceled(true);
             return;
         }
@@ -295,7 +295,7 @@ public class ArmorEventHandler {
     @SideOnly(Side.CLIENT)
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onPlayerRenderPreSpecial(RenderPlayerEvent.Specials.Pre event) { // true invis
-        if (MysteriumPatchesFixesMagicka.isPlayerEthereal(event.entityPlayer)) {
+        if (EtherealState.isEthereal(event.entityPlayer)) {
             event.setCanceled(true);
             return;
         }
@@ -316,7 +316,7 @@ public class ArmorEventHandler {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     @SideOnly(Side.CLIENT)
     public void onOverlayRenderPre(RenderGameOverlayEvent.Pre event) {
-        if (MysteriumPatchesFixesMagicka.isPlayerEthereal(Minecraft.getMinecraft().thePlayer)) {
+        if (EtherealState.isEthereal(Minecraft.getMinecraft().thePlayer)) {
             if (event.type == RenderGameOverlayEvent.ElementType.HOTBAR
                 || event.type == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
                 event.setCanceled(true);
@@ -331,7 +331,7 @@ public class ArmorEventHandler {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     @SideOnly(Side.CLIENT)
     public void onOverlayRenderPost(RenderGameOverlayEvent.Post event) {
-        if (MysteriumPatchesFixesMagicka.isPlayerEthereal(Minecraft.getMinecraft().thePlayer)) {
+        if (EtherealState.isEthereal(Minecraft.getMinecraft().thePlayer)) {
             if (event.type == RenderGameOverlayEvent.ElementType.ALL) {
                 Minecraft.getMinecraft().gameSettings.heldItemTooltips = hadHeldItemTooltips;
             }
@@ -341,20 +341,20 @@ public class ArmorEventHandler {
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void onHandRender(RenderHandEvent event) {
-        if (MysteriumPatchesFixesMagicka.isPlayerEthereal(Minecraft.getMinecraft().thePlayer)) event.setCanceled(true);
+        if (EtherealState.isEthereal(Minecraft.getMinecraft().thePlayer)) event.setCanceled(true);
     }
 
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void onFireRender(RenderBlockOverlayEvent event) {
-        if (MysteriumPatchesFixesMagicka.isPlayerEthereal(Minecraft.getMinecraft().thePlayer)) event.setCanceled(true);
+        if (EtherealState.isEthereal(Minecraft.getMinecraft().thePlayer)) event.setCanceled(true);
     }
 
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void onRenderFogDensity(EntityViewRenderEvent.FogDensity event) {
         if (event.entity instanceof EntityPlayer) {
-            if (MysteriumPatchesFixesMagicka.isPlayerEthereal((EntityPlayer) event.entity)) {
+            if (EtherealState.isEthereal((EntityPlayer) event.entity)) {
                 if (event.block.getMaterial() == Material.water || event.block.getMaterial() == Material.lava) {
                     event.setCanceled(true);
                     event.density = 0;
@@ -366,7 +366,7 @@ public class ArmorEventHandler {
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void onBlockHighlight(DrawBlockHighlightEvent event) {
-        if (MysteriumPatchesFixesMagicka.isPlayerEthereal(event.player)) {
+        if (EtherealState.isEthereal(event.player)) {
             Block block = Minecraft.getMinecraft().theWorld
                 .getBlock(event.target.blockX, event.target.blockY, event.target.blockZ);
             int meta = Minecraft.getMinecraft().theWorld
@@ -386,7 +386,7 @@ public class ArmorEventHandler {
         if (player != null && !(player instanceof FakePlayer)
             && Minecraft.getMinecraft().playerController != null
             && event.phase == TickEvent.Phase.START) {
-            if (MysteriumPatchesFixesMagicka.isPlayerEthereal(Minecraft.getMinecraft().thePlayer)) {
+            if (EtherealState.isEthereal(Minecraft.getMinecraft().thePlayer)) {
                 if (!player.capabilities.isFlying) {
                     player.capabilities.isFlying = true;
                     player.sendPlayerAbilities();
@@ -397,7 +397,7 @@ public class ArmorEventHandler {
 
     @SubscribeEvent
     public void onInteract(PlayerInteractEvent event) {
-        if (MysteriumPatchesFixesMagicka.isPlayerEthereal(event.entityPlayer)) {
+        if (EtherealState.isEthereal(event.entityPlayer)) {
             if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) event.setCanceled(true);
             else {
                 if (!event.world.blockExists(event.x, event.y, event.z)) {
@@ -415,21 +415,21 @@ public class ArmorEventHandler {
 
     @SubscribeEvent
     public void onInteract(BlockEvent.PlaceEvent event) {
-        if (MysteriumPatchesFixesMagicka.isPlayerEthereal(event.player)) {
+        if (EtherealState.isEthereal(event.player)) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
     public void onItemPickup(EntityItemPickupEvent event) {
-        if (MysteriumPatchesFixesMagicka.isPlayerEthereal(event.entityPlayer)) {
+        if (EtherealState.isEthereal(event.entityPlayer)) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
     public void onInteract(AttackEntityEvent event) {
-        if (MysteriumPatchesFixesMagicka.isPlayerEthereal(event.entityPlayer)) {
+        if (EtherealState.isEthereal(event.entityPlayer)) {
             event.setCanceled(true);
         }
     }
@@ -437,7 +437,7 @@ public class ArmorEventHandler {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
-            if (MysteriumPatchesFixesMagicka.isPlayerEthereal(event.player)) {
+            if (EtherealState.isEthereal(event.player)) {
                 event.player.noClip = true;
                 event.player.onGround = false;
                 event.player.setInvisible(true);
@@ -447,12 +447,12 @@ public class ArmorEventHandler {
 
     @SubscribeEvent
     public void breakSpeed(PlayerEvent.BreakSpeed event) {
-        if (MysteriumPatchesFixesMagicka.isPlayerEthereal(event.entityPlayer)) event.newSpeed = 0;
+        if (EtherealState.isEthereal(event.entityPlayer)) event.newSpeed = 0;
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void itemToss(ItemTossEvent event) {
-        if (MysteriumPatchesFixesMagicka.isPlayerEthereal(event.player)) {
+        if (EtherealState.isEthereal(event.player)) {
             event.setCanceled(true);
             ItemStack item = event.entityItem.getEntityItem();
             event.player.inventory.addItemStackToInventory(item);

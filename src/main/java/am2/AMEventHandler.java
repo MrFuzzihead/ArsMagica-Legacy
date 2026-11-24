@@ -71,7 +71,6 @@ import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.world.BlockEvent;
-import net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixesMagicka;
 
 import am2.affinity.AffinityHelper;
 import am2.api.ArsMagicaApi;
@@ -712,29 +711,22 @@ public class AMEventHandler {
     public void disconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) { // fired at the client. this is
                                                                                        // to reset it to normal after
                                                                                        // disconnecting
-        MysteriumPatchesFixesMagicka.changeServerTickrate(MysteriumPatchesFixesMagicka.clienttickratedefault); // this
-                                                                                                               // is ok
-                                                                                                               // because
-                                                                                                               // it
-                                                                                                               // converts
-                                                                                                               // it to
-                                                                                                               // the
-                                                                                                               // server
-                                                                                                               // format
-                                                                                                               // anyway
-        MysteriumPatchesFixesMagicka
-            .changeClientTickratePublic(null, MysteriumPatchesFixesMagicka.clienttickratedefault);
+        TickrateController.setServerTickrate(TickrateController.DEFAULT_TICKS_PER_SECOND);
+        TickrateController.changeClientTickratePublic(null, TickrateController.DEFAULT_TICKS_PER_SECOND);
     }
 
     @SubscribeEvent
     public void connect(FMLNetworkEvent.ClientConnectedToServerEvent event) { // fired at client when connects to server
         if (event.isLocal) { // single player game
-            float tickrate = MysteriumPatchesFixesMagicka.clienttickratedefault;
-            MysteriumPatchesFixesMagicka.changeServerTickrate(tickrate); // this is ok because it converts it to the
-                                                                         // server format anyway
-            MysteriumPatchesFixesMagicka.changeClientTickratePublic(null, tickrate);
+            float tickrate = TickrateController.DEFAULT_TICKS_PER_SECOND;
+            TickrateController.setServerTickrate(tickrate);
+            TickrateController.changeClientTickratePublic(null, tickrate);
         } else {
-            MysteriumPatchesFixesMagicka.changeClientTickratePublic(null, 20F); // it forces it serverside anyway
+            TickrateController.changeClientTickratePublic(null, TickrateController.DEFAULT_TICKS_PER_SECOND); // it
+                                                                                                              // forces
+                                                                                                              // it
+                                                                                                              // serverside
+                                                                                                              // anyway
         }
     }
 
@@ -743,7 +735,7 @@ public class AMEventHandler {
         if (FMLCommonHandler.instance()
             .getEffectiveSide() == Side.SERVER) {
             float tickrate = (float) 1000L / TickrateController.getServerTickrate(); // 1000/50 = 20 ticks, etc
-            MysteriumPatchesFixesMagicka.changeClientTickratePublic(event.player, tickrate);
+            TickrateController.changeClientTickratePublic(event.player, tickrate);
         }
     }
 

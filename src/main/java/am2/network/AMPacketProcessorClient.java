@@ -16,7 +16,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
-import net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixesMagicka;
 
 import am2.AMCore;
 import am2.LogHelper;
@@ -36,6 +35,7 @@ import am2.bosses.IArsMagicaBoss;
 import am2.buffs.BuffList;
 import am2.containers.ContainerMagiciansWorkbench;
 import am2.customdata.CustomWorldData;
+import am2.entities.renderers.ClientPlayerModelMap;
 import am2.guis.AMGuiHelper;
 import am2.guis.ArsMagicaGuiIdList;
 import am2.guis.GuiHudCustomization;
@@ -220,7 +220,8 @@ public class AMPacketProcessorClient extends AMPacketProcessorServer {
         for (int i = 0; i < size; i++) {
             String key = rdr.getString();
             String value = rdr.getString();
-            MysteriumPatchesFixesMagicka.playerModelMap.put(key, value);
+            ClientPlayerModelMap.map()
+                .put(key, value);
         }
     }
 

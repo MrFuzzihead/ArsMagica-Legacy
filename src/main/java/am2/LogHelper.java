@@ -1,14 +1,17 @@
 package am2;
 
-import net.tclproject.mysteriumlib.asm.common.CustomLoadingPlugin;
-
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import cpw.mods.fml.common.Loader;
+
 public class LogHelper {
 
     private static Logger logger = LogManager.getLogger("ArsMagica2");
+
+    /** FML registers a synthetic {@code mcp} mod in a deobfuscated development environment. */
+    private static final boolean isDevEnvironment = Loader.isModLoaded("mcp");
 
     public static void log(Level level, String format, Object... data) {
         logger.log(level, String.format(format, data));
@@ -38,7 +41,7 @@ public class LogHelper {
         // this is a rather hacky way of turning on debug output if we're in a dev environment, but with the redeeming
         // feature that it actually works
         // (the default logging level seems to be INFO and I can't change it easily through code)
-        if (CustomLoadingPlugin.isDevEnvironment) {
+        if (isDevEnvironment) {
             log(Level.INFO, "AM2 Debug: " + format, data);
         } else {
             log(Level.DEBUG, format, data);

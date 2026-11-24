@@ -11,7 +11,6 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
-import net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixesMagicka;
 
 import am2.AMCore;
 import am2.api.spell.component.interfaces.ISpellComponent;
@@ -23,6 +22,7 @@ import am2.particles.AMParticle;
 import am2.particles.ParticleOrbitEntity;
 import am2.playerextensions.ExtendedProperties;
 import am2.spell.SpellUtils;
+import am2.utility.TickrateController;
 
 public class ConcentrateTime implements ISpellComponent {
 
@@ -41,7 +41,7 @@ public class ConcentrateTime implements ISpellComponent {
                 MinecraftServer server = MinecraftServer.getServer();
                 if ((server != null) && (server.getConfigurationManager() != null)) { // server side, or client side
                                                                                       // singleplayer
-                    MysteriumPatchesFixesMagicka.changeTickrate(
+                    TickrateController.changeTickrate(
                         (int) (20
                             * ((SpellUtils.instance.countModifiers(SpellModifiers.BUFF_POWER, stack, 0) + 1) * 1.5)));
                     int duration = (int) (SpellUtils.instance.getModifiedInt_Mul(
@@ -53,9 +53,9 @@ public class ConcentrateTime implements ISpellComponent {
                         0,
                         SpellModifiers.DURATION) / 2);
                     duration = SpellUtils.instance.modifyDurationBasedOnArmor(caster, duration);
-                    MysteriumPatchesFixesMagicka.countdownToChangeBack = duration; // if the server is reset, this will
-                                                                                   // reset anyway, so there's no issues
-                                                                                   // with not storing this in nbt
+                    TickrateController.countdownToChangeBack = duration; // if the server is reset, this will
+                                                                         // reset anyway, so there's no issues
+                                                                         // with not storing this in nbt
                 } // 1.5, 3, 4.5 times slower
             }
             return false;

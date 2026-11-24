@@ -69,6 +69,7 @@ import am2.proxy.tick.ClientTickHandler;
 import am2.spell.SpellUtils;
 import am2.spell.components.Telekinesis;
 import am2.texture.SpellIconManager;
+import am2.utility.ClientTickrateController;
 import am2.utility.ProxyUtilitiesClient;
 import am2.utility.RenderUtilities;
 import cpw.mods.fml.client.FMLClientHandler;
@@ -169,6 +170,11 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void flashManaBar() {
         AMGuiHelper.instance.flashManaBar();
+    }
+
+    @Override
+    public void changeClientTickrate(float ticksPerSecond) {
+        ClientTickrateController.changeClientTickrate(ticksPerSecond);
     }
 
     @Override

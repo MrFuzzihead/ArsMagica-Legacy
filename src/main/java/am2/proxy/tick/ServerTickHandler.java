@@ -16,7 +16,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
-import net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixesMagicka;
 
 import am2.AMCore;
 import am2.EntityItemWatcher;
@@ -28,6 +27,7 @@ import am2.network.AMNetHandler;
 import am2.network.AMPacketIDs;
 import am2.spell.SpellHelper;
 import am2.utility.DimensionUtilities;
+import am2.utility.TickrateController;
 import am2.worldgen.RetroactiveWorldgenerator;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -121,11 +121,11 @@ public class ServerTickHandler {
 
         MinecraftServer server = MinecraftServer.getServer();
         if ((server != null) && (server.getConfigurationManager() != null)) {
-            if (MysteriumPatchesFixesMagicka.countdownToChangeBack >= 3) {
-                MysteriumPatchesFixesMagicka.countdownToChangeBack--;
-            } else if (MysteriumPatchesFixesMagicka.countdownToChangeBack != -1) {
-                MysteriumPatchesFixesMagicka.countdownToChangeBack = -1;
-                MysteriumPatchesFixesMagicka.changeTickrate(20);
+            if (TickrateController.countdownToChangeBack >= 3) {
+                TickrateController.countdownToChangeBack--;
+            } else if (TickrateController.countdownToChangeBack != -1) {
+                TickrateController.countdownToChangeBack = -1;
+                TickrateController.changeTickrate(TickrateController.DEFAULT_TICKS_PER_SECOND);
             }
         }
     }
