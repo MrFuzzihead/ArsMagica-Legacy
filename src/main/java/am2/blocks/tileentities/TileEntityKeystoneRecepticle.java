@@ -440,7 +440,7 @@ public class TileEntityKeystoneRecepticle extends TileEntityAMPower
         NBTTagList nbttaglist = nbttagcompound.getTagList("KeystoneRecepticleInventory", Constants.NBT.TAG_COMPOUND);
         inventory = new ItemStack[getSizeInventory()];
         for (int i = 0; i < nbttaglist.tagCount(); i++) {
-            String tag = String.format("ArrayIndex", i);
+            String tag = "ArrayIndex";
             NBTTagCompound nbttagcompound1 = (NBTTagCompound) nbttaglist.getCompoundTagAt(i);
             byte byte0 = nbttagcompound1.getByte(tag);
             if (byte0 >= 0 && byte0 < inventory.length) {
@@ -463,7 +463,7 @@ public class TileEntityKeystoneRecepticle extends TileEntityAMPower
         NBTTagList nbttaglist = new NBTTagList();
         for (int i = 0; i < inventory.length; i++) {
             if (inventory[i] != null) {
-                String tag = String.format("ArrayIndex", i);
+                String tag = "ArrayIndex";
                 NBTTagCompound nbttagcompound1 = new NBTTagCompound();
                 nbttagcompound1.setByte(tag, (byte) i);
                 inventory[i].writeToNBT(nbttagcompound1);

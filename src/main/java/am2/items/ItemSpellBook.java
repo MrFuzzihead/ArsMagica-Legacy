@@ -215,10 +215,14 @@ public class ItemSpellBook extends ArsMagicaItem {
 
     public ItemSpellBase GetActiveScroll(ItemStack bookStack) {
         ItemStack[] inventoryItems = getMyInventory(bookStack);
-        if (inventoryItems[GetActiveSlot(bookStack)] == null) {
+        return activeSpell(inventoryItems[GetActiveSlot(bookStack)]);
+    }
+
+    static ItemSpellBase activeSpell(ItemStack active) {
+        if (active == null || !(active.getItem() instanceof ItemSpellBase)) {
             return null;
         }
-        return (ItemSpellBase) inventoryItems[GetActiveSlot(bookStack)].getItem();
+        return (ItemSpellBase) active.getItem();
     }
 
     public ItemStack GetActiveItemStack(ItemStack bookStack) {
@@ -307,7 +311,12 @@ public class ItemSpellBook extends ArsMagicaItem {
             SetActiveSlot(itemStack, 0);
             return 0;
         }
-        return itemStack.stackTagCompound.getInteger("spellbookactiveslot");
+        int slot = itemStack.stackTagCompound.getInteger("spellbookactiveslot");
+        if (slot < 0 || slot >= 8) {
+            slot = 0;
+            SetActiveSlot(itemStack, slot);
+        }
+        return slot;
     }
 
     public ItemStack[] ReadFromStackTagCompound(ItemStack item) {

@@ -326,7 +326,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
         NBTTagList nbttaglist = par1NBTTagCompound.getTagList("InscriptionTableInventory", Constants.NBT.TAG_COMPOUND);
         inscriptionTableItemStacks = new ItemStack[getSizeInventory()];
         for (int i = 0; i < nbttaglist.tagCount(); i++) {
-            String tag = String.format("ArrayIndex", i);
+            String tag = "ArrayIndex";
             NBTTagCompound nbttagcompound1 = (NBTTagCompound) nbttaglist.getCompoundTagAt(i);
             byte byte0 = nbttagcompound1.getByte(tag);
             if (byte0 >= 0 && byte0 < inscriptionTableItemStacks.length) {
@@ -343,7 +343,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
         NBTTagList nbttaglist = new NBTTagList();
         for (int i = 0; i < inscriptionTableItemStacks.length; i++) {
             if (inscriptionTableItemStacks[i] != null) {
-                String tag = String.format("ArrayIndex", i);
+                String tag = "ArrayIndex";
                 NBTTagCompound nbttagcompound1 = new NBTTagCompound();
                 nbttagcompound1.setByte(tag, (byte) i);
                 inscriptionTableItemStacks[i].writeToNBT(nbttagcompound1);

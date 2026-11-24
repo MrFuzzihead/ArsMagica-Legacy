@@ -441,7 +441,7 @@ public class TileEntityCalefactor extends TileEntityAMPower implements IInventor
         NBTTagList nbttaglist = nbttagcompound.getTagList("CasterInventory", Constants.NBT.TAG_COMPOUND);
         calefactorItemStacks = new ItemStack[getSizeInventory()];
         for (int i = 0; i < nbttaglist.tagCount(); i++) {
-            String tag = String.format("ArrayIndex", i);
+            String tag = "ArrayIndex";
             NBTTagCompound nbttagcompound1 = (NBTTagCompound) nbttaglist.getCompoundTagAt(i);
             byte byte0 = nbttagcompound1.getByte(tag);
             if (byte0 >= 0 && byte0 < calefactorItemStacks.length) {
@@ -456,7 +456,7 @@ public class TileEntityCalefactor extends TileEntityAMPower implements IInventor
         NBTTagList nbttaglist = new NBTTagList();
         for (int i = 0; i < calefactorItemStacks.length; i++) {
             if (calefactorItemStacks[i] != null) {
-                String tag = String.format("ArrayIndex", i);
+                String tag = "ArrayIndex";
                 NBTTagCompound nbttagcompound1 = new NBTTagCompound();
                 nbttagcompound1.setByte(tag, (byte) i);
                 calefactorItemStacks[i].writeToNBT(nbttagcompound1);

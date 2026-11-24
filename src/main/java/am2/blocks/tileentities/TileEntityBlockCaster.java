@@ -415,7 +415,7 @@ public class TileEntityBlockCaster extends TileEntityAMPower implements IInvento
         NBTTagList nbttaglist = (NBTTagList) nbttagcompound.getTag("CasterInventory");
         this.casterItemStacks = new ItemStack[this.getSizeInventory()];
         for (int i = 0; i < nbttaglist.tagCount(); ++i) {
-            String tag = String.format("ArrayIndex", i);
+            String tag = "ArrayIndex";
             NBTTagCompound nbttagcompound1 = nbttaglist.getCompoundTagAt(i);
             byte byte0 = nbttagcompound1.getByte(tag);
             if (byte0 >= 0 && byte0 < this.casterItemStacks.length) {
@@ -431,7 +431,7 @@ public class TileEntityBlockCaster extends TileEntityAMPower implements IInvento
 
         for (int i = 0; i < this.casterItemStacks.length; ++i) {
             if (this.casterItemStacks[i] != null) {
-                String tag = String.format("ArrayIndex", i);
+                String tag = "ArrayIndex";
                 NBTTagCompound nbttagcompound1 = new NBTTagCompound();
                 nbttagcompound1.setByte(tag, (byte) i);
                 this.casterItemStacks[i].writeToNBT(nbttagcompound1);
