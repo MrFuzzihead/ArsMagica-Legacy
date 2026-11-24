@@ -41,6 +41,7 @@ and the automated tests that now cover the fix.
 | Finding | Status | Commit | Automated coverage |
 |---|---|---|---|
 | 2.1 Coremod not registered | **Fixed** — GTNH Mixin loader is registered and guarded | `53b3d3f` … `d6cd9ea` | `verifyMixinManifest`, `MixinsTest`, server/client game tests |
+| 2.2 Client-authoritative packets | **Fixed** — skill sync direction, inscription-table ownership/creative/recipe checks, coordinate reach checks | `8d6d3fc` | `SkillDataTest`, `PacketAuthorityTest`, `TileEntityInscriptionTableAuthorityTest` |
 | 2.3 Unbounded packet allocations | **Fixed** — negative/oversized lengths rejected, 1 MiB NBT cap, `readFully` | `ceb14c9` | `AMDataReaderTest` |
 | 2.4 Power-node persistence | **Fixed** — world+dimension+region keys, flush on save/unload, non-destructive `readFromNBT` | `1353eff` | `PowerNodeCacheTest`, `PowerNodeEntryNbtTest` |
 | 2.5 `PowerNodeRegistry` comparator | **Fixed** — lexicographic comparator | `ceb14c9` | `PowerNodeRegistryComparatorTest` |
@@ -100,6 +101,11 @@ The runtime potion array extension in `BuffList` still lets default IDs (24–56
 Either way, this must be resolved before release; the current state is a silent half-implemented feature set.
 
 ### 2.2 Client-authoritative server packets (cheats and crashes)
+
+> **Status: Fixed** in `8d6d3fc`; covered by `SkillDataTest`, `PacketAuthorityTest` and
+> `TileEntityInscriptionTableAuthorityTest`. Generic per-player packet-rate limiting and the cosmetic
+> `SYNCMAPTOSERVER` model-map relay remain follow-up hardening items.
+
 
 **Verified.** `AMPacketProcessorServer` dispatches many client packets directly into server-side state with no direction/authority check.
 
