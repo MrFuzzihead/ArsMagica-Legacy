@@ -104,6 +104,7 @@ and the automated tests that now cover the fix.
 | 6.1 Handler split complete | **Fixed** — all event handlers moved; `AMEventHandler` is shared state/helpers only | `12e0951`, `24b1d02` | unit + game suites |
 | 6.2 World-scoped force shields | **Partially fixed** — force-shield state moved to `WorldStateManager` | `d8f9b33e` | `WorldStateManagerTest`, `AMEventHandlerStateTest` |
 | 6.2 World-scoped transient maps | **Partially fixed** — hallucination/dust/curse state moved to `WorldStateManager` | `75c21765` | `WorldStateManagerTest`, `AMEventHandlerStateTest` |
+| 6.2 World-scoped entity maps | **Partially fixed** — accelerated/slowed UUID maps moved to `WorldStateManager` | `a30fb74` | `WorldStateManagerTest`, `AMEventHandlerPerfGuardTest` |
 | 6.1 Handler section extraction | **Partially fixed** — `onEntityLiving` fully decomposed into named sections; other event families remain | `c8e815f`, `3cb040e`, `6bb2836`, `01e293e`, `6817ebc`, `a9c056a`, `5e101ac`, `b1c6314`, `3f47f30`, `3689056`, `9b76b22`, `aaeaf3b`, `388e527`, `6227d51` | `AMEventHandlerPerfGuardTest` |
 | 6.4 Packet payload validation | **Partially fixed** — 1 MiB cap before payload allocation on both processors | `092f9ea` | `PacketValidationTest` |
 | 6.4 Strict packet reads | **Fixed for both processors** — failure guards across server and client packet handlers | `74fc17f`, `e10b97c`, `eadef7a` | `AMDataReaderTest`, `AMPacketProcessorServerStrictReadTest`, `AMPacketProcessorClientStrictReadTest` |
@@ -884,10 +885,10 @@ See 3.4. Every tick, per block. This is likely the single largest source of pack
 
 The power registry, `CustomWorldData`, `ItemFrameWatcher`, `RetroactiveWorldgenerator`, `FlickerOperatorMoonstoneAttractor`, `AMEventHandler` statics, and `PowerNodeCache` all use static maps keyed by dimension (or not keyed at all). A single `WorldState`/`WorldStateManager` registered on `WorldEvent.Load`/`Unload` and cleared on server stop would eliminate the cross-world leaks and the `DIM0`/`DIM-1` collisions. It also gives you a natural place to clear `hallucinationMap`, `tempFlicker`, `forceShielded`, `slowedTiles`, `attractors`, and the frame watcher.
 
-> **Status: Partially fixed.** `WorldStateManager` owns force-shielded block state plus hallucination, dust and
-> temporary-curse maps, all keyed by live `World` identity. Remaining: accelerated/slowed UUID maps, retro-gen queues,
-> frame watcher, and power caches. Covered by `WorldStateManagerTest` and `AMEventHandlerStateTest` (`d8f9b33e`,
-> `75c21765`).
+> **Status: Partially fixed.** `WorldStateManager` owns force-shielded block state, hallucination/dust/curse maps and
+> accelerated/slowed entity UUID maps, all keyed by live `World` identity. Remaining: retro-gen queues, frame watcher
+> and power caches. Covered by `WorldStateManagerTest`, `AMEventHandlerStateTest` and `AMEventHandlerPerfGuardTest`
+> (`d8f9b33e`, `75c21765`, `a30fb74`).
 
 ### 6.3 Replace stringly-typed extra properties with typed data
 
