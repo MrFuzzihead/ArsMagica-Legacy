@@ -802,6 +802,19 @@ public class AMEventHandler {
             && (enabled_accelerate || enabled_slow || enable_spatialVortex || enabled_timeFortified || enabled_shield);
     }
 
+    /** Runs one accelerated update for a block position, reusing the tile/block lookups for all requested ticks. */
+    static void tickAcceleratedBlock(World world, int x, int y, int z) {
+        TileEntity tile = world.getTileEntity(x, y, z);
+        if (tile != null && tile.canUpdate()) {
+            tile.updateEntity();
+        }
+
+        Block block = world.getBlock(x, y, z);
+        if (block != null && block.getTickRandomly() && world.rand.nextInt(100) == 0) {
+            block.updateTick(world, x, y, z, world.rand);
+        }
+    }
+
     @SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event) {
 
@@ -851,11 +864,11 @@ public class AMEventHandler {
             // accelerated blocks and entities are done outside the 5-tick performance optimisation to make them smooth
             acceleratedBlocks = extendedProperties.getExtraVariablesContains("accelerated_fast_tile_");
             for (Map.Entry<String, String> entry : acceleratedBlocks.entrySet()) {
-                if (Integer.parseInt(entry.getValue()) < 3) {
+                int remaining = Integer.parseInt(entry.getValue());
+                if (remaining < 3) {
                     extendedProperties.removeFromExtraVariables(entry.getKey());
                 } else {
-                    extendedProperties
-                        .addToExtraVariables(entry.getKey(), String.valueOf(Integer.parseInt(entry.getValue()) - 1));
+                    extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(remaining - 1));
                     String[] entryvalues = entry.getKey()
                         .split("_");
                     int x = Integer.parseInt(entryvalues[3]);
@@ -866,16 +879,7 @@ public class AMEventHandler {
                     World wrld = DimensionManager.getWorld(dim);
                     if (wrld != null) {
                         for (int i = 0; i < power; i++) {
-                            if (wrld.getTileEntity(x, y, z) != null && wrld.getTileEntity(x, y, z)
-                                .canUpdate()) {
-                                wrld.getTileEntity(x, y, z)
-                                    .updateEntity();
-                            }
-                            if (wrld.getBlock(x, y, z)
-                                .getTickRandomly() && wrld.rand.nextInt(100) == 0) {
-                                wrld.getBlock(x, y, z)
-                                    .updateTick(wrld, x, y, z, wrld.rand);
-                            }
+                            tickAcceleratedBlock(wrld, x, y, z);
                         }
                     }
                 }
