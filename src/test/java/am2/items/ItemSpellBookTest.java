@@ -3,7 +3,9 @@ package am2.items;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import net.minecraft.item.Item;
@@ -40,6 +42,49 @@ public class ItemSpellBookTest {
 
         assertEquals(0, book.GetActiveSlot(stack));
         assertEquals(0, stack.stackTagCompound.getInteger("spellbookactiveslot"));
+    }
+
+    @Test
+    public void activeSlotEightAndThirtyNineAreOutOfRange() {
+        ItemSpellBook book = new ItemSpellBook();
+        for (int slot : new int[] { 8, 39 }) {
+            ItemStack stack = new ItemStack(book);
+            stack.setTagCompound(new NBTTagCompound());
+            stack.stackTagCompound.setInteger("spellbookactiveslot", slot);
+
+            assertEquals(0, book.GetActiveSlot(stack));
+            assertEquals(0, stack.stackTagCompound.getInteger("spellbookactiveslot"));
+        }
+    }
+
+    @Test
+    public void setNextSlotFindsTheNextScrollAndReturnsTheOldSlot() {
+        ItemSpellBook book = spy(new ItemSpellBook());
+        ItemStack stack = new ItemStack(book);
+        stack.setTagCompound(new NBTTagCompound());
+        stack.stackTagCompound.setInteger("spellbookactiveslot", 0);
+
+        ItemStack[] inventory = new ItemStack[40];
+        inventory[2] = mock(ItemStack.class);
+        when(inventory[2].getItem()).thenReturn(mock(ItemSpellBase.class));
+        doReturn(inventory).when(book)
+            .ReadFromStackTagCompound(stack);
+
+        assertEquals(0, book.SetNextSlot(stack));
+        assertEquals(2, stack.stackTagCompound.getInteger("spellbookactiveslot"));
+    }
+
+    @Test
+    public void setNextSlotWrapsWhenNoScrollsExist() {
+        ItemSpellBook book = spy(new ItemSpellBook());
+        ItemStack stack = new ItemStack(book);
+        stack.setTagCompound(new NBTTagCompound());
+        stack.stackTagCompound.setInteger("spellbookactiveslot", 7);
+        doReturn(new ItemStack[40]).when(book)
+            .ReadFromStackTagCompound(stack);
+
+        assertEquals(7, book.SetNextSlot(stack));
+        assertEquals(7, stack.stackTagCompound.getInteger("spellbookactiveslot"));
     }
 
     @Test

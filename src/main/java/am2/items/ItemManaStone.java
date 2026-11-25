@@ -77,7 +77,7 @@ public class ItemManaStone extends ArsMagicaItem {
 
     public static void addManaToStone(ItemStack stone, int amount) {
         if (!stone.hasTagCompound()) stone.stackTagCompound = new NBTTagCompound();
-        int value = Math.min(stone.stackTagCompound.getInteger(KEY_NBT_MANA) + amount, 1000);
+        int value = Math.max(0, Math.min(getManaInStone(stone) + amount, 1000));
         stone.stackTagCompound.setInteger(KEY_NBT_MANA, value);
     }
 
@@ -87,7 +87,7 @@ public class ItemManaStone extends ArsMagicaItem {
 
     public static int getManaInStone(ItemStack stone) {
         if (!stone.hasTagCompound()) return 0;
-        return stone.stackTagCompound.getInteger(KEY_NBT_MANA);
+        return Math.max(0, stone.stackTagCompound.getInteger(KEY_NBT_MANA));
     }
 
     public static boolean isFull(ItemStack stone) {

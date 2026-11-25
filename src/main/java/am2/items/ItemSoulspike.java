@@ -142,7 +142,7 @@ public class ItemSoulspike extends ItemSword {
 
     public static void addManaToSpike(ItemStack spike, int amount) {
         if (!spike.hasTagCompound()) spike.stackTagCompound = new NBTTagCompound();
-        int value = Math.min(spike.stackTagCompound.getInteger(KEY_NBT_MANA) + amount, 150000);
+        int value = Math.max(0, Math.min(getManaInSpike(spike) + amount, 150000));
         spike.stackTagCompound.setInteger(KEY_NBT_MANA, value);
     }
 
@@ -152,7 +152,7 @@ public class ItemSoulspike extends ItemSword {
 
     public static int getManaInSpike(ItemStack spike) {
         if (!spike.hasTagCompound()) return 0;
-        return spike.stackTagCompound.getInteger(KEY_NBT_MANA);
+        return Math.max(0, spike.stackTagCompound.getInteger(KEY_NBT_MANA));
     }
 
     public static boolean isFull(ItemStack spike) {
