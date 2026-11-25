@@ -94,6 +94,18 @@ public class AMEventHandlerPerfGuardTest {
     }
 
     @Test
+    public void serverPlayerWithoutPsychedelicDoesNoHallucinationWork() {
+        AMEventHandler handler = new AMEventHandler();
+        EntityPlayer player = mock(EntityPlayer.class);
+        World world = mock(World.class);
+        player.worldObj = world;
+
+        handler.tickHallucinations(player);
+
+        verifyNoInteractions(world);
+    }
+
+    @Test
     public void serverManaLinkTickSkipsOffIntervalWorldWork() {
         AMEventHandler handler = new AMEventHandler();
         ExtendedProperties properties = new ExtendedProperties();

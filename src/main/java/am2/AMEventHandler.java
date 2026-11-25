@@ -1652,6 +1652,23 @@ public class AMEventHandler {
         }
     }
 
+    void tickHallucinations(EntityPlayer player) {
+        if (player.worldObj.isRemote) return;
+        // hallucination effects
+        if (player.isPotionActive(BuffList.psychedelic)) {
+            if (player.worldObj.provider.dimensionId == -1) { // any amplifier can cause lower level hallucinations
+                if (player.getActivePotionEffect(BuffList.psychedelic)
+                    .getDuration() > 10) lowerHallucinationTick(player);
+                else cleanupLowerHallucination(player);
+            } else if (player.worldObj.provider.dimensionId == 1 && player.getActivePotionEffect(BuffList.psychedelic)
+                .getAmplifier() == 1) { // only amplified for higher
+                    if (player.getActivePotionEffect(BuffList.psychedelic)
+                        .getDuration() > 10) higherHallucinationTick(player);
+                    else cleanupHigherHallucination(player);
+                }
+        }
+    }
+
     @SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event) {
 
@@ -1761,19 +1778,8 @@ public class AMEventHandler {
 
         tickMovementBuffs(ent, extendedProperties);
 
-        if (ent instanceof EntityPlayer && !ent.worldObj.isRemote) { // hallucination effects
-            if (ent.isPotionActive(BuffList.psychedelic)) {
-                if (ent.worldObj.provider.dimensionId == -1) { // any amplifier can cause lower level hallucinations
-                    if (ent.getActivePotionEffect(BuffList.psychedelic)
-                        .getDuration() > 10) lowerHallucinationTick((EntityPlayer) ent);
-                    else cleanupLowerHallucination((EntityPlayer) ent);
-                } else if (ent.worldObj.provider.dimensionId == 1 && ent.getActivePotionEffect(BuffList.psychedelic)
-                    .getAmplifier() == 1) { // only amplified for higher
-                        if (ent.getActivePotionEffect(BuffList.psychedelic)
-                            .getDuration() > 10) higherHallucinationTick((EntityPlayer) ent);
-                        else cleanupHigherHallucination((EntityPlayer) ent);
-                    }
-            }
+        if (ent instanceof EntityPlayer) {
+            tickHallucinations((EntityPlayer) ent);
         }
 
         tickManaLinksAndLocalMovement(ent, extendedProperties, world);
