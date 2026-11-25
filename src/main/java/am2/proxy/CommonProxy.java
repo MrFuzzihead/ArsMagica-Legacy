@@ -81,6 +81,7 @@ import am2.handlers.EntityDeathHandler;
 import am2.handlers.FallHandler;
 import am2.handlers.ItemWatchHandler;
 import am2.handlers.JumpHandler;
+import am2.handlers.LivingHurtHandler;
 import am2.handlers.ManaCostHandler;
 import am2.handlers.PlayerCloneDataHandler;
 import am2.handlers.PotionBrewingHandler;
@@ -170,6 +171,7 @@ public class CommonProxy {
         MinecraftForge.EVENT_BUS.register(new FallHandler());
         MinecraftForge.EVENT_BUS.register(new EntityDeathHandler());
         MinecraftForge.EVENT_BUS.register(new EndermanTeleportHandler());
+        MinecraftForge.EVENT_BUS.register(new LivingHurtHandler());
         MinecraftForge.EVENT_BUS.register(new AcceleratedEntityTickHandler());
         FMLCommonHandler.instance()
             .bus()
