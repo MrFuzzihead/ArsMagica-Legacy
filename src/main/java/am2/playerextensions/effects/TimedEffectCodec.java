@@ -68,6 +68,10 @@ public final class TimedEffectCodec {
         return "shielded_tile_" + effect.x + "_" + effect.y + "_" + effect.z + "_" + effect.dimension;
     }
 
+    public static String encodeSpatialVortex(SpatialVortexEffect effect) {
+        return "spatialvortex_" + effect.x + "_" + effect.y + "_" + effect.z + "_" + effect.dimension;
+    }
+
     public static TimedBlockEffect parseTimedBlock(String raw) {
         if (raw == null) return null;
         String[] parts = raw.split("_");

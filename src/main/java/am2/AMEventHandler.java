@@ -3,7 +3,6 @@ package am2;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -994,17 +993,7 @@ public class AMEventHandler {
                 }
 
                 if (enable_spatialVortex) {
-                    Map<String, String> spatialVortices = extendedProperties
-                        .getExtraVariablesContains("spatialvortex_");
-                    for (Iterator<Map.Entry<String, String>> it = spatialVortices.entrySet()
-                        .iterator(); it.hasNext();) {
-                        Map.Entry<String, String> entry = it.next();
-                        if (spatialVortexKey(entry.getKey()) == null) {
-                            // Do not leave malformed legacy data in a live extra-property map.
-                            extendedProperties.removeFromExtraVariables(entry.getKey());
-                            it.remove();
-                        }
-                    }
+                    Map<SpatialVortexEffect, String> spatialVortices = extendedProperties.getSpatialVortices();
                     if (!spatialVortices.isEmpty()) {
                         int[] totalenergy = new int[spatialVortices.size()];
                         int[] totalenergyExternallyLimited = new int[spatialVortices.size()];
@@ -1012,8 +1001,8 @@ public class AMEventHandler {
                         int[] totaletheriumlight = new int[spatialVortices.size()];
 
                         int vIndex = 0;
-                        for (Map.Entry<String, String> entry : spatialVortices.entrySet()) {
-                            SpatialVortexEffect key = spatialVortexKey(entry.getKey());
+                        for (Map.Entry<SpatialVortexEffect, String> entry : spatialVortices.entrySet()) {
+                            SpatialVortexEffect key = entry.getKey();
                             if (key == null) continue;
                             int x = key.x;
                             int y = key.y;
@@ -1090,12 +1079,12 @@ public class AMEventHandler {
                         if (toTransferE > 0) {
                             // maximum energy we can *accept* right now (RF only)
                             int tIndex = 0;
-                            for (Map.Entry<String, String> entry : spatialVortices.entrySet()) {
+                            for (Map.Entry<SpatialVortexEffect, String> entry : spatialVortices.entrySet()) {
                                 if (AMCore.config.getDebugVortex()) {
                                     System.out.println(minE[0]);
                                 }
                                 if (tIndex == minE[0]) {
-                                    SpatialVortexEffect key = spatialVortexKey(entry.getKey());
+                                    SpatialVortexEffect key = entry.getKey();
                                     if (key == null) continue;
                                     int x = key.x;
                                     int y = key.y;
@@ -1134,9 +1123,9 @@ public class AMEventHandler {
                         // energy subtraction. BEWARE: Terrible code to follow!! Prepare bleach for eyes.
                         if (ELeft) {
                             int toSubtractE = toTransferEActual;
-                            for (Map.Entry<String, String> entry : spatialVortices.entrySet()) {
+                            for (Map.Entry<SpatialVortexEffect, String> entry : spatialVortices.entrySet()) {
                                 if (localIndex == maxE[0]) {
-                                    SpatialVortexEffect key = spatialVortexKey(entry.getKey());
+                                    SpatialVortexEffect key = entry.getKey();
                                     if (key == null) continue;
                                     int x = key.x;
                                     int y = key.y;
@@ -1160,9 +1149,9 @@ public class AMEventHandler {
                         }
                         if (DLeft) {
                             int toSubtractD = toTransferD;
-                            for (Map.Entry<String, String> entry : spatialVortices.entrySet()) {
+                            for (Map.Entry<SpatialVortexEffect, String> entry : spatialVortices.entrySet()) {
                                 if (localIndex == maxD[0]) {
-                                    SpatialVortexEffect key = spatialVortexKey(entry.getKey());
+                                    SpatialVortexEffect key = entry.getKey();
                                     if (key == null) continue;
                                     int x = key.x;
                                     int y = key.y;
@@ -1187,9 +1176,9 @@ public class AMEventHandler {
                         }
                         if (LLeft) {
                             int toSubtractL = toTransferL;
-                            for (Map.Entry<String, String> entry : spatialVortices.entrySet()) {
+                            for (Map.Entry<SpatialVortexEffect, String> entry : spatialVortices.entrySet()) {
                                 if (localIndex == maxL[0]) {
-                                    SpatialVortexEffect key = spatialVortexKey(entry.getKey());
+                                    SpatialVortexEffect key = entry.getKey();
                                     if (key == null) continue;
                                     int x = key.x;
                                     int y = key.y;
@@ -1216,9 +1205,9 @@ public class AMEventHandler {
                             // actually do the energy transfer. Finally. Note: I *know* this whole algo I came up with
                             // is badly optimized, and I welcome any PRs to optimize it.
                             int fIndex = 0;
-                            for (Map.Entry<String, String> entry : spatialVortices.entrySet()) {
+                            for (Map.Entry<SpatialVortexEffect, String> entry : spatialVortices.entrySet()) {
                                 if (fIndex == minE[0] && ELeft) {
-                                    SpatialVortexEffect key = spatialVortexKey(entry.getKey());
+                                    SpatialVortexEffect key = entry.getKey();
                                     if (key == null) continue;
                                     int x = key.x;
                                     int y = key.y;
@@ -1244,7 +1233,7 @@ public class AMEventHandler {
                                     if (AMCore.config.getDebugVortex()) {
                                         System.out.println(fIndex + " fIndex when minD");
                                     }
-                                    SpatialVortexEffect key = spatialVortexKey(entry.getKey());
+                                    SpatialVortexEffect key = entry.getKey();
                                     if (key == null) continue;
                                     int x = key.x;
                                     int y = key.y;
@@ -1268,7 +1257,7 @@ public class AMEventHandler {
                                     if (AMCore.config.getDebugVortex()) {
                                         System.out.println(fIndex + " fIndex when minL");
                                     }
-                                    SpatialVortexEffect key = spatialVortexKey(entry.getKey());
+                                    SpatialVortexEffect key = entry.getKey();
                                     if (key == null) continue;
                                     int x = key.x;
                                     int y = key.y;

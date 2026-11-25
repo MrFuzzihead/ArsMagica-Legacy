@@ -55,6 +55,7 @@ import am2.network.AMDataWriter;
 import am2.network.AMNetHandler;
 import am2.network.AMPacketIDs;
 import am2.particles.AMLineArc;
+import am2.playerextensions.effects.SpatialVortexEffect;
 import am2.playerextensions.effects.TimedBlockEffect;
 import am2.playerextensions.effects.TimedEffectCodec;
 import am2.playerextensions.effects.TimedEntityEffect;
@@ -101,6 +102,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     private final transient Map<TimedBlockEffect, Integer> slowedTiles = new HashMap<TimedBlockEffect, Integer>();
     private final transient Map<TimedBlockEffect, Integer> fortifiedTiles = new HashMap<TimedBlockEffect, Integer>();
     private final transient Map<TimedBlockEffect, Integer> shieldedTiles = new HashMap<TimedBlockEffect, Integer>();
+    private final transient Map<SpatialVortexEffect, String> spatialVortices = new HashMap<SpatialVortexEffect, String>();
 
     private final Map<String, String> compendium_entries = new HashMap<String, String>();
 
@@ -1394,6 +1396,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         slowedTiles.clear();
         fortifiedTiles.clear();
         shieldedTiles.clear();
+        spatialVortices.clear();
         setFullSync();
     }
 
@@ -1425,6 +1428,10 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         shieldedTiles.keySet()
             .removeIf(
                 effect -> TimedEffectCodec.encodeShieldedTile(effect)
+                    .contains(contains));
+        spatialVortices.keySet()
+            .removeIf(
+                effect -> TimedEffectCodec.encodeSpatialVortex(effect)
                     .contains(contains));
         setFullSync();
     }
@@ -1498,6 +1505,9 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
                     // Keep the legacy string; malformed durations must not break loading.
                 }
             }
+        } else if (name.startsWith("spatialvortex_")) {
+            SpatialVortexEffect effect = TimedEffectCodec.parseSpatialVortex(name);
+            if (effect != null) spatialVortices.put(effect, value);
         }
     }
 
@@ -1522,6 +1532,9 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         } else if (name.startsWith("shielded_tile_")) {
             TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
             if (effect != null) shieldedTiles.remove(effect);
+        } else if (name.startsWith("spatialvortex_")) {
+            SpatialVortexEffect effect = TimedEffectCodec.parseSpatialVortex(name);
+            if (effect != null) spatialVortices.remove(effect);
         }
     }
 
@@ -1533,6 +1546,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         slowedTiles.clear();
         fortifiedTiles.clear();
         shieldedTiles.clear();
+        spatialVortices.clear();
         for (Map.Entry<String, String> entry : extra_properties.entrySet()) {
             trackTimedEffectKey(entry.getKey(), entry.getValue());
         }
@@ -1548,6 +1562,10 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
     public Map<TimedEntityEffect, Integer> getSlowedEntities() {
         return slowedEntities;
+    }
+
+    public Map<SpatialVortexEffect, String> getSpatialVortices() {
+        return spatialVortices;
     }
 
     public Map<TimedBlockEffect, Integer> getFortifiedTiles() {
