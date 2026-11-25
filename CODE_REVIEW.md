@@ -86,6 +86,7 @@ and the automated tests that now cover the fix.
 | 6.4 Packet payload validation | **Partially fixed** — 1 MiB cap before payload allocation on both processors | `092f9ea` | `PacketValidationTest` |
 | 6.4 Strict packet reads | **Fixed for both processors** — failure guards across server and client packet handlers | `74fc17f`, `e10b97c`, `eadef7a` | `AMDataReaderTest`, `AMPacketProcessorServerStrictReadTest`, `AMPacketProcessorClientStrictReadTest` |
 | 6.4 Packet direction tags | **Fixed** — per-ID direction registry enforced before dispatch | `493cb80` | `PacketValidationTest` |
+| 6.4 Self-scoped packet authority | **Partially fixed** — sender-bound desync/beta requests and spellbook slot bounds | `0e32562` | `PacketAuthorityTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -868,11 +869,11 @@ The network code has a single `AMDataReader`/`AMDataWriter` pair, no length vali
 would remove a whole class of bugs. At minimum, add a `PacketValidation` utility and use it in the handlers listed in 2.2.
 
 > **Status: Partially fixed.** `PacketValidation` enforces a 1 MiB payload cap before either processor allocates the
-> remaining byte array, both processors reject packet IDs arriving on the wrong side, and both client and server
-> handlers check `AMDataReader.hasFailed()` before mutating state. The typed packet framework and the full per-handler
-> authority contract remain open. Covered by `PacketValidationTest` (`092f9ea`, `493cb80`), `AMDataReaderTest`
-> (`74fc17f`), `AMPacketProcessorServerStrictReadTest` (`e10b97c`) and `AMPacketProcessorClientStrictReadTest`
-> (`eadef7a`).
+> remaining byte array, both processors reject packet IDs arriving on the wrong side, both client and server handlers
+> check `AMDataReader.hasFailed()` before mutating state, and self-scoped requests are bound to the sending player. The
+> typed packet framework and a fuller per-handler authority contract remain open. Covered by `PacketValidationTest`
+> (`092f9ea`, `493cb80`), `AMDataReaderTest` (`74fc17f`), `AMPacketProcessorServerStrictReadTest` (`e10b97c`),
+> `AMPacketProcessorClientStrictReadTest` (`eadef7a`) and `PacketAuthorityTest` (`0e32562`).
 
 ### 6.5 Decide the ASM strategy
 
