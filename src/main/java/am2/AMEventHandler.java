@@ -34,7 +34,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.living.EnderTeleportEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
-import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 
 import am2.api.power.IPowerNode;
@@ -228,45 +227,6 @@ public class AMEventHandler {
                     }
                 }
             }
-        }
-    }
-
-    @SubscribeEvent
-    public void onEntityFall(LivingFallEvent event) {
-
-        EntityLivingBase ent = event.entityLiving;
-        float f = event.distance;
-        ent.isAirBorne = false;
-
-        // slowfall buff
-        if (ent.isPotionActive(BuffList.slowfall.id) || ent.isPotionActive(BuffList.shrink.id)
-            || (ent instanceof EntityPlayer && AffinityData.For(ent)
-                .getAffinityDepth(Affinity.NATURE) == 1.0f)) {
-            event.setCanceled(true);
-            ent.fallDistance = 0;
-            return;
-        }
-
-        if (ent instanceof EntityPlayer && ((EntityPlayer) ent).inventory.armorInventory[0] != null) {
-            if (((EntityPlayer) ent).inventory.armorInventory[0].getItem() == ItemsCommonProxy.archmageBoots) {
-                event.setCanceled(true);
-                return;
-            }
-        }
-
-        // gravity well
-        if (ent.isPotionActive(BuffList.gravityWell.id)) {
-            ent.fallDistance *= 1.5f;
-        }
-
-        // fall protection stat
-        f -= ExtendedProperties.For(ent)
-            .getFallProtection();
-        ExtendedProperties.For(ent)
-            .setFallProtection(0);
-        if (f <= 0) {
-            ent.fallDistance = 0;
-            event.setCanceled(true);
         }
     }
 
