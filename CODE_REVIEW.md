@@ -81,6 +81,7 @@ and the automated tests that now cover the fix.
 | 6.7 API property getters | **Fixed** — null-safe entities/identifiers and lifecycle docs | `d148bbc` | `ArsMagicaApiPropertiesTest` |
 | 6.7 Legacy second mana API | **Fixed** — live legacy types deprecated, commented-out dead types removed | `9ff50da` | `LegacyManaApiTest` |
 | 6.6 Duplicated sync countdown | **Fixed** — shared `SyncWindow` for all three synced stores | `c268948` | `SyncWindowTest`, `SyncWindowIntegrationTest` |
+| 6.1 Timed-effect extraction | **Partially fixed** — timed-effect section moved out of `onEntityLiving` | `c8e815f` | `AMEventHandlerPerfGuardTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -837,6 +838,9 @@ See 3.4. Every tick, per block. This is likely the single largest source of pack
 ### 6.1 Split `AMEventHandler`
 
 `AMEventHandler.java` is 2,161 lines and handles potions, souls, death/clone, combat, buffs, adjacency/spatial mechanics, block protection, world interactions, and dozens of unrelated events. Split it into focused classes (`PlayerLifecycleHandler`, `CombatEventHandler`, `TimeEffectsHandler`, `SpatialVortexHandler`, `ShieldHandler`, `BucketHandler`, etc.). This will make the static-state leaks and side guards reviewable in isolation.
+
+> **Status: Partially fixed.** The large timed-effect section is now isolated in `tickTimedEffects`, with no-op/client
+> guard coverage. The remaining event families are still in `AMEventHandler` and need the same extraction treatment.
 
 ### 6.2 Introduce a world-scoped manager for AM2 state
 
