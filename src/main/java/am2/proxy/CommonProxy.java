@@ -75,6 +75,7 @@ import am2.handlers.BucketHandler;
 import am2.handlers.CombatDefenseHandler;
 import am2.handlers.CompendiumPickupHandler;
 import am2.handlers.ConnectionTickrateHandler;
+import am2.handlers.EndermanTeleportHandler;
 import am2.handlers.EntityConstructionHandler;
 import am2.handlers.EntityDeathHandler;
 import am2.handlers.FallHandler;
@@ -168,6 +169,7 @@ public class CommonProxy {
         MinecraftForge.EVENT_BUS.register(new CombatDefenseHandler());
         MinecraftForge.EVENT_BUS.register(new FallHandler());
         MinecraftForge.EVENT_BUS.register(new EntityDeathHandler());
+        MinecraftForge.EVENT_BUS.register(new EndermanTeleportHandler());
         MinecraftForge.EVENT_BUS.register(new AcceleratedEntityTickHandler());
         FMLCommonHandler.instance()
             .bus()

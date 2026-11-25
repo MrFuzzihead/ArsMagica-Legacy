@@ -16,7 +16,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemSnowball;
@@ -30,7 +29,6 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.event.entity.living.EnderTeleportEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 
@@ -40,13 +38,11 @@ import am2.api.spell.enums.Affinity;
 import am2.api.spell.enums.BuffPowerLevel;
 import am2.armor.ArmorHelper;
 import am2.armor.infusions.GenericImbuement;
-import am2.blocks.tileentities.TileEntityAstralBarrier;
 import am2.buffs.BuffEffectScrambleSynapses;
 import am2.buffs.BuffList;
 import am2.buffs.BuffStatModifiers;
 import am2.damage.DamageSourceFire;
 import am2.damage.DamageSources;
-import am2.entities.EntityFlicker;
 import am2.entities.EntityHallucination;
 import am2.entities.EntitySpecificHallucinations;
 import am2.items.ItemOre;
@@ -64,9 +60,7 @@ import am2.playerextensions.effects.TimedEntityEffect;
 import am2.power.PowerNodeRegistry;
 import am2.spell.SkillManager;
 import am2.spell.SkillTreeManager;
-import am2.utility.DimensionUtilities;
 import am2.utility.EntityUtilities;
-import am2.utility.KeystoneUtilities;
 import am2.utility.MathUtilities;
 import cofh.api.energy.IEnergyHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -81,34 +75,6 @@ public class AMEventHandler {
 
     private static final Random rand = new Random();
     private static final Map<ExtendedProperties, Integer> tempFlipped = new HashMap<ExtendedProperties, Integer>();
-
-    @SubscribeEvent
-    public void onEndermanTeleport(EnderTeleportEvent event) {
-        EntityLivingBase ent = event.entityLiving;
-
-        ArrayList<Long> keystoneKeys = KeystoneUtilities.instance.GetKeysInInvenory(ent);
-        TileEntityAstralBarrier blockingBarrier = DimensionUtilities.GetBlockingAstralBarrier(
-            event.entityLiving.worldObj,
-            (int) event.targetX,
-            (int) event.targetY,
-            (int) event.targetZ,
-            keystoneKeys);
-
-        if (ent.isPotionActive(BuffList.astralDistortion.id) || blockingBarrier != null) {
-            event.setCanceled(true);
-            if (blockingBarrier != null) {
-                blockingBarrier.onEntityBlocked(ent);
-            }
-            return;
-        }
-
-        if (!ent.worldObj.isRemote && ent instanceof EntityEnderman && ent.worldObj.rand.nextDouble() < 0.01f) {
-            EntityFlicker flicker = new EntityFlicker(ent.worldObj);
-            flicker.setPosition(ent.posX, ent.posY, ent.posZ);
-            flicker.setFlickerType(Affinity.ENDER);
-            ent.worldObj.spawnEntityInWorld(flicker);
-        }
-    }
 
     // @SubscribeEvent(priority = EventPriority.HIGHEST)
     // public void onEntityDeathHighPriority(LivingDeathEvent event){
