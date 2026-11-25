@@ -29,7 +29,6 @@ public class AMWorldEventHandler {
 
     @SubscribeEvent
     public void onChunkLoaded(ChunkDataEvent.Load event) {
-        int dimensionID = event.world.provider.dimensionId;
         ChunkCoordIntPair chunkLocation = event.getChunk()
             .getChunkCoordIntPair();
 
@@ -38,7 +37,7 @@ public class AMWorldEventHandler {
 
         if (AMCore.config.retroactiveWorldgen() && (compound == null || !compound.hasKey(genKey))) {
             LogHelper.info("Detected a chunk that requires retrogen.  Adding to retrogen list.");
-            AMCore.proxy.addQueuedRetrogen(dimensionID, chunkLocation);
+            AMCore.proxy.addQueuedRetrogen(event.world, chunkLocation);
         }
     }
 

@@ -2,6 +2,7 @@ package am2.world;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.UUID;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 
 /**
@@ -58,6 +60,11 @@ public final class WorldStateManager {
         return state == null ? Collections.emptyMap() : state.acceleratedEntities;
     }
 
+    public static Deque<ChunkCoordIntPair> retroGenChunks(World world) {
+        WorldState state = state(world);
+        return state == null ? new java.util.ArrayDeque<ChunkCoordIntPair>() : state.retroGenChunks;
+    }
+
     public static Map<UUID, Integer> slowedEntities(World world) {
         WorldState state = state(world);
         return state == null ? Collections.emptyMap() : state.slowedEntities;
@@ -90,5 +97,6 @@ public final class WorldStateManager {
         final Map<EntityCreature, Integer> tempCurseMap = new HashMap<EntityCreature, Integer>();
         final Map<UUID, Integer> acceleratedEntities = new HashMap<UUID, Integer>();
         final Map<UUID, Integer> slowedEntities = new HashMap<UUID, Integer>();
+        final Deque<ChunkCoordIntPair> retroGenChunks = new java.util.ArrayDeque<ChunkCoordIntPair>();
     }
 }

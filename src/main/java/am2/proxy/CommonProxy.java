@@ -2,10 +2,8 @@ package am2.proxy;
 
 import static am2.blocks.BlocksCommonProxy.AMOres;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -103,8 +101,8 @@ import am2.spell.SkillManager;
 import am2.spell.SkillTreeManager;
 import am2.spell.SpellUnlockManager;
 import am2.utility.ProxyUtilitiesCommon;
+import am2.world.WorldStateManager;
 import am2.worldgen.AM2WorldDecorator;
-import am2.worldgen.RetroactiveWorldgenerator;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -293,14 +291,9 @@ public class CommonProxy {
         AMNetHandler.INSTANCE.registerChannels(new AMPacketProcessorServer());
     }
 
-    public void addQueuedRetrogen(int dimensionID, ChunkCoordIntPair pair) {
-        Deque<ChunkCoordIntPair> chunks = RetroactiveWorldgenerator.deferredChunkGeneration.get(dimensionID);
-        if (chunks == null) {
-            chunks = new ArrayDeque<ChunkCoordIntPair>();
-            RetroactiveWorldgenerator.deferredChunkGeneration.put(dimensionID, chunks);
-        }
-
-        chunks.add(pair);
+    public void addQueuedRetrogen(World world, ChunkCoordIntPair pair) {
+        WorldStateManager.retroGenChunks(world)
+            .add(pair);
     }
 
     public void flashManaBar() {}

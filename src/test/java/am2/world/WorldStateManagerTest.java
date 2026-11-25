@@ -9,6 +9,7 @@ import java.lang.reflect.Field;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProvider;
 
@@ -68,6 +69,23 @@ public class WorldStateManagerTest {
         WorldStateManager.unload(first);
         assertTrue(
             WorldStateManager.hallucinationMap(first)
+                .isEmpty());
+    }
+
+    @Test
+    public void retroGenQueuesAreWorldScoped() throws Exception {
+        World first = world(0);
+        World second = world(0);
+
+        WorldStateManager.retroGenChunks(first)
+            .add(new ChunkCoordIntPair(1, 2));
+
+        assertTrue(
+            WorldStateManager.retroGenChunks(second)
+                .isEmpty());
+        WorldStateManager.unload(first);
+        assertTrue(
+            WorldStateManager.retroGenChunks(first)
                 .isEmpty());
     }
 

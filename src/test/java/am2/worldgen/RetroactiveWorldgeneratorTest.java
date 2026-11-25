@@ -31,6 +31,7 @@ import am2.AMCore;
 import am2.configuration.AMConfig;
 import am2.proxy.CommonProxy;
 import am2.proxy.tick.ServerTickHandler;
+import am2.world.WorldStateManager;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.relauncher.Side;
 
@@ -63,12 +64,12 @@ public class RetroactiveWorldgeneratorTest {
         chunkProvider = mock(IChunkProvider.class);
         when(world.getChunkProvider()).thenReturn(chunkProvider);
 
-        RetroactiveWorldgenerator.deferredChunkGeneration.clear();
+        WorldStateManager.clearAll();
     }
 
     @After
     public void tearDown() {
-        RetroactiveWorldgenerator.deferredChunkGeneration.clear();
+        WorldStateManager.clearAll();
         AMCore.proxy = previousProxy;
         AMCore.config = previousConfig;
     }
@@ -76,7 +77,7 @@ public class RetroactiveWorldgeneratorTest {
     @Test
     public void processesAtMostFiveChunksInFifoOrder() {
         for (int i = 0; i < 8; i++) {
-            queue(0, new ChunkCoordIntPair(i, i + 10));
+            queue(world, new ChunkCoordIntPair(i, i + 10));
         }
 
         RetroactiveWorldgenerator.instance.continueRetrogen(world);
@@ -84,7 +85,7 @@ public class RetroactiveWorldgeneratorTest {
         verify(decorator, times(5))
             .generate(any(Random.class), anyInt(), anyInt(), eq(world), eq(chunkProvider), eq(chunkProvider));
 
-        Deque<ChunkCoordIntPair> remaining = RetroactiveWorldgenerator.deferredChunkGeneration.get(0);
+        Deque<ChunkCoordIntPair> remaining = WorldStateManager.retroGenChunks(world);
         assertEquals(3, remaining.size());
         assertEquals(5, remaining.peekFirst().chunkXPos);
         assertEquals(15, remaining.peekFirst().chunkZPos);
@@ -95,7 +96,7 @@ public class RetroactiveWorldgeneratorTest {
     @Test
     public void nextCallDrainsTheRestAndRemovesTheDimensionEntry() {
         for (int i = 0; i < 8; i++) {
-            queue(0, new ChunkCoordIntPair(i, i));
+            queue(world, new ChunkCoordIntPair(i, i));
         }
 
         RetroactiveWorldgenerator.instance.continueRetrogen(world);
@@ -103,13 +104,15 @@ public class RetroactiveWorldgeneratorTest {
 
         verify(decorator, times(8))
             .generate(any(Random.class), anyInt(), anyInt(), eq(world), eq(chunkProvider), eq(chunkProvider));
-        assertFalse(RetroactiveWorldgenerator.deferredChunkGeneration.containsKey(0));
+        assertFalse(
+            !WorldStateManager.retroGenChunks(world)
+                .isEmpty());
     }
 
     @Test
     public void remoteWorldsAreIgnored() {
         world.isRemote = true;
-        queue(0, new ChunkCoordIntPair(1, 2));
+        queue(world, new ChunkCoordIntPair(1, 2));
 
         RetroactiveWorldgenerator.instance.continueRetrogen(world);
 
@@ -122,17 +125,17 @@ public class RetroactiveWorldgeneratorTest {
             any(IChunkProvider.class));
         assertEquals(
             1,
-            RetroactiveWorldgenerator.deferredChunkGeneration.get(0)
+            WorldStateManager.retroGenChunks(world)
                 .size());
     }
 
     @Test
     public void nullWorldIsIgnored() {
-        queue(0, new ChunkCoordIntPair(1, 2));
+        queue(world, new ChunkCoordIntPair(1, 2));
         RetroactiveWorldgenerator.instance.continueRetrogen(null);
         assertEquals(
             1,
-            RetroactiveWorldgenerator.deferredChunkGeneration.get(0)
+            WorldStateManager.retroGenChunks(world)
                 .size());
     }
 
@@ -147,7 +150,8 @@ public class RetroactiveWorldgeneratorTest {
             any(IChunkProvider.class),
             any(IChunkProvider.class));
 
-        RetroactiveWorldgenerator.deferredChunkGeneration.put(0, new ArrayDeque<ChunkCoordIntPair>());
+        WorldStateManager.retroGenChunks(world)
+            .clear();
         RetroactiveWorldgenerator.instance.continueRetrogen(world);
         verify(decorator, never()).generate(
             any(Random.class),
@@ -164,7 +168,7 @@ public class RetroactiveWorldgeneratorTest {
         when(AMCore.config.retroactiveWorldgen()).thenReturn(true);
         ServerTickHandler handler = new ServerTickHandler();
 
-        queue(0, new ChunkCoordIntPair(1, 2));
+        queue(world, new ChunkCoordIntPair(1, 2));
         handler.onWorldTick(new TickEvent.WorldTickEvent(Side.SERVER, TickEvent.Phase.START, world));
         verify(decorator, never()).generate(
             any(Random.class),
@@ -180,28 +184,25 @@ public class RetroactiveWorldgeneratorTest {
     }
 
     @Test
-    public void addQueuedRetrogenCreatesAndReusesTheDeque() {
+    public void addQueuedRetrogenCreatesAndReusesTheDeque() throws Exception {
         CommonProxy realProxy = new CommonProxy();
         ChunkCoordIntPair first = new ChunkCoordIntPair(1, 2);
         ChunkCoordIntPair second = new ChunkCoordIntPair(3, 4);
 
-        realProxy.addQueuedRetrogen(7, first);
-        realProxy.addQueuedRetrogen(7, second);
+        World queuedWorld = world(7);
+        realProxy.addQueuedRetrogen(queuedWorld, first);
+        realProxy.addQueuedRetrogen(queuedWorld, second);
 
-        Deque<ChunkCoordIntPair> queued = RetroactiveWorldgenerator.deferredChunkGeneration.get(7);
+        Deque<ChunkCoordIntPair> queued = WorldStateManager.retroGenChunks(queuedWorld);
         assertEquals(2, queued.size());
         assertSame(first, queued.pollFirst());
         assertSame(second, queued.pollFirst());
         assertTrue(queued instanceof ArrayDeque);
     }
 
-    private static void queue(int dimension, ChunkCoordIntPair pair) {
-        Deque<ChunkCoordIntPair> chunks = RetroactiveWorldgenerator.deferredChunkGeneration.get(dimension);
-        if (chunks == null) {
-            chunks = new ArrayDeque<ChunkCoordIntPair>();
-            RetroactiveWorldgenerator.deferredChunkGeneration.put(dimension, chunks);
-        }
-        chunks.add(pair);
+    private static void queue(World world, ChunkCoordIntPair pair) {
+        WorldStateManager.retroGenChunks(world)
+            .add(pair);
     }
 
     private static World world(int dimension) throws Exception {
