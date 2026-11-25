@@ -1584,6 +1584,24 @@ public class AMEventHandler {
 
     }
 
+    void tickEtherealForm(EntityPlayer player, ExtendedProperties extendedProperties) {
+        int durationLeft = Integer.parseInt(extendedProperties.getExtraVariable("ethereal"));
+        if (durationLeft < 3) {
+            // deactivate form
+            ItemSoulspike.removeTagFromBoots(player.inventory.armorInventory[0]);
+            player.capabilities.disableDamage = false;
+            player.capabilities.allowEdit = true;
+            player.capabilities.isFlying = false;
+            player.noClip = false;
+            player.setInvisible(false);
+            extendedProperties.removeFromExtraVariables("ethereal");
+        } else {
+            // tick ethereal form
+            // decrease duration
+            extendedProperties.addToExtraVariables("ethereal", String.valueOf(durationLeft - 1));
+        }
+    }
+
     @SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event) {
 
@@ -1609,23 +1627,8 @@ public class AMEventHandler {
         extendedProperties.handleSpecialSyncData();
         extendedProperties.manaBurnoutTick();
 
-        if (ent instanceof EntityPlayer && extendedProperties.hasExtraVariable("ethereal")) { // ethereal form handling
-            int durationLeft = Integer.parseInt(extendedProperties.getExtraVariable("ethereal"));
-            EntityPlayer player = (EntityPlayer) ent;
-            if (durationLeft < 3) {
-                // deactivate form
-                ItemSoulspike.removeTagFromBoots(player.inventory.armorInventory[0]);
-                player.capabilities.disableDamage = false;
-                player.capabilities.allowEdit = true;
-                player.capabilities.isFlying = false;
-                player.noClip = false;
-                player.setInvisible(false);
-                extendedProperties.removeFromExtraVariables("ethereal");
-            } else {
-                // tick ethereal form
-                // decrease duration
-                extendedProperties.addToExtraVariables("ethereal", String.valueOf(durationLeft - 1));
-            }
+        if (ent instanceof EntityPlayer && extendedProperties.hasExtraVariable("ethereal")) {
+            tickEtherealForm((EntityPlayer) ent, extendedProperties);
         }
 
         tickTimedEffects(ent, extendedProperties, world);

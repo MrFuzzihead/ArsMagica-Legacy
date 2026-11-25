@@ -7,6 +7,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.entity.player.PlayerCapabilities;
 import net.minecraft.world.World;
 
 import org.junit.After;
@@ -61,6 +64,31 @@ public class AMEventHandlerPerfGuardTest {
 
         assertFalse(AMEventHandler.shouldTickAcceleratedBlocks(null));
         assertFalse(AMEventHandler.shouldTickTimedEffects(null));
+    }
+
+    @Test
+    public void etherealFormCountsDownWithoutDeactivating() {
+        AMEventHandler handler = new AMEventHandler();
+        ExtendedProperties properties = new ExtendedProperties();
+        properties.addToExtraVariables("ethereal", "10");
+
+        handler.tickEtherealForm(mock(EntityPlayer.class), properties);
+
+        assertEquals("9", properties.getExtraVariable("ethereal"));
+    }
+
+    @Test
+    public void etherealFormDeactivatesAtTheEndOfItsDuration() {
+        AMEventHandler handler = new AMEventHandler();
+        ExtendedProperties properties = new ExtendedProperties();
+        properties.addToExtraVariables("ethereal", "2");
+        EntityPlayer player = mock(EntityPlayer.class);
+        player.inventory = new InventoryPlayer(player);
+        player.capabilities = new PlayerCapabilities();
+
+        handler.tickEtherealForm(player, properties);
+
+        assertFalse(properties.hasExtraVariable("ethereal"));
     }
 
     @Test
