@@ -22,23 +22,17 @@ import net.minecraft.entity.item.EntityBoat;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityMinecart;
 import net.minecraft.entity.monster.EntityEnderman;
-import net.minecraft.entity.passive.EntityHorse;
-import net.minecraft.entity.passive.EntityPig;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemSnowball;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
@@ -50,13 +44,11 @@ import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.living.EnderTeleportEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
-import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.world.BlockEvent;
 
@@ -410,25 +402,6 @@ public class AMEventHandler {
                     }
                 }
             }
-        }
-    }
-
-    @SubscribeEvent
-    public void onLivingDrops(LivingDropsEvent event) {
-        if (EntityUtilities.isSummon(event.entityLiving) && !(event.entityLiving instanceof EntityHorse)) {
-            event.setCanceled(true);
-        }
-        if (event.source == DamageSources.darkNexus) {
-            event.setCanceled(true);
-        }
-        if (!event.entityLiving.worldObj.isRemote && event.entityLiving instanceof EntityPig
-            && event.entityLiving.getRNG()
-                .nextDouble() < 0.3f) {
-            EntityItem animalFat = new EntityItem(event.entityLiving.worldObj);
-            ItemStack stack = new ItemStack(ItemsCommonProxy.itemOre, 1, ItemOre.META_ANIMALFAT);
-            animalFat.setPosition(event.entity.posX, event.entity.posY, event.entity.posZ);
-            animalFat.setEntityItemStack(stack);
-            event.drops.add(animalFat);
         }
     }
 
@@ -2095,50 +2068,4 @@ public class AMEventHandler {
             && ((EntityLivingBase) entityAttacker).isPotionActive(BuffList.shrink)) event.ammount /= 2;
     }
 
-    @SubscribeEvent
-    public void onPlayerPickupItem(EntityItemPickupEvent event) {
-        if (event.entityPlayer == null) return;
-
-        if (!event.entityPlayer.worldObj.isRemote && ExtendedProperties.For(event.entityPlayer)
-            .getMagicLevel() <= 0
-            && event.item.getEntityItem()
-                .getItem() == ItemsCommonProxy.arcaneCompendium) {
-            event.entityPlayer.addChatMessage(new ChatComponentText("You have unlocked the secrets of the arcane!"));
-            AMNetHandler.INSTANCE.sendCompendiumUnlockPacket((EntityPlayerMP) event.entityPlayer, "shapes", true);
-            AMNetHandler.INSTANCE.sendCompendiumUnlockPacket((EntityPlayerMP) event.entityPlayer, "components", true);
-            AMNetHandler.INSTANCE.sendCompendiumUnlockPacket((EntityPlayerMP) event.entityPlayer, "modifiers", true);
-            ExtendedProperties.For(event.entityPlayer)
-                .setMagicLevelWithMana(1);
-            ExtendedProperties.For(event.entityPlayer)
-                .forceSync();
-            return;
-        }
-
-        if (event.item.getEntityItem()
-            .getItem() == ItemsCommonProxy.spell) {
-            if (event.entityPlayer.worldObj.isRemote) {
-                AMNetHandler.INSTANCE
-                    .sendCompendiumUnlockPacket((EntityPlayerMP) event.entityPlayer, "spell_book", false);
-            }
-        } else {
-            Item item = event.item.getEntityItem()
-                .getItem();
-            int meta = event.item.getEntityItem()
-                .getItemDamage();
-
-            if (event.entityPlayer.worldObj.isRemote && item.getUnlocalizedName() != null
-                && (AMCore.proxy.items.getArsMagicaItems()
-                    .contains(item))
-                || (item instanceof ItemBlock && AMCore.proxy.blocks.getArsMagicaBlocks()
-                    .contains(((ItemBlock) item).field_150939_a))) {
-                AMNetHandler.INSTANCE.sendCompendiumUnlockPacket(
-                    (EntityPlayerMP) event.entityPlayer,
-                    item.getUnlocalizedName()
-                        .replace("item.", "")
-                        .replace("arsmagica2:", "")
-                        .replace("tile.", "") + ((meta > -1) ? "@" + meta : ""),
-                    false);
-            }
-        }
-    }
 }
