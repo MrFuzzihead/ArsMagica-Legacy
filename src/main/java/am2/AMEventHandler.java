@@ -45,7 +45,6 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.client.event.RenderBlockOverlayEvent;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -65,9 +64,7 @@ import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.world.BlockEvent;
 
-import am2.affinity.AffinityHelper;
 import am2.api.ArsMagicaApi;
-import am2.api.events.ManaCostEvent;
 import am2.api.power.IPowerNode;
 import am2.api.power.PowerTypes;
 import am2.api.spell.enums.Affinity;
@@ -2141,29 +2138,6 @@ public class AMEventHandler {
 
         if (entityAttacker instanceof EntityLivingBase
             && ((EntityLivingBase) entityAttacker).isPotionActive(BuffList.shrink)) event.ammount /= 2;
-    }
-
-    @SubscribeEvent
-    public void onBlockOverlay(RenderBlockOverlayEvent event) {
-        if (event.overlayType == RenderBlockOverlayEvent.OverlayType.WATER) {
-            if (AffinityHelper.isNotInWaterActually.contains(event.player)) {
-                event.setCanceled(true);
-            }
-        } else if (event.overlayType == RenderBlockOverlayEvent.OverlayType.FIRE) {
-            if (event.player != null && event.player.inventory.armorInventory[3] != null
-                && event.player.inventory.armorInventory[3].getItem() == ItemsCommonProxy.archmageHood) {
-                event.setCanceled(true);
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public void onManaCost(ManaCostEvent event) {
-        if (event.caster.getHeldItem() != null && event.caster.getHeldItem()
-            .getItem() == ItemsCommonProxy.arcaneSpellbook) {
-            event.manaCost *= 0.75f;
-            event.burnout *= 0.4f;
-        }
     }
 
     @SubscribeEvent
