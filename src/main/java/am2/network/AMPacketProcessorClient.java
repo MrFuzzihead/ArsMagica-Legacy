@@ -74,19 +74,14 @@ public class AMPacketProcessorClient extends AMPacketProcessorServer {
             }
 
             // constant details all packets share: ID, player, and remaining data
-            packetID = bbis.readByte();
-            if (!PacketValidation.isAllowedDirection(packetID, Side.CLIENT)) {
-                LogHelper.warn("Rejected packet %d on the wrong side", packetID);
+            PacketEnvelope envelope = PacketEnvelope.read(bbis, Side.CLIENT);
+            if (envelope == null) {
+                LogHelper.warn("Rejected invalid packet envelope");
                 return;
             }
-            int remainingBytes = bbis.available();
-            if (!PacketValidation.isValidPayloadLength(remainingBytes)) {
-                LogHelper.warn("Rejected invalid packet payload of %d bytes (type %d)", remainingBytes, packetID);
-                return;
-            }
+            packetID = envelope.id();
             EntityPlayer player = Minecraft.getMinecraft().thePlayer;
-            byte[] remaining = new byte[remainingBytes];
-            bbis.readFully(remaining);
+            byte[] remaining = envelope.payload();
 
             switch (packetID) {
                 case AMPacketIDs.SPELL_CAST:

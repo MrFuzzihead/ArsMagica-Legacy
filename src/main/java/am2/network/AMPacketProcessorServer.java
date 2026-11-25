@@ -52,20 +52,15 @@ public class AMPacketProcessorServer {
             }
 
             // constant details all packets share: ID, player, and remaining data
-            packetID = bbis.readByte();
-            if (!PacketValidation.isAllowedDirection(packetID, Side.SERVER)) {
-                LogHelper.warn("Rejected packet %d on the wrong side", packetID);
+            PacketEnvelope envelope = PacketEnvelope.read(bbis, Side.SERVER);
+            if (envelope == null) {
+                LogHelper.warn("Rejected invalid packet envelope");
                 return;
             }
-            int remainingBytes = bbis.available();
-            if (!PacketValidation.isValidPayloadLength(remainingBytes)) {
-                LogHelper.warn("Rejected invalid packet payload of %d bytes (type %d)", remainingBytes, packetID);
-                return;
-            }
+            packetID = envelope.id();
             NetHandlerPlayServer srv = (NetHandlerPlayServer) event.packet.handler();
             EntityPlayerMP player = srv.playerEntity;
-            byte[] remaining = new byte[remainingBytes];
-            bbis.readFully(remaining);
+            byte[] remaining = envelope.payload();
 
             switch (packetID) {
                 case AMPacketIDs.SPELL_SHAPE_GROUP_CHANGE:
