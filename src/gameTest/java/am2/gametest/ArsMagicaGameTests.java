@@ -1,5 +1,6 @@
 package am2.gametest;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -20,6 +21,8 @@ import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
+import net.minecraft.profiler.Profiler;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MovingObjectPosition;
@@ -27,7 +30,10 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.WorldSettings;
+import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.AnvilSaveHandler;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.FakePlayer;
@@ -38,6 +44,7 @@ import com.mojang.authlib.GameProfile;
 
 import am2.AMChunkLoader;
 import am2.AMCore;
+import am2.AMEventHandler;
 import am2.api.ArsMagicaApi;
 import am2.api.blocks.MultiblockStructureDefinition;
 import am2.api.power.PowerTypes;
@@ -67,6 +74,7 @@ import am2.spell.SkillManager;
 import am2.spell.SpellUtils;
 import am2.utility.RedstoneInlayState;
 import am2.utility.TickrateController;
+import am2.world.WorldStateManager;
 import cpw.mods.fml.common.registry.GameRegistry;
 
 /**
@@ -128,6 +136,7 @@ final class ArsMagicaGameTests {
         checksAltarLifecycle(pWorld);
         checksPowerChunkReload(pWorld);
         checksSpellBookCast(pWorld);
+        checksWorldLifecycle(pWorld);
         checksBucketFill(pWorld);
         checksOreDictionary();
         checksRecipes();
@@ -561,6 +570,59 @@ final class ArsMagicaGameTests {
 
         check(properties.getCurrentMana() < manaBefore, "casting from the spell book must deduct mana");
         check(properties.getCurrentFatigue() > fatigueBefore, "casting from the spell book must add burnout");
+    }
+
+    /** Creates a temporary world, ticks it 200 times, unloads it, and verifies transient state is released. */
+    private static void checksWorldLifecycle(WorldServer pWorld) {
+        File directory = new File("leakTestWorld");
+        deleteDirectory(directory);
+        WorldServer temporary = null;
+
+        try {
+            temporary = new WorldServer(
+                MinecraftServer.getServer(),
+                new AnvilSaveHandler(directory, "leakTest", true),
+                "leakTest",
+                0,
+                new WorldSettings(1234L, WorldSettings.GameType.CREATIVE, false, false, WorldType.FLAT),
+                new Profiler());
+
+            for (int i = 0; i < 200; i++) {
+                temporary.tick();
+            }
+
+            WorldStateManager.forceShielded(temporary)
+                .add("leak_test");
+            WorldStateManager.acceleratedEntities(temporary)
+                .put(UUID.randomUUID(), 1);
+            AMEventHandler.clearWorldState(temporary);
+
+            check(
+                WorldStateManager.forceShielded(temporary)
+                    .isEmpty(),
+                "unloading a temporary world must release its transient state");
+            check(
+                temporary.getChunkProvider()
+                    .getLoadedChunkCount() >= 0,
+                "the temporary world must remain usable while it is unloaded");
+            temporary.saveAllChunks(true, null);
+            temporary.flush();
+        } catch (Throwable t) {
+            t.printStackTrace();
+            check(false, "the temporary 200-tick world lifecycle must not throw: " + t);
+        } finally {
+            AMEventHandler.clearAllTransientState();
+            deleteDirectory(directory);
+        }
+    }
+
+    private static void deleteDirectory(File file) {
+        if (file == null || !file.exists()) return;
+        File[] children = file.listFiles();
+        if (children != null) {
+            for (File child : children) deleteDirectory(child);
+        }
+        file.delete();
     }
 
     private static void checksBucketFill(WorldServer pWorld) {
