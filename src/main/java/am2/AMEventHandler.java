@@ -1295,48 +1295,36 @@ public class AMEventHandler {
                 }
 
                 if (enabled_timeFortified) {
-                    Map<String, String> loadedBlocks = extendedProperties
-                        .getExtraVariablesContains("timefortified_tile_");
-
-                    for (Map.Entry<String, String> entry : loadedBlocks.entrySet()) {
-                        int remaining = Integer.parseInt(entry.getValue());
+                    for (Map.Entry<TimedBlockEffect, Integer> entry : new ArrayList<Map.Entry<TimedBlockEffect, Integer>>(
+                        extendedProperties.getFortifiedTiles()
+                            .entrySet())) {
+                        TimedBlockEffect key = entry.getKey();
+                        int remaining = entry.getValue();
                         if (remaining < 3) {
-                            extendedProperties.removeFromExtraVariables(entry.getKey());
+                            extendedProperties.removeFortifiedTile(key);
                             if (!world.isRemote) {
-                                TimedBlockEffect key = timedBlockKey(entry.getKey());
-                                if (key != null) {
-                                    releaseFortifiedChunk(
-                                        DimensionManager.getWorld(key.dimension),
-                                        key.x,
-                                        key.y,
-                                        key.z);
-                                }
+                                releaseFortifiedChunk(DimensionManager.getWorld(key.dimension), key.x, key.y, key.z);
                             }
                         } else {
-                            extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(remaining - 5));
+                            extendedProperties.setFortifiedTileDuration(key, remaining - 5);
                         }
                     }
                 }
                 if (enabled_shield) {
-                    Map<String, String> shieldedBlocks = extendedProperties.getExtraVariablesContains("shielded_tile_");
-
-                    for (Map.Entry<String, String> entry : shieldedBlocks.entrySet()) {
-                        TimedBlockEffect key = timedBlockKey(entry.getKey());
-                        if (key == null) {
-                            // Do not leave malformed legacy data in a live extra-property map.
-                            extendedProperties.removeFromExtraVariables(entry.getKey());
-                            continue;
-                        }
-                        int remaining = Integer.parseInt(entry.getValue());
+                    for (Map.Entry<TimedBlockEffect, Integer> entry : new ArrayList<Map.Entry<TimedBlockEffect, Integer>>(
+                        extendedProperties.getShieldedTiles()
+                            .entrySet())) {
+                        TimedBlockEffect key = entry.getKey();
+                        int remaining = entry.getValue();
                         if (remaining < 3) {
-                            extendedProperties.removeFromExtraVariables(entry.getKey());
+                            extendedProperties.removeShieldedTile(key);
                             if (!world.isRemote) {
                                 forceShielded.remove(key.representation());
                             }
                         } else {
                             String represent = key.representation();
                             if (!(forceShielded.contains(represent))) forceShielded.add(represent);
-                            extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(remaining - 5));
+                            extendedProperties.setShieldedTileDuration(key, remaining - 5);
                         }
                     }
                 }

@@ -60,6 +60,14 @@ public final class TimedEffectCodec {
         return parseAcceleratedTile(raw);
     }
 
+    public static String encodeFortifiedTile(TimedBlockEffect effect) {
+        return "timefortified_tile_" + effect.x + "_" + effect.y + "_" + effect.z + "_" + effect.dimension;
+    }
+
+    public static String encodeShieldedTile(TimedBlockEffect effect) {
+        return "shielded_tile_" + effect.x + "_" + effect.y + "_" + effect.z + "_" + effect.dimension;
+    }
+
     public static TimedBlockEffect parseTimedBlock(String raw) {
         if (raw == null) return null;
         String[] parts = raw.split("_");

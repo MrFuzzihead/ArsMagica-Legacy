@@ -99,6 +99,8 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     private final transient Map<TimedEntityEffect, Integer> acceleratedEntities = new HashMap<TimedEntityEffect, Integer>();
     private final transient Map<TimedEntityEffect, Integer> slowedEntities = new HashMap<TimedEntityEffect, Integer>();
     private final transient Map<TimedBlockEffect, Integer> slowedTiles = new HashMap<TimedBlockEffect, Integer>();
+    private final transient Map<TimedBlockEffect, Integer> fortifiedTiles = new HashMap<TimedBlockEffect, Integer>();
+    private final transient Map<TimedBlockEffect, Integer> shieldedTiles = new HashMap<TimedBlockEffect, Integer>();
 
     private final Map<String, String> compendium_entries = new HashMap<String, String>();
 
@@ -1390,6 +1392,8 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         acceleratedEntities.clear();
         slowedEntities.clear();
         slowedTiles.clear();
+        fortifiedTiles.clear();
+        shieldedTiles.clear();
         setFullSync();
     }
 
@@ -1413,6 +1417,14 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         slowedTiles.keySet()
             .removeIf(
                 effect -> TimedEffectCodec.encodeSlowedTile(effect)
+                    .contains(contains));
+        fortifiedTiles.keySet()
+            .removeIf(
+                effect -> TimedEffectCodec.encodeFortifiedTile(effect)
+                    .contains(contains));
+        shieldedTiles.keySet()
+            .removeIf(
+                effect -> TimedEffectCodec.encodeShieldedTile(effect)
                     .contains(contains));
         setFullSync();
     }
@@ -1468,6 +1480,24 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
                     // Keep the legacy string; malformed durations must not break loading.
                 }
             }
+        } else if (name.startsWith("timefortified_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
+            if (effect != null) {
+                try {
+                    fortifiedTiles.put(effect, Integer.parseInt(value));
+                } catch (NumberFormatException ignored) {
+                    // Keep the legacy string; malformed durations must not break loading.
+                }
+            }
+        } else if (name.startsWith("shielded_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
+            if (effect != null) {
+                try {
+                    shieldedTiles.put(effect, Integer.parseInt(value));
+                } catch (NumberFormatException ignored) {
+                    // Keep the legacy string; malformed durations must not break loading.
+                }
+            }
         }
     }
 
@@ -1486,6 +1516,12 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         } else if (name.startsWith("accelerated_slow_tile_")) {
             TimedBlockEffect effect = TimedEffectCodec.parseSlowedTile(name);
             if (effect != null) slowedTiles.remove(effect);
+        } else if (name.startsWith("timefortified_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
+            if (effect != null) fortifiedTiles.remove(effect);
+        } else if (name.startsWith("shielded_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
+            if (effect != null) shieldedTiles.remove(effect);
         }
     }
 
@@ -1495,6 +1531,8 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         acceleratedEntities.clear();
         slowedEntities.clear();
         slowedTiles.clear();
+        fortifiedTiles.clear();
+        shieldedTiles.clear();
         for (Map.Entry<String, String> entry : extra_properties.entrySet()) {
             trackTimedEffectKey(entry.getKey(), entry.getValue());
         }
@@ -1510,6 +1548,42 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
     public Map<TimedEntityEffect, Integer> getSlowedEntities() {
         return slowedEntities;
+    }
+
+    public Map<TimedBlockEffect, Integer> getFortifiedTiles() {
+        return fortifiedTiles;
+    }
+
+    public Map<TimedBlockEffect, Integer> getShieldedTiles() {
+        return shieldedTiles;
+    }
+
+    public void setFortifiedTileDuration(TimedBlockEffect effect, int duration) {
+        fortifiedTiles.put(effect, duration);
+        extra_properties.put(TimedEffectCodec.encodeFortifiedTile(effect), String.valueOf(duration));
+        setFullSync();
+    }
+
+    public void setShieldedTileDuration(TimedBlockEffect effect, int duration) {
+        shieldedTiles.put(effect, duration);
+        extra_properties.put(TimedEffectCodec.encodeShieldedTile(effect), String.valueOf(duration));
+        setFullSync();
+    }
+
+    public void removeFortifiedTile(TimedBlockEffect effect) {
+        fortifiedTiles.remove(effect);
+        String key = TimedEffectCodec.encodeFortifiedTile(effect);
+        extra_properties.remove(key);
+        timedEffectKeys.remove(key);
+        setFullSync();
+    }
+
+    public void removeShieldedTile(TimedBlockEffect effect) {
+        shieldedTiles.remove(effect);
+        String key = TimedEffectCodec.encodeShieldedTile(effect);
+        extra_properties.remove(key);
+        timedEffectKeys.remove(key);
+        setFullSync();
     }
 
     public Map<TimedBlockEffect, Integer> getSlowedTiles() {
