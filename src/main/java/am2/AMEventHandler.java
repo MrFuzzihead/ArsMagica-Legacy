@@ -51,9 +51,6 @@ public class AMEventHandler {
         tempFlipped.put(properties, ticks);
     }
 
-    public static Map<UUID, Integer> acceleratedEntitiesUUIDs = new HashMap<>();
-    public static Map<UUID, Integer> slowedEntitiesUUIDs = new HashMap<>();
-
     /** Null-safe tile lookup for the spatial-vortex bookkeeping; an unloaded dimension yields a null world. */
     static TileEntity getTileEntitySafe(World world, int x, int y, int z) {
         return world == null ? null : world.getTileEntity(x, y, z);
@@ -238,8 +235,6 @@ public class AMEventHandler {
     /** Clears all transient state on server stop or client disconnect. */
     public static void clearAllTransientState() {
         am2.world.WorldStateManager.clearAll();
-        acceleratedEntitiesUUIDs.clear();
-        slowedEntitiesUUIDs.clear();
         tempFlipped.clear();
     }
 

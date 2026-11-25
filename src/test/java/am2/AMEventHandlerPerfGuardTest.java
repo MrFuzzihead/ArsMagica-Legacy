@@ -30,6 +30,7 @@ import am2.buffs.BuffList;
 import am2.playerextensions.AffinityData;
 import am2.playerextensions.ExtendedProperties;
 import am2.playerextensions.SkillData;
+import am2.world.WorldStateManager;
 
 /**
  * The timed-effect bookkeeping in {@code onEntityLiving} mutates server worlds and reads server dimensions. These
@@ -88,7 +89,7 @@ public class AMEventHandlerPerfGuardTest {
     @Before
     @After
     public void clearSlowedEntities() {
-        AMEventHandler.slowedEntitiesUUIDs.clear();
+        WorldStateManager.clearAll();
     }
 
     @Before
@@ -228,8 +229,9 @@ public class AMEventHandlerPerfGuardTest {
     @Test
     public void emptySlowedMapNeverCancels() {
         EntityLivingBase entity = mock(EntityLivingBase.class);
+        World world = mock(World.class);
 
-        assertFalse(new LivingUpdateHandler().shouldCancelSlowedEntity(entity));
+        assertFalse(new LivingUpdateHandler().shouldCancelSlowedEntity(entity, world));
         verifyNoInteractions(entity);
     }
 
@@ -239,9 +241,11 @@ public class AMEventHandlerPerfGuardTest {
         EntityLivingBase entity = mock(EntityLivingBase.class);
         when(entity.getUniqueID()).thenReturn(uuid);
         entity.ticksExisted = 1;
-        AMEventHandler.slowedEntitiesUUIDs.put(uuid, 5);
+        World world = mock(World.class);
+        WorldStateManager.slowedEntities(world)
+            .put(uuid, 5);
 
-        assertTrue(new LivingUpdateHandler().shouldCancelSlowedEntity(entity));
+        assertTrue(new LivingUpdateHandler().shouldCancelSlowedEntity(entity, world));
     }
 
     @Test
@@ -250,9 +254,11 @@ public class AMEventHandlerPerfGuardTest {
         EntityLivingBase entity = mock(EntityLivingBase.class);
         when(entity.getUniqueID()).thenReturn(uuid);
         entity.ticksExisted = 10;
-        AMEventHandler.slowedEntitiesUUIDs.put(uuid, 5);
+        World world = mock(World.class);
+        WorldStateManager.slowedEntities(world)
+            .put(uuid, 5);
 
-        assertFalse(new LivingUpdateHandler().shouldCancelSlowedEntity(entity));
+        assertFalse(new LivingUpdateHandler().shouldCancelSlowedEntity(entity, world));
     }
 
     @Test

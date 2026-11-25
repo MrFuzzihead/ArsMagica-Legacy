@@ -96,15 +96,14 @@ public class AMEventHandlerStateTest {
             .put(creatureIn(world), 10);
         WorldStateManager.forceShielded(world)
             .add("1_2_3_0");
-        AMEventHandler.acceleratedEntitiesUUIDs.put(java.util.UUID.randomUUID(), 1);
-        AMEventHandler.slowedEntitiesUUIDs.put(java.util.UUID.randomUUID(), 1);
+        WorldStateManager.acceleratedEntities(world)
+            .put(java.util.UUID.randomUUID(), 1);
+        WorldStateManager.slowedEntities(world)
+            .put(java.util.UUID.randomUUID(), 1);
 
         AMEventHandler.clearAllTransientState();
 
         assertTrue(WorldStateManager.isEmpty());
-        assertTrue(WorldStateManager.isEmpty());
-        assertTrue(AMEventHandler.acceleratedEntitiesUUIDs.isEmpty());
-        assertTrue(AMEventHandler.slowedEntitiesUUIDs.isEmpty());
     }
 
     private static EntityPlayer playerIn(World world) {

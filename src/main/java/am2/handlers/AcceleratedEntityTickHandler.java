@@ -9,6 +9,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
 import am2.AMEventHandler;
+import am2.world.WorldStateManager;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 
@@ -18,7 +19,7 @@ public class AcceleratedEntityTickHandler {
     @SubscribeEvent
     public void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !AMEventHandler.isAccelerateEnabled()
-            || AMEventHandler.acceleratedEntitiesUUIDs.isEmpty()) {
+            || !WorldStateManager.hasAcceleratedEntities()) {
             return;
         }
 
@@ -29,7 +30,8 @@ public class AcceleratedEntityTickHandler {
                     continue;
                 }
 
-                Integer extraTicks = AMEventHandler.acceleratedEntitiesUUIDs.get(entity.getUniqueID());
+                Integer extraTicks = WorldStateManager.acceleratedEntities(worldServer)
+                    .get(entity.getUniqueID());
                 if (extraTicks == null || extraTicks <= 0) {
                     continue;
                 }

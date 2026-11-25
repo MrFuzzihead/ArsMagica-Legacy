@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.item.EntityItem;
@@ -52,6 +53,23 @@ public final class WorldStateManager {
         return state == null ? Collections.emptyMap() : state.tempCurseMap;
     }
 
+    public static Map<UUID, Integer> acceleratedEntities(World world) {
+        WorldState state = state(world);
+        return state == null ? Collections.emptyMap() : state.acceleratedEntities;
+    }
+
+    public static Map<UUID, Integer> slowedEntities(World world) {
+        WorldState state = state(world);
+        return state == null ? Collections.emptyMap() : state.slowedEntities;
+    }
+
+    public static boolean hasAcceleratedEntities() {
+        for (WorldState state : states.values()) {
+            if (!state.acceleratedEntities.isEmpty()) return true;
+        }
+        return false;
+    }
+
     public static void unload(World world) {
         if (world != null) states.remove(world);
     }
@@ -70,5 +88,7 @@ public final class WorldStateManager {
         final Map<EntityPlayer, ArrayList<EntityCreature>> hallucinationMap = new HashMap<EntityPlayer, ArrayList<EntityCreature>>();
         final Map<EntityPlayer, ArrayList<EntityItem>> dustMap = new HashMap<EntityPlayer, ArrayList<EntityItem>>();
         final Map<EntityCreature, Integer> tempCurseMap = new HashMap<EntityCreature, Integer>();
+        final Map<UUID, Integer> acceleratedEntities = new HashMap<UUID, Integer>();
+        final Map<UUID, Integer> slowedEntities = new HashMap<UUID, Integer>();
     }
 }

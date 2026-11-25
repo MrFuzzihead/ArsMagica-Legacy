@@ -3,6 +3,7 @@ package am2;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.UUID;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
@@ -41,6 +42,7 @@ import am2.spell.SkillManager;
 import am2.spell.SkillTreeManager;
 import am2.utility.EntityUtilities;
 import am2.utility.MathUtilities;
+import am2.world.WorldStateManager;
 import cofh.api.energy.IEnergyHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
@@ -95,6 +97,7 @@ public class LivingUpdateHandler extends AMEventHandler {
                             extendedProperties.removeAcceleratedEntity(effect);
                         }
                     }
+                    Map<UUID, Integer> acceleratedEntitiesUUIDs = WorldStateManager.acceleratedEntities(world);
                     for (Map.Entry<TimedEntityEffect, Integer> entry : new ArrayList<Map.Entry<TimedEntityEffect, Integer>>(
                         extendedProperties.getAcceleratedEntities()
                             .entrySet())) {
@@ -116,6 +119,7 @@ public class LivingUpdateHandler extends AMEventHandler {
                         extendedProperties.removeExtraVariablesContaining("accelerated_slow_entity_");
                         extendedProperties.removeExtraVariablesContaining("accelerated_slow_tile_");
                     }
+                    Map<UUID, Integer> slowedEntitiesUUIDs = WorldStateManager.slowedEntities(world);
                     for (Map.Entry<TimedEntityEffect, Integer> entry : new ArrayList<Map.Entry<TimedEntityEffect, Integer>>(
                         extendedProperties.getSlowedEntities()
                             .entrySet())) {
@@ -671,7 +675,8 @@ public class LivingUpdateHandler extends AMEventHandler {
         }
     }
 
-    boolean shouldCancelSlowedEntity(EntityLivingBase ent) {
+    boolean shouldCancelSlowedEntity(EntityLivingBase ent, World world) {
+        Map<UUID, Integer> slowedEntitiesUUIDs = WorldStateManager.slowedEntities(world);
         if (slowedEntitiesUUIDs.isEmpty()) return false;
 
         Integer updateInterval = slowedEntitiesUUIDs.get(ent.getUniqueID());
@@ -763,13 +768,12 @@ public class LivingUpdateHandler extends AMEventHandler {
     public void onEntityLiving(LivingUpdateEvent event) {
 
         EntityLivingBase ent = event.entityLiving;
+        World world = ent.worldObj;
 
-        if (shouldCancelSlowedEntity(ent)) {
+        if (shouldCancelSlowedEntity(ent, world)) {
             event.setCanceled(true);
             return;
         }
-
-        World world = ent.worldObj;
 
         ExtendedProperties extendedProperties = prepareEntityProperties(ent);
 

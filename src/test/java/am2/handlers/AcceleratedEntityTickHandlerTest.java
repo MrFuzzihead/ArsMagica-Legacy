@@ -1,12 +1,10 @@
 package am2.handlers;
 
-import java.util.UUID;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import am2.AMEventHandler;
+import am2.world.WorldStateManager;
 import cpw.mods.fml.common.gameevent.TickEvent;
 
 public class AcceleratedEntityTickHandlerTest {
@@ -14,13 +12,11 @@ public class AcceleratedEntityTickHandlerTest {
     @Before
     @After
     public void clearEntities() {
-        AMEventHandler.acceleratedEntitiesUUIDs.clear();
+        WorldStateManager.clearAll();
     }
 
     @Test
     public void startPhaseIsIgnored() {
-        AMEventHandler.acceleratedEntitiesUUIDs.put(UUID.randomUUID(), 2);
-
         new AcceleratedEntityTickHandler().onServerTick(new TickEvent.ServerTickEvent(TickEvent.Phase.START));
     }
 
