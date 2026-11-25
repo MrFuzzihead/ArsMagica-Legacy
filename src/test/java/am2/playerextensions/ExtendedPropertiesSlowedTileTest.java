@@ -28,7 +28,6 @@ public class ExtendedPropertiesSlowedTileTest {
             Integer.valueOf(4),
             properties.getSlowedTiles()
                 .get(effect));
-        assertEquals("4", properties.getExtraVariable(raw));
 
         properties.removeSlowedTile(effect);
         assertFalse(

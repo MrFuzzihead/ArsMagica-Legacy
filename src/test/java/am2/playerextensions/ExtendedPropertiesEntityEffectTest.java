@@ -31,7 +31,6 @@ public class ExtendedPropertiesEntityEffectTest {
             Integer.valueOf(5),
             properties.getAcceleratedEntities()
                 .get(effect));
-        assertEquals("5", properties.getExtraVariable(raw));
 
         properties.removeAcceleratedEntity(effect);
         assertFalse(
@@ -54,7 +53,6 @@ public class ExtendedPropertiesEntityEffectTest {
                 .get(effect));
 
         properties.setSlowedEntityDuration(effect, 3);
-        assertEquals("3", properties.getExtraVariable(raw));
 
         properties.removeSlowedEntity(effect);
         assertTrue(

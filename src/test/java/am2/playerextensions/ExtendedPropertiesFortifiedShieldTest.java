@@ -25,7 +25,6 @@ public class ExtendedPropertiesFortifiedShieldTest {
                 .get(EFFECT));
 
         properties.setFortifiedTileDuration(EFFECT, 5);
-        assertEquals("5", properties.getExtraVariable(raw));
 
         properties.removeFortifiedTile(EFFECT);
         assertTrue(
@@ -46,7 +45,6 @@ public class ExtendedPropertiesFortifiedShieldTest {
                 .get(EFFECT));
 
         properties.setShieldedTileDuration(EFFECT, 5);
-        assertEquals("5", properties.getExtraVariable(raw));
 
         properties.removeShieldedTile(EFFECT);
         assertTrue(

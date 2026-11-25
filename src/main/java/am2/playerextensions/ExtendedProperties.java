@@ -502,7 +502,12 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         }
 
         NBTTagCompound extra_data = new NBTTagCompound();
-        writeStringMap(extra_data, "persistentobj", "persistentobjname", "persistentobjsize", extra_properties);
+        writeStringMap(
+            extra_data,
+            "persistentobj",
+            "persistentobjname",
+            "persistentobjsize",
+            buildSerializableExtraProperties());
         writer.add(extra_data);
 
         this.updateFlags = 0;
@@ -1179,6 +1184,33 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         return false;
     }
 
+    private Map<String, String> buildSerializableExtraProperties() {
+        Map<String, String> serializable = new HashMap<String, String>(extra_properties);
+        for (Map.Entry<TimedBlockEffect, Integer> entry : acceleratedTiles.entrySet()) {
+            serializable.put(TimedEffectCodec.encodeAcceleratedTile(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        for (Map.Entry<TimedBlockEffect, Integer> entry : slowedTiles.entrySet()) {
+            serializable.put(TimedEffectCodec.encodeSlowedTile(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        for (Map.Entry<TimedBlockEffect, Integer> entry : fortifiedTiles.entrySet()) {
+            serializable.put(TimedEffectCodec.encodeFortifiedTile(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        for (Map.Entry<TimedBlockEffect, Integer> entry : shieldedTiles.entrySet()) {
+            serializable.put(TimedEffectCodec.encodeShieldedTile(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        for (Map.Entry<TimedEntityEffect, Integer> entry : acceleratedEntities.entrySet()) {
+            serializable
+                .put(TimedEffectCodec.encodeAcceleratedEntity(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        for (Map.Entry<TimedEntityEffect, Integer> entry : slowedEntities.entrySet()) {
+            serializable.put(TimedEffectCodec.encodeSlowedEntity(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        for (Map.Entry<SpatialVortexEffect, String> entry : spatialVortices.entrySet()) {
+            serializable.put(TimedEffectCodec.encodeSpatialVortex(entry.getKey()), entry.getValue());
+        }
+        return serializable;
+    }
+
     static void writeStringMap(NBTTagCompound compound, String valuePrefix, String namePrefix, String sizeKey,
         Map<String, String> values) {
         int index = 0;
@@ -1240,7 +1272,12 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
             compound.setDouble("marklocationz", this.getMarkZ());
             compound.setInteger("markdimension", this.getMarkDimension());
         }
-        writeStringMap(compound, "persistentobj", "persistentobjname", "persistentobjsize", extra_properties);
+        writeStringMap(
+            compound,
+            "persistentobj",
+            "persistentobjname",
+            "persistentobjsize",
+            buildSerializableExtraProperties());
         writeStringMap(compound, "compentry", "compentryname", "compendiumsize", compendium_entries);
     }
 
@@ -1309,9 +1346,65 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     }
 
     public void addToExtraVariables(String name, String value) {
+        if (storeTimedEffect(name, value)) {
+            setFullSync();
+            return;
+        }
         extra_properties.put(name, value);
         trackTimedEffectKey(name, value);
         setFullSync();
+    }
+
+    private boolean storeTimedEffect(String name, String value) {
+        if (!isTimedEffectKey(name)) return false;
+        timedEffectKeys.add(name);
+        try {
+            if (name.startsWith("accelerated_fast_tile_")) {
+                TimedBlockEffect effect = TimedEffectCodec.parseAcceleratedTile(name);
+                if (effect == null) return false;
+                acceleratedTiles.put(effect, Integer.parseInt(value));
+                return true;
+            }
+            if (name.startsWith("accelerated_slow_tile_")) {
+                TimedBlockEffect effect = TimedEffectCodec.parseSlowedTile(name);
+                if (effect == null) return false;
+                slowedTiles.put(effect, Integer.parseInt(value));
+                return true;
+            }
+            if (name.startsWith("accelerated_fast_entity_")) {
+                TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
+                if (effect == null) return false;
+                acceleratedEntities.put(effect, Integer.parseInt(value));
+                return true;
+            }
+            if (name.startsWith("accelerated_slow_entity_")) {
+                TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
+                if (effect == null) return false;
+                slowedEntities.put(effect, Integer.parseInt(value));
+                return true;
+            }
+            if (name.startsWith("timefortified_tile_")) {
+                TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
+                if (effect == null) return false;
+                fortifiedTiles.put(effect, Integer.parseInt(value));
+                return true;
+            }
+            if (name.startsWith("shielded_tile_")) {
+                TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
+                if (effect == null) return false;
+                shieldedTiles.put(effect, Integer.parseInt(value));
+                return true;
+            }
+            if (name.startsWith("spatialvortex_")) {
+                SpatialVortexEffect effect = TimedEffectCodec.parseSpatialVortex(name);
+                if (effect == null) return false;
+                spatialVortices.put(effect, value);
+                return true;
+            }
+        } catch (NumberFormatException ignored) {
+            return false;
+        }
+        return false;
     }
 
     public void setCompendiumEntry(String name, String value) {
@@ -1382,9 +1475,40 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     }
 
     public void removeFromExtraVariables(String name) {
-        extra_properties.remove(name);
-        untrackTimedEffectKey(name);
+        if (isTimedEffectKey(name)) {
+            removeTimedEffect(name);
+            extra_properties.remove(name);
+            timedEffectKeys.remove(name);
+        } else {
+            extra_properties.remove(name);
+            untrackTimedEffectKey(name);
+        }
         setFullSync();
+    }
+
+    private void removeTimedEffect(String name) {
+        if (name.startsWith("accelerated_fast_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseAcceleratedTile(name);
+            if (effect != null) acceleratedTiles.remove(effect);
+        } else if (name.startsWith("accelerated_slow_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseSlowedTile(name);
+            if (effect != null) slowedTiles.remove(effect);
+        } else if (name.startsWith("accelerated_fast_entity_")) {
+            TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
+            if (effect != null) acceleratedEntities.remove(effect);
+        } else if (name.startsWith("accelerated_slow_entity_")) {
+            TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
+            if (effect != null) slowedEntities.remove(effect);
+        } else if (name.startsWith("timefortified_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
+            if (effect != null) fortifiedTiles.remove(effect);
+        } else if (name.startsWith("shielded_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
+            if (effect != null) shieldedTiles.remove(effect);
+        } else if (name.startsWith("spatialvortex_")) {
+            SpatialVortexEffect effect = TimedEffectCodec.parseSpatialVortex(name);
+            if (effect != null) spatialVortices.remove(effect);
+        }
     }
 
     public void clearExtraVariables() {
@@ -1550,6 +1674,8 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         for (Map.Entry<String, String> entry : extra_properties.entrySet()) {
             trackTimedEffectKey(entry.getKey(), entry.getValue());
         }
+        extra_properties.keySet()
+            .removeIf(ExtendedProperties::isTimedEffectKey);
     }
 
     public Map<TimedBlockEffect, Integer> getAcceleratedTiles() {

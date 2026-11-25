@@ -8,6 +8,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import net.minecraft.nbt.NBTTagCompound;
+
 import org.junit.Test;
 
 import am2.playerextensions.effects.TimedBlockEffect;
@@ -33,13 +35,27 @@ public class ExtendedPropertiesAcceleratedTileTest {
             Integer.valueOf(7),
             properties.getAcceleratedTiles()
                 .get(effect));
-        assertEquals("7", properties.getExtraVariable(raw));
 
         properties.removeAcceleratedTile(effect);
         assertFalse(
             properties.getAcceleratedTiles()
                 .containsKey(effect));
         assertFalse(properties.hasExtraVariable(raw));
+    }
+
+    @Test
+    public void serializationDerivesTimedStringsFromTheTypedMap() {
+        ExtendedProperties properties = new ExtendedProperties();
+        String raw = "accelerated_fast_tile_1_2_3_4_5";
+        properties.addToExtraVariables(raw, "10");
+
+        NBTTagCompound tag = new NBTTagCompound();
+        properties.saveNBTData(tag);
+
+        int size = tag.getInteger("persistentobjsize");
+        assertEquals(1, size);
+        assertEquals(raw, tag.getString("persistentobjname0"));
+        assertEquals("10", tag.getString("persistentobj0"));
     }
 
     @Test
