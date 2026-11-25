@@ -960,16 +960,9 @@ public class AMEventHandler {
                     }
                 }
                 if (enabled_slow) {
-                    Map<String, String> slowedBlocks = extendedProperties
-                        .getExtraVariablesContains("accelerated_slow_tile_");
-                    Map<String, String> slowedEntities = extendedProperties
-                        .getExtraVariablesContains("accelerated_slow_entity_");
-
                     if (SkillTreeManager.instance.isSkillDisabled(SkillManager.instance.getSkill("DiluteTime"))) {
                         extendedProperties.removeExtraVariablesContaining("accelerated_slow_entity_");
                         extendedProperties.removeExtraVariablesContaining("accelerated_slow_tile_");
-                        slowedEntities.clear();
-                        slowedBlocks.clear();
                     }
                     for (Map.Entry<TimedEntityEffect, Integer> entry : new ArrayList<Map.Entry<TimedEntityEffect, Integer>>(
                         extendedProperties.getSlowedEntities()
@@ -987,12 +980,15 @@ public class AMEventHandler {
                         }
                     }
 
-                    for (Map.Entry<String, String> entry : slowedBlocks.entrySet()) {
-                        int remaining = Integer.parseInt(entry.getValue());
+                    for (Map.Entry<TimedBlockEffect, Integer> entry : new ArrayList<Map.Entry<TimedBlockEffect, Integer>>(
+                        extendedProperties.getSlowedTiles()
+                            .entrySet())) {
+                        TimedBlockEffect key = entry.getKey();
+                        int remaining = entry.getValue();
                         if (remaining < 3) {
-                            extendedProperties.removeFromExtraVariables(entry.getKey());
+                            extendedProperties.removeSlowedTile(key);
                         } else {
-                            extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(remaining - 5));
+                            extendedProperties.setSlowedTileDuration(key, remaining - 5);
                         }
                     }
                 }

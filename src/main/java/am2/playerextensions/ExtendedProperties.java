@@ -98,6 +98,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     private final transient Map<TimedBlockEffect, Integer> acceleratedTiles = new HashMap<TimedBlockEffect, Integer>();
     private final transient Map<TimedEntityEffect, Integer> acceleratedEntities = new HashMap<TimedEntityEffect, Integer>();
     private final transient Map<TimedEntityEffect, Integer> slowedEntities = new HashMap<TimedEntityEffect, Integer>();
+    private final transient Map<TimedBlockEffect, Integer> slowedTiles = new HashMap<TimedBlockEffect, Integer>();
 
     private final Map<String, String> compendium_entries = new HashMap<String, String>();
 
@@ -1388,6 +1389,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         acceleratedTiles.clear();
         acceleratedEntities.clear();
         slowedEntities.clear();
+        slowedTiles.clear();
         setFullSync();
     }
 
@@ -1407,6 +1409,10 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         slowedEntities.keySet()
             .removeIf(
                 effect -> TimedEffectCodec.encodeSlowedEntity(effect)
+                    .contains(contains));
+        slowedTiles.keySet()
+            .removeIf(
+                effect -> TimedEffectCodec.encodeSlowedTile(effect)
                     .contains(contains));
         setFullSync();
     }
@@ -1453,6 +1459,15 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
                     // Keep the legacy string; malformed durations must not break loading.
                 }
             }
+        } else if (name.startsWith("accelerated_slow_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseSlowedTile(name);
+            if (effect != null) {
+                try {
+                    slowedTiles.put(effect, Integer.parseInt(value));
+                } catch (NumberFormatException ignored) {
+                    // Keep the legacy string; malformed durations must not break loading.
+                }
+            }
         }
     }
 
@@ -1468,6 +1483,9 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         } else if (name.startsWith("accelerated_slow_entity_")) {
             TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
             if (effect != null) slowedEntities.remove(effect);
+        } else if (name.startsWith("accelerated_slow_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseSlowedTile(name);
+            if (effect != null) slowedTiles.remove(effect);
         }
     }
 
@@ -1476,6 +1494,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         acceleratedTiles.clear();
         acceleratedEntities.clear();
         slowedEntities.clear();
+        slowedTiles.clear();
         for (Map.Entry<String, String> entry : extra_properties.entrySet()) {
             trackTimedEffectKey(entry.getKey(), entry.getValue());
         }
@@ -1491,6 +1510,24 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
     public Map<TimedEntityEffect, Integer> getSlowedEntities() {
         return slowedEntities;
+    }
+
+    public Map<TimedBlockEffect, Integer> getSlowedTiles() {
+        return slowedTiles;
+    }
+
+    public void setSlowedTileDuration(TimedBlockEffect effect, int duration) {
+        slowedTiles.put(effect, duration);
+        extra_properties.put(TimedEffectCodec.encodeSlowedTile(effect), String.valueOf(duration));
+        setFullSync();
+    }
+
+    public void removeSlowedTile(TimedBlockEffect effect) {
+        slowedTiles.remove(effect);
+        String key = TimedEffectCodec.encodeSlowedTile(effect);
+        extra_properties.remove(key);
+        timedEffectKeys.remove(key);
+        setFullSync();
     }
 
     public void setAcceleratedEntityDuration(TimedEntityEffect effect, int duration) {

@@ -44,6 +44,22 @@ public final class TimedEffectCodec {
         return "accelerated_slow_entity_" + effect.power + "_" + effect.entityUUID;
     }
 
+    public static String encodeSlowedTile(TimedBlockEffect effect) {
+        return "accelerated_slow_tile_" + effect.x
+            + "_"
+            + effect.y
+            + "_"
+            + effect.z
+            + "_"
+            + effect.dimension
+            + "_"
+            + effect.power;
+    }
+
+    public static TimedBlockEffect parseSlowedTile(String raw) {
+        return parseAcceleratedTile(raw);
+    }
+
     public static TimedBlockEffect parseTimedBlock(String raw) {
         if (raw == null) return null;
         String[] parts = raw.split("_");
