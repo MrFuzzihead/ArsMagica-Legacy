@@ -90,7 +90,7 @@ public class AMPacketProcessorServer {
                     handleSyncBetaParticles(remaining, player);
                     break;
                 case AMPacketIDs.POSSIBLE_CLIENT_EXPROP_DESYNC:
-                    handlePossibleClientExpropDesync(remaining);
+                    handlePossibleClientExpropDesync(remaining, player);
                     break;
                 case AMPacketIDs.REQUEST_BETA_PARTICLES:
                     handleRequestBetaParticles(remaining, player);
@@ -389,6 +389,7 @@ public class AMPacketProcessorServer {
         int entityID = rdr.getInt();
         int inventorySlot = rdr.getInt();
         if (rdr.hasFailed()) return;
+        if (inventorySlot < 0 || inventorySlot >= player.inventory.getSizeInventory()) return;
 
         ItemStack stack = player.inventory.getStackInSlot(inventorySlot);
         if (stack == null || !(stack.getItem() instanceof ItemSpellBook)) return;
@@ -423,6 +424,7 @@ public class AMPacketProcessorServer {
         int requesterID = rdr.getInt();
         int entityID = rdr.getInt();
         if (rdr.hasFailed()) return;
+        if (!PacketAuthority.isSelf(player, requesterID)) return;
         EntityLivingBase entity = getEntityByID(entityID);
 
         if (player == null || !(entity instanceof EntityPlayer)) return;
@@ -439,12 +441,13 @@ public class AMPacketProcessorServer {
         AMNetHandler.INSTANCE.sendPacketToClientPlayer(player, AMPacketIDs.REQUEST_BETA_PARTICLES, writer.generate());
     }
 
-    private void handlePossibleClientExpropDesync(byte[] data) {
+    private void handlePossibleClientExpropDesync(byte[] data, EntityPlayerMP player) {
         AMDataReader rdr = new AMDataReader(data, false);
         int entityID = rdr.getInt();
         if (rdr.hasFailed()) return;
 
         EntityLivingBase e = getEntityByID(entityID);
+        if (!PacketAuthority.isSelf(player, e)) return;
 
         if (e instanceof EntityPlayer) {
             ExtendedProperties props = ExtendedProperties.For(e);

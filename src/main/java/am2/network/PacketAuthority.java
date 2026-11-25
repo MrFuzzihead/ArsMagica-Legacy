@@ -1,5 +1,6 @@
 package am2.network;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 
@@ -21,6 +22,14 @@ public final class PacketAuthority {
     public static final double MAX_INTERACTION_DISTANCE_SQ = 64.0D;
 
     private PacketAuthority() {}
+
+    public static boolean isSelf(EntityPlayer player, Entity entity) {
+        return player != null && entity != null && player.getEntityId() == entity.getEntityId();
+    }
+
+    public static boolean isSelf(EntityPlayer player, int entityID) {
+        return player != null && player.getEntityId() == entityID;
+    }
 
     public static boolean isWithinReach(EntityPlayer player, TileEntity te) {
         if (player == null || te == null) {

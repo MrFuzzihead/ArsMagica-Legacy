@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.tileentity.TileEntity;
@@ -19,6 +20,23 @@ import am2.containers.ContainerInscriptionTable;
  * Covers the server-side authority helpers used by the client-packet handlers.
  */
 public class PacketAuthorityTest {
+
+    @Test
+    public void selfChecksUseTheEntityId() {
+        EntityPlayer player = mock(EntityPlayer.class);
+        when(player.getEntityId()).thenReturn(42);
+        Entity self = mock(Entity.class);
+        when(self.getEntityId()).thenReturn(42);
+        Entity other = mock(Entity.class);
+        when(other.getEntityId()).thenReturn(7);
+
+        assertTrue(PacketAuthority.isSelf(player, self));
+        assertTrue(PacketAuthority.isSelf(player, 42));
+        assertFalse(PacketAuthority.isSelf(player, other));
+        assertFalse(PacketAuthority.isSelf(player, 7));
+        assertFalse(PacketAuthority.isSelf(null, self));
+        assertFalse(PacketAuthority.isSelf(player, (Entity) null));
+    }
 
     @Test
     public void reachableTileEntityInTheSameWorldPasses() {
