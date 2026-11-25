@@ -79,6 +79,7 @@ and the automated tests that now cover the fix.
 | 5.7 Timed-effect early-out | **Fixed** — timed-key index skips per-entity timed work when no effects exist | `159e053` | `ExtendedPropertiesTimedEffectsTest` |
 | 6.7 Helper stack mutation | **Fixed** — fuel comparators and enervator outputs are copied | `0d5a4d7` | `ObeliskFuelHelperTest`, `EnervatorRecipeHelperTest` |
 | 6.7 API property getters | **Fixed** — null-safe entities/identifiers and lifecycle docs | `d148bbc` | `ArsMagicaApiPropertiesTest` |
+| 6.7 Legacy second mana API | **Fixed** — live legacy types deprecated, commented-out dead types removed | `9ff50da` | `LegacyManaApiTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -872,10 +873,10 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 - `EnervatorRecipeHelper.getRecipe` returns the stored output stack itself and mutates `stackSize` (`EnervatorRecipeHelper.java:29-53`). Return a copy.
 - `ArsMagicaApi.getSpellPartManager` and the identifier getters should have clear null/initialisation documentation.
 
-> **Status: Partially fixed.** `ObeliskFuelHelper.registerFuelType` and `EnervatorRecipeHelper.getRecipe` now copy
-> their inputs/outputs, so callers and the recipe registry cannot mutate each other. The extended-property getters are
-> null-safe and documented for pre-initialisation use. The abandoned second power API remains open. Covered by
-> `ObeliskFuelHelperTest`, `EnervatorRecipeHelperTest` (`0d5a4d7`) and `ArsMagicaApiPropertiesTest` (`d148bbc`).
+> **Status: Fixed.** `ObeliskFuelHelper.registerFuelType` and `EnervatorRecipeHelper.getRecipe` copy their
+> inputs/outputs, the extended-property getters are null-safe and documented, the legacy second mana API is deprecated,
+> and the fully commented-out dead types have been removed. Covered by `ObeliskFuelHelperTest`,
+> `EnervatorRecipeHelperTest` (`0d5a4d7`), `ArsMagicaApiPropertiesTest` (`d148bbc`) and `LegacyManaApiTest` (`9ff50da`).
 
 ---
 
