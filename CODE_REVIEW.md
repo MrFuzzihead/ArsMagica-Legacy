@@ -53,6 +53,7 @@ and the automated tests that now cover the fix.
 | 3.6 Wrong enchantment removal | **Fixed** — matching fortune/looting removal | `d72a7d2` | `AMEnchantmentHelperTest` |
 | 3.8 Unset spell-part manager | **Fixed** — SkillManager assigned, clear guard | `d72a7d2` | game-test API assertion |
 | 3.9 IMC blacklist parsing | **Fixed** — literal pipe parser | `d72a7d2` | `AMCoreImcParsingTest` |
+| 2.8 Dedicated-server client handler | **Fixed** — client-only overlay handler registered from `ClientProxy`, game-test success marker enforced | `b6602de` | `gameTestServer` 218/218, marker guard |
 | 3.1 Chunk-loader tickets | **Fixed** — reuse/release/restore map lifecycle and real key equality | `c64bf57` | `AMChunkLoaderTest`, game-test ticket lifecycle |
 | 3.4 TE network floods | **Fixed** — change-gated battery metadata and throttled enervator NBT | `c64bf57` | `TileEntityManaBatteryUpdateTest`, `TileEntityEntropicEnervatorTest` |
 | 3.7 Lingering spells | **Fixed** — one server tick per matching world, clear on unload | `c64bf57` | `SpellHelperLingeringTest` |
@@ -953,7 +954,7 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 ### Current state
 
 - 433 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
-- The server game test has 142 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
+- The server game test has 218 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
 - The client game test has 23 assertions at the main menu (proxy, key bindings, creative tabs, localisation).
 - Coverage is 177/69,939 lines (0.25%), with a 0.2% floor. The game-test coverage report is generated but not enforced.
 
@@ -994,7 +995,17 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 > `AMConfigPotionIdTest` cover invalid dimension/biome/potion IDs; `AM2WorldDecoratorTest` covers flat-world skipping,
 > MMF/overworld routing, nether routing and the empty end case.
 9. **Game tests** — place and break a fully formed crafting altar and assert the multiblock/TE state; cast a spell with a spell book and assert mana/burnout sync; place a mana battery and assert metadata changes only on change; unload/reload a chunk with a power network; run a dedicated-server test without CoFH to prove the optional-dependency guards.
+
+> **Status: Partially fixed.** `gameTestServer` now runs 218 real assertions and fails if the success marker is absent;
+> `checksAltarLifecycle` builds a tier-1 altar, validates it, removes a wall and verifies invalidation and TE removal.
+> The run is a dedicated server without CoFH. Battery metadata change-gating is covered by
+> `TileEntityManaBatteryUpdateTest`. Spell-book casting/mana-burnout sync and a live chunk unload/reload power test
+> remain.
 10. **Thread-safety/leak tests** — a single-player integration test that creates a world, ticks 200 ticks, unloads the world, and asserts the static maps are empty (or at least bounded). This would catch the `ItemFrameWatcher`/`AMEventHandler` leaks.
+
+> **Status: Partially fixed.** `AMEventHandlerStateTest` covers world-scoped and full transient-state cleanup,
+> `ItemFrameWatcherKeyTest` covers key scoping, and `PowerNodeRegistryWorldScopeTest` covers world identity. A live
+> 200-tick create/unload integration test remains.
 
 ### Coverage gate
 
