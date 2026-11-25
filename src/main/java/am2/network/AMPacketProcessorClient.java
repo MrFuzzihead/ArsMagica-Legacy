@@ -75,8 +75,13 @@ public class AMPacketProcessorClient extends AMPacketProcessorServer {
 
             // constant details all packets share: ID, player, and remaining data
             packetID = bbis.readByte();
+            int remainingBytes = bbis.available();
+            if (!PacketValidation.isValidPayloadLength(remainingBytes)) {
+                LogHelper.warn("Rejected invalid packet payload of %d bytes (type %d)", remainingBytes, packetID);
+                return;
+            }
             EntityPlayer player = Minecraft.getMinecraft().thePlayer;
-            byte[] remaining = new byte[bbis.available()];
+            byte[] remaining = new byte[remainingBytes];
             bbis.readFully(remaining);
 
             switch (packetID) {

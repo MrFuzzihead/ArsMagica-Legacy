@@ -53,9 +53,14 @@ public class AMPacketProcessorServer {
 
             // constant details all packets share: ID, player, and remaining data
             packetID = bbis.readByte();
+            int remainingBytes = bbis.available();
+            if (!PacketValidation.isValidPayloadLength(remainingBytes)) {
+                LogHelper.warn("Rejected invalid packet payload of %d bytes (type %d)", remainingBytes, packetID);
+                return;
+            }
             NetHandlerPlayServer srv = (NetHandlerPlayServer) event.packet.handler();
             EntityPlayerMP player = srv.playerEntity;
-            byte[] remaining = new byte[bbis.available()];
+            byte[] remaining = new byte[remainingBytes];
             bbis.readFully(remaining);
 
             switch (packetID) {
