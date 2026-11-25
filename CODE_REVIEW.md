@@ -83,6 +83,7 @@ and the automated tests that now cover the fix.
 | 6.6 Duplicated sync countdown | **Fixed** — shared `SyncWindow` for all three synced stores | `c268948` | `SyncWindowTest`, `SyncWindowIntegrationTest` |
 | 6.1 Bucket handler extraction | **Partially fixed** — bucket fill moved to `am2.handlers.BucketHandler` | `5d9dc43` | `BucketHandlerTest`, game-test bucket checks |
 | 6.1 Potion-brewing extraction | **Partially fixed** — brewing replacement moved to `PotionBrewingHandler` | `a583c03` | `PotionBrewingHandlerTest` |
+| 6.1 Passive-effect handlers | **Partially fixed** — temporal-anchor join cleanup and fury break-speed extracted | `e8b50a4` | `SmallEffectHandlersTest` |
 | 6.1 Handler section extraction | **Partially fixed** — `onEntityLiving` fully decomposed into named sections; other event families remain | `c8e815f`, `3cb040e`, `6bb2836`, `01e293e`, `6817ebc`, `a9c056a`, `5e101ac`, `b1c6314`, `3f47f30`, `3689056`, `9b76b22`, `aaeaf3b`, `388e527`, `6227d51` | `AMEventHandlerPerfGuardTest` |
 | 6.4 Packet payload validation | **Partially fixed** — 1 MiB cap before payload allocation on both processors | `092f9ea` | `PacketValidationTest` |
 | 6.4 Strict packet reads | **Fixed for both processors** — failure guards across server and client packet handlers | `74fc17f`, `e10b97c`, `eadef7a` | `AMDataReaderTest`, `AMPacketProcessorServerStrictReadTest`, `AMPacketProcessorClientStrictReadTest` |
@@ -855,9 +856,9 @@ See 3.4. Every tick, per block. This is likely the single largest source of pack
 
 `AMEventHandler.java` is 2,161 lines and handles potions, souls, death/clone, combat, buffs, adjacency/spatial mechanics, block protection, world interactions, and dozens of unrelated events. Split it into focused classes (`PlayerLifecycleHandler`, `CombatEventHandler`, `TimeEffectsHandler`, `SpatialVortexHandler`, `ShieldHandler`, `BucketHandler`, etc.). This will make the static-state leaks and side guards reviewable in isolation.
 
-> **Status: Partially fixed.** `onEntityLiving` is fully decomposed into named sections, and bucket filling and potion
-> brewing now live in their own handler classes. `AMEventHandler` still contains 21 other event families plus shared
-> helpers, so the class split is not complete.
+> **Status: Partially fixed.** `onEntityLiving` is fully decomposed into named sections, and bucket filling, potion
+> brewing, temporal-anchor cleanup and fury break-speed now live in their own handler classes. `AMEventHandler` still
+> contains 25 event handlers and 2,215 lines, so the class split is not complete.
 
 ### 6.2 Introduce a world-scoped manager for AM2 state
 
