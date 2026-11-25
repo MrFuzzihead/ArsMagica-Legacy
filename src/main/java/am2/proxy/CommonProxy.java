@@ -67,7 +67,6 @@ import am2.entities.EntityManager;
 import am2.entities.ai.MageVillagerTrade;
 import am2.handlers.AcceleratedEntityTickHandler;
 import am2.handlers.BlockBreakHandler;
-import am2.handlers.BlockOverlayHandler;
 import am2.handlers.BreakSpeedHandler;
 import am2.handlers.BucketHandler;
 import am2.handlers.CombatDefenseHandler;
@@ -153,7 +152,6 @@ public class CommonProxy {
         MinecraftForge.EVENT_BUS.register(new TemporalAnchorHandler());
         MinecraftForge.EVENT_BUS.register(new BreakSpeedHandler());
         MinecraftForge.EVENT_BUS.register(new ManaCostHandler());
-        MinecraftForge.EVENT_BUS.register(new BlockOverlayHandler());
         MinecraftForge.EVENT_BUS.register(new ItemWatchHandler());
         MinecraftForge.EVENT_BUS.register(new EntityConstructionHandler());
         MinecraftForge.EVENT_BUS.register(new SummonDropHandler());

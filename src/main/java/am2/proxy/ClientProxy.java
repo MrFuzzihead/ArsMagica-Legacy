@@ -53,6 +53,7 @@ import am2.entities.EntityAirSled;
 import am2.guis.AMGuiHelper;
 import am2.guis.GuiParticleEmitter;
 import am2.guis.GuiSkillTrees;
+import am2.handlers.BlockOverlayHandler;
 import am2.items.ItemSpellBook;
 import am2.items.ItemsCommonProxy;
 import am2.items.renderers.CustomItemRenderer;
@@ -118,6 +119,7 @@ public class ClientProxy extends CommonProxy {
         MinecraftForge.EVENT_BUS.post(new RegisterCompendiumEntries(ArcaneCompendium.instance));
         MinecraftForge.EVENT_BUS.post(new RegisterSkillTreeIcons(SpellIconManager.instance));
         MinecraftForge.EVENT_BUS.register(new AMClientEventHandler());
+        MinecraftForge.EVENT_BUS.register(new BlockOverlayHandler());
         ((ParticleManagerClient) particleManager).registerEventHandlers();
 
         FMLCommonHandler.instance()

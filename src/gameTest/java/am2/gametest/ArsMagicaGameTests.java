@@ -1,5 +1,7 @@
 package am2.gametest;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import net.minecraft.block.Block;
@@ -7,6 +9,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.entity.projectile.EntityFishHook;
+import net.minecraft.init.Blocks;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryCrafting;
@@ -105,6 +108,7 @@ final class ArsMagicaGameTests {
         checksItems();
         checksTileEntities(pWorld);
         checksWorldPlacement(pWorld);
+        checksAltarLifecycle(pWorld);
         checksBucketFill(pWorld);
         checksOreDictionary();
         checksRecipes();
@@ -338,6 +342,112 @@ final class ArsMagicaGameTests {
         }
 
         check(pWorld.getTileEntity(x, y, z) == null, "removing the block must remove its tile entity");
+    }
+
+    /**
+     * Builds a complete tier-1 altar, runs the real multiblock check, then removes a wall and verifies the altar
+     * invalidates and its tile entity is removed with the block.
+     */
+    private static void checksAltarLifecycle(WorldServer pWorld) {
+        int x = 8;
+        int z = 8;
+        int y = TEST_HEIGHT + 20;
+
+        try {
+            placeAltarBlock(pWorld, x, y, z, BlocksCommonProxy.craftingAltar);
+            for (int offsetZ : new int[] { -2, 2 }) {
+                placeAltarBlock(pWorld, x, y - 1, z + offsetZ, BlocksCommonProxy.magicWall);
+                for (int offsetY = -2; offsetY >= -3; offsetY--) {
+                    placeAltarBlock(pWorld, x, y + offsetY, z + offsetZ, BlocksCommonProxy.magicWall);
+                }
+            }
+
+            // Tier-1 structure and stairs.
+            placeAltarBlock(pWorld, x, y, z - 1, Blocks.planks);
+            placeAltarBlock(pWorld, x, y, z + 1, Blocks.planks);
+            for (int offsetY = -1; offsetY >= -3; offsetY--) {
+                for (int offsetX : new int[] { -1, 1 }) {
+                    placeAltarBlock(pWorld, x + offsetX, y + offsetY, z - 2, Blocks.planks);
+                    placeAltarBlock(pWorld, x + offsetX, y + offsetY, z + 2, Blocks.planks);
+                }
+            }
+            for (int offsetX = -2; offsetX <= 2; offsetX++) {
+                for (int offsetZ = -2; offsetZ <= 2; offsetZ++) {
+                    if (offsetX != 0 || offsetZ != 0) {
+                        placeAltarBlock(pWorld, x + offsetX, y - 4, z + offsetZ, Blocks.planks);
+                    }
+                }
+            }
+            for (int offsetZ = -1; offsetZ <= 1; offsetZ++) {
+                placeAltarBlock(pWorld, x - 1, y, z + offsetZ, Blocks.oak_stairs);
+                placeAltarBlock(pWorld, x + 1, y, z + offsetZ, Blocks.oak_stairs);
+            }
+            placeAltarBlock(pWorld, x, y, z - 2, Blocks.oak_stairs);
+            placeAltarBlock(pWorld, x, y, z + 2, Blocks.oak_stairs);
+            for (int offsetX : new int[] { -1, 1 }) {
+                placeAltarBlock(pWorld, x + offsetX, y - 1, z - 1, Blocks.oak_stairs);
+                placeAltarBlock(pWorld, x + offsetX, y - 1, z + 1, Blocks.oak_stairs);
+            }
+
+            // One complete augment group and all four lectern/lever groups.
+            for (int offsetX : new int[] { -1, 1 }) {
+                for (int offsetZ : new int[] { -2, 2 }) {
+                    placeAltarBlock(pWorld, x + offsetX, y, z + offsetZ, Blocks.glass);
+                }
+            }
+            placeAltarBlock(pWorld, x, y - 4, z, Blocks.glass);
+            for (int offsetX : new int[] { -2, 2 }) {
+                for (int offsetZ : new int[] { -2, 2 }) {
+                    placeAltarBlock(pWorld, x + offsetX, y - 3, z + offsetZ, BlocksCommonProxy.blockLectern);
+                }
+            }
+            for (int offsetX : new int[] { -2, 2 }) {
+                for (int offsetZ : new int[] { -2, 2 }) {
+                    placeAltarBlock(pWorld, x + offsetX, y - 2, z + offsetZ, Blocks.lever);
+                }
+            }
+
+            TileEntityCraftingAltar altar = (TileEntityCraftingAltar) pWorld.getTileEntity(x, y, z);
+            check(altar != null, "the altar must have a tile entity");
+            if (altar == null) return;
+
+            check(forceStructureCheck(altar), "a complete tier-1 altar must validate");
+            check(altar.structureValid(), "the altar must cache its valid structure state");
+
+            pWorld.setBlockToAir(x, y - 1, z + 2);
+            check(!forceStructureCheck(altar), "breaking a wall must invalidate the altar");
+            check(!altar.structureValid(), "the altar must clear its cached structure state");
+        } finally {
+            for (int offsetX = -2; offsetX <= 2; offsetX++) {
+                for (int offsetZ = -2; offsetZ <= 2; offsetZ++) {
+                    for (int offsetY = -4; offsetY <= 0; offsetY++) {
+                        pWorld.setBlockToAir(x + offsetX, y + offsetY, z + offsetZ);
+                    }
+                }
+            }
+        }
+
+        check(pWorld.getTileEntity(x, y, z) == null, "breaking the altar must remove its tile entity");
+    }
+
+    private static void placeAltarBlock(WorldServer pWorld, int x, int y, int z, Block pBlock) {
+        check(
+            pWorld.setBlock(x, y, z, pBlock),
+            "altar block " + pBlock + " must be placeable at " + x + "," + y + "," + z);
+    }
+
+    private static boolean forceStructureCheck(TileEntityCraftingAltar pAltar) {
+        try {
+            Field counter = TileEntityCraftingAltar.class.getDeclaredField("checkCounter");
+            counter.setAccessible(true);
+            counter.setInt(pAltar, 200);
+            Method check = TileEntityCraftingAltar.class.getDeclaredMethod("checkStructure");
+            check.setAccessible(true);
+            check.invoke(pAltar);
+            return pAltar.structureValid();
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
     }
 
     private static void checksBucketFill(WorldServer pWorld) {

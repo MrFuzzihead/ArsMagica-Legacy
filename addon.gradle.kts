@@ -284,11 +284,14 @@ tasks.register("prepareGameTestServer") {
     val propertiesFile = runDirectory.file("server.properties").asFile
     val worldDirectory = runDirectory.dir("gameTestWorld").asFile
     val classDumpDirectory = project.layout.buildDirectory.dir("jacoco/gameTestClasses").get().asFile
+    val serverLog = runDirectory.file("logs/fml-server-latest.log").asFile
 
     doLast {
         // The JaCoCo class dump is append-ish by nature: a second run can leave a hashed duplicate of the same class
         // name, which JaCoCo refuses to analyze. Start every run with a clean dump.
         classDumpDirectory.deleteRecursively()
+        // Do not let a marker from an earlier run hide a crash in this one.
+        serverLog.delete()
         eulaFile.parentFile.mkdirs()
         eulaFile.writeText("eula=true\n")
         propertiesFile.writeText(
@@ -372,4 +375,11 @@ tasks.register<JacocoReport>("jacocoGameTestReport") {
 
 tasks.named("gameTestServer") {
     finalizedBy(tasks.named("jacocoGameTestReport"))
+
+    doLast {
+        val log = java.io.File("run/server/logs/fml-server-latest.log")
+        check(log.isFile && log.readText().contains("ARSMAGICA_GAMETEST_OK")) {
+            "the dedicated server did not report ARSMAGICA_GAMETEST_OK; see $log"
+        }
+    }
 }
