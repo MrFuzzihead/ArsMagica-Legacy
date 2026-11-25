@@ -961,6 +961,10 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 ### The most valuable missing tests
 
 1. **Coremod registration test** — assert that `MysteriumPatchesFixLoaderMagicka` was loaded and that at least one transformation marker is present. This would have caught 2.1 immediately. If the coremod is intentionally removed, assert its absence and remove the code.
+
+> **Status: Fixed (superseded).** The old coremod was removed in favour of the Mixin loader. `verifyMixinManifest`
+> asserts the loader/refmap metadata, `MixinsTest` covers the mixin selection, and the server game test proves the
+> potion-array, accessor and tickrate transforms are active.
 2. **Network/reader tests** — `AMDataReader`/`AMDataWriter` round-trips for every type, malformed length/negative length/short read, oversized NBT, non-multiple-of-3 reagent arrays.
 
 > **Status: Fixed.** `AMDataRoundTripTest` covers every primitive/array/NBT writer type and every scalar getter's
@@ -968,6 +972,9 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 > arrays, and `SpellUtilsReagentTest` covers non-multiple-of-3 reagent arrays. `ItemStack` is excluded because its reader
 > needs the Minecraft item registry.
 3. **Packet authority tests** — unit-test `SkillData.handlePacketData` with a `CLIENT_SYNC` payload and assert the server rejects/ignores it; test `TileEntityInscriptionTable.HandleUpdatePacket` with a non-player entity ID and with an invalid recipe; test `AMPacketProcessorServer.handleDecoBlockUpdate` with a far-away TE.
+
+> **Status: Fixed.** `SkillDataTest` covers the client-sync rejection, `TileEntityInscriptionTableAuthorityTest` covers
+> non-player ids and invalid/non-creative recipes, and `PacketAuthorityTest` covers far-away/different-world tiles.
 4. **NBT round-trip tests** — `ExtendedProperties` with non-empty `extra_properties` + compendium entries + all five contingencies; `SkillData` with corrupt `SpellPoints`/`PrimarySkillTree`; `AffinityData` with an out-of-range ordinal; `RiftStorage` with duplicate/invalid slot indices.
 
 > **Status: Fixed.** `ExtendedPropertiesNbtRoundTripTest` covers magic level, mana/fatigue, extra properties,
@@ -996,7 +1003,7 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 > MMF/overworld routing, nether routing and the empty end case.
 9. **Game tests** — place and break a fully formed crafting altar and assert the multiblock/TE state; cast a spell with a spell book and assert mana/burnout sync; place a mana battery and assert metadata changes only on change; unload/reload a chunk with a power network; run a dedicated-server test without CoFH to prove the optional-dependency guards.
 
-> **Status: Fixed.** `gameTestServer` runs 230 real assertions and fails if the success marker is absent;
+> **Status: Fixed.** `gameTestServer` runs 232 real assertions and fails if the success marker is absent;
 > `checksAltarLifecycle` builds a tier-1 altar, validates it, removes a wall and verifies invalidation and TE removal;
 > `checksPowerChunkReload` saves, unloads and reloads a chunk and verifies the battery power survives;
 > `checksSpellBookCast` casts a real Projectile through a `FakePlayer`'s spell book and verifies mana/burnout. The run is
