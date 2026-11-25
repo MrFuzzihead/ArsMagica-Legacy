@@ -23,8 +23,11 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.oredict.OreDictionary;
 
@@ -32,6 +35,7 @@ import am2.AMChunkLoader;
 import am2.AMCore;
 import am2.api.ArsMagicaApi;
 import am2.api.blocks.MultiblockStructureDefinition;
+import am2.api.power.PowerTypes;
 import am2.blocks.BlocksCommonProxy;
 import am2.blocks.tileentities.TileEntityCraftingAltar;
 import am2.blocks.tileentities.TileEntityEssenceRefiner;
@@ -48,6 +52,7 @@ import am2.mixins.early.DamageSourceAccessor;
 import am2.mixins.early.EntityArrowAccessor;
 import am2.mixins.early.EntityFishHookAccessor;
 import am2.mixins.early.PotionAccessor;
+import am2.power.PowerNodeRegistry;
 import am2.utility.RedstoneInlayState;
 import am2.utility.TickrateController;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -109,6 +114,7 @@ final class ArsMagicaGameTests {
         checksTileEntities(pWorld);
         checksWorldPlacement(pWorld);
         checksAltarLifecycle(pWorld);
+        checksPowerChunkReload(pWorld);
         checksBucketFill(pWorld);
         checksOreDictionary();
         checksRecipes();
@@ -447,6 +453,54 @@ final class ArsMagicaGameTests {
             return pAltar.structureValid();
         } catch (ReflectiveOperationException e) {
             throw new AssertionError(e);
+        }
+    }
+
+    /** Saves power into a battery, unloads its chunk through the real event path, and reads it back after reload. */
+    private static void checksPowerChunkReload(WorldServer pWorld) {
+        int chunkX = 32;
+        int chunkZ = 32;
+        int x = (chunkX << 4) + 8;
+        int z = (chunkZ << 4) + 8;
+        int y = TEST_HEIGHT;
+
+        try {
+            check(pWorld.setBlock(x, y, z, BlocksCommonProxy.manaBattery), "the power test battery must be placeable");
+            TileEntity battery = pWorld.getTileEntity(x, y, z);
+            check(battery instanceof TileEntityManaBattery, "the power test battery must have its tile entity");
+
+            PowerNodeRegistry.For(pWorld)
+                .setPower((TileEntityManaBattery) battery, PowerTypes.LIGHT, 250.0F);
+            check(
+                PowerNodeRegistry.For(pWorld)
+                    .getPower((TileEntityManaBattery) battery, PowerTypes.LIGHT) == 250.0F,
+                "the battery must store the requested power");
+
+            check(
+                pWorld.getChunkProvider()
+                    .saveChunks(true, null),
+                "saving the power-test chunk must succeed");
+            Chunk chunk = pWorld.getChunkFromChunkCoords(chunkX, chunkZ);
+            chunk.onChunkUnload();
+
+            ChunkProviderServer provider = (ChunkProviderServer) pWorld.getChunkProvider();
+            provider.loadedChunkHashMap.remove(Long.valueOf(ChunkCoordIntPair.chunkXZ2Int(chunkX, chunkZ)));
+            provider.loadedChunks.remove(chunk);
+            check(
+                !PowerNodeRegistry.For(pWorld)
+                    .hasDataForChunk(chunk),
+                "unloading the chunk must drop its live power registry");
+
+            Chunk reloaded = pWorld.getChunkFromChunkCoords(chunkX, chunkZ);
+            check(reloaded != null, "the power-test chunk must reload");
+            TileEntity reloadedBattery = pWorld.getTileEntity(x, y, z);
+            check(reloadedBattery instanceof TileEntityManaBattery, "the reloaded chunk must restore its battery");
+            check(
+                PowerNodeRegistry.For(pWorld)
+                    .getPower((TileEntityManaBattery) reloadedBattery, PowerTypes.LIGHT) == 250.0F,
+                "the reloaded chunk must restore the saved battery power");
+        } finally {
+            pWorld.setBlockToAir(x, y, z);
         }
     }
 
