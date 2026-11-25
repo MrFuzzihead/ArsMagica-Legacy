@@ -86,6 +86,7 @@ and the automated tests that now cover the fix.
 | 6.1 Passive-effect handlers | **Partially fixed** — temporal-anchor join cleanup and fury break-speed extracted | `e8b50a4` | `SmallEffectHandlersTest` |
 | 6.1 Cost/overlay handlers | **Partially fixed** — spellbook mana discount and client overlays extracted | `ff0fcdf` | `ManaCostHandlerTest`, `BlockOverlayHandlerTest` |
 | 6.1 Item-watch handlers | **Partially fixed** — item-frame interaction and item-toss watching extracted | `a1b1147` | `ItemWatchHandlerTest` |
+| 6.1 Entity construction | **Partially fixed** — property/attribute registration moved to `EntityConstructionHandler` | `b0db6bd` | `EntityConstructionHandlerTest` |
 | 6.1 Handler section extraction | **Partially fixed** — `onEntityLiving` fully decomposed into named sections; other event families remain | `c8e815f`, `3cb040e`, `6bb2836`, `01e293e`, `6817ebc`, `a9c056a`, `5e101ac`, `b1c6314`, `3f47f30`, `3689056`, `9b76b22`, `aaeaf3b`, `388e527`, `6227d51` | `AMEventHandlerPerfGuardTest` |
 | 6.4 Packet payload validation | **Partially fixed** — 1 MiB cap before payload allocation on both processors | `092f9ea` | `PacketValidationTest` |
 | 6.4 Strict packet reads | **Fixed for both processors** — failure guards across server and client packet handlers | `74fc17f`, `e10b97c`, `eadef7a` | `AMDataReaderTest`, `AMPacketProcessorServerStrictReadTest`, `AMPacketProcessorClientStrictReadTest` |
@@ -859,8 +860,9 @@ See 3.4. Every tick, per block. This is likely the single largest source of pack
 `AMEventHandler.java` is 2,161 lines and handles potions, souls, death/clone, combat, buffs, adjacency/spatial mechanics, block protection, world interactions, and dozens of unrelated events. Split it into focused classes (`PlayerLifecycleHandler`, `CombatEventHandler`, `TimeEffectsHandler`, `SpatialVortexHandler`, `ShieldHandler`, `BucketHandler`, etc.). This will make the static-state leaks and side guards reviewable in isolation.
 
 > **Status: Partially fixed.** `onEntityLiving` is fully decomposed into named sections, and bucket filling, potion
-> brewing, temporal-anchor cleanup, fury break-speed, mana cost, client overlays and item watching now live in focused
-> handler classes. `AMEventHandler` still contains 21 event handlers and 2,176 lines, so the class split is not complete.
+> brewing, temporal-anchor cleanup, fury break-speed, mana cost, client overlays, item watching and entity construction
+> now live in focused handler classes. `AMEventHandler` still contains 20 event handlers and 2,144 lines, so the class
+> split is not complete.
 
 ### 6.2 Introduce a world-scoped manager for AM2 state
 
