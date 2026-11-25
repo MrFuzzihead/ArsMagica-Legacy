@@ -82,6 +82,7 @@ and the automated tests that now cover the fix.
 | 6.7 Legacy second mana API | **Fixed** — live legacy types deprecated, commented-out dead types removed | `9ff50da` | `LegacyManaApiTest` |
 | 6.6 Duplicated sync countdown | **Fixed** — shared `SyncWindow` for all three synced stores | `c268948` | `SyncWindowTest`, `SyncWindowIntegrationTest` |
 | 6.1 Timed-effect extraction | **Partially fixed** — timed-effect section moved out of `onEntityLiving` | `c8e815f` | `AMEventHandlerPerfGuardTest` |
+| 6.4 Packet payload validation | **Partially fixed** — 1 MiB cap before payload allocation on both processors | `092f9ea` | `PacketValidationTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -861,6 +862,10 @@ The network code has a single `AMDataReader`/`AMDataWriter` pair, no length vali
 - and a debug rate limiter
 
 would remove a whole class of bugs. At minimum, add a `PacketValidation` utility and use it in the handlers listed in 2.2.
+
+> **Status: Partially fixed.** `PacketValidation` now enforces a 1 MiB payload cap before either processor allocates
+> the remaining byte array. The typed packet framework, direction tags and per-handler validation contract remain open.
+> Covered by `PacketValidationTest` (`092f9ea`).
 
 ### 6.5 Decide the ASM strategy
 
