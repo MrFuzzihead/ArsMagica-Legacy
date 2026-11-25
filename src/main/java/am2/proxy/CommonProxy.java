@@ -67,6 +67,7 @@ import am2.buffs.BuffList;
 import am2.enchantments.AMEnchantments;
 import am2.entities.EntityManager;
 import am2.entities.ai.MageVillagerTrade;
+import am2.handlers.AcceleratedEntityTickHandler;
 import am2.handlers.BlockBreakHandler;
 import am2.handlers.BlockOverlayHandler;
 import am2.handlers.BreakSpeedHandler;
@@ -155,6 +156,7 @@ public class CommonProxy {
         MinecraftForge.EVENT_BUS.register(new SoulspikeAttackHandler());
         MinecraftForge.EVENT_BUS.register(new ConnectionTickrateHandler());
         MinecraftForge.EVENT_BUS.register(new BlockBreakHandler());
+        MinecraftForge.EVENT_BUS.register(new AcceleratedEntityTickHandler());
         FMLCommonHandler.instance()
             .bus()
             .register(new AMEventHandler());

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Random;
@@ -37,7 +36,6 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -92,7 +90,6 @@ import am2.utility.MathUtilities;
 import cofh.api.energy.IEnergyHandler;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
 
 public class AMEventHandler {
 
@@ -537,33 +534,6 @@ public class AMEventHandler {
      * allocate the string representation of an entity UUID.
      * </p>
      */
-    @SubscribeEvent
-    public void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || !enabled_accelerate || acceleratedEntitiesUUIDs.isEmpty()) {
-            return;
-        }
-
-        for (WorldServer worldServer : DimensionManager.getWorlds()) {
-            // Entity#onUpdate can add or remove entities. Iterate over a snapshot just as the old code did, but do it
-            // only once for the whole server tick instead of once for every LivingUpdateEvent.
-            List<Entity> entityList = new ArrayList<>(worldServer.loadedEntityList);
-            for (Entity entity : entityList) {
-                if (!(entity instanceof EntityLivingBase) || entity.isDead) {
-                    continue;
-                }
-
-                Integer extraTicks = acceleratedEntitiesUUIDs.get(entity.getUniqueID());
-                if (extraTicks == null || extraTicks <= 0) {
-                    continue;
-                }
-
-                for (int i = 0; i < extraTicks && !entity.isDead; i++) {
-                    entity.onUpdate();
-                }
-            }
-        }
-    }
-
     private static UUID parseUUID(String value) {
         try {
             return UUID.fromString(value);
@@ -604,6 +574,10 @@ public class AMEventHandler {
      * Timed block/entity bookkeeping mutates server worlds and reads server-side dimensions. Clients only render the
      * synced result, so skip the parsing and world lookups entirely there.
      */
+    public static boolean isAccelerateEnabled() {
+        return enabled_accelerate;
+    }
+
     static boolean shouldTickAcceleratedBlocks(World world) {
         return world != null && !world.isRemote && enabled_accelerate;
     }
