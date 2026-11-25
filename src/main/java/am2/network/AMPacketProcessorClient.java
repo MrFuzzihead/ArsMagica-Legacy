@@ -64,6 +64,66 @@ import io.netty.buffer.ByteBufInputStream;
 
 public class AMPacketProcessorClient extends AMPacketProcessorServer {
 
+    private final PacketRegistry<EntityPlayer> packetHandlers = new PacketRegistry<EntityPlayer>();
+
+    public AMPacketProcessorClient() {
+        registerPacketHandlers();
+    }
+
+    private void registerPacketHandlers() {
+        packetHandlers.register(AMPacketIDs.SPELL_CAST, (player, payload) -> handleSpellCast(payload));
+        packetHandlers.register(AMPacketIDs.CLOAKING, (player, payload) -> handleCloaking(payload));
+        packetHandlers.register(AMPacketIDs.DEAFEN, (player, payload) -> handleDeafen(payload));
+        packetHandlers.register(AMPacketIDs.SYNCMAPTOCLIENTS, (player, payload) -> handleSyncMap(payload));
+        packetHandlers.register(AMPacketIDs.SYNCCOMPENDIUMRESPONSE, (player, payload) -> handleCompendiumSync(payload));
+        packetHandlers.register(AMPacketIDs.SYNCWORLDDATATOCLIENTS, (player, payload) -> handleSyncWorldData(payload));
+        packetHandlers.register(AMPacketIDs.MAGIC_LEVEL_UP, (player, payload) -> handleMagicLevelUpResponse(payload));
+        packetHandlers.register(
+            AMPacketIDs.PARTICLE_SPAWN_SPECIAL,
+            (player, payload) -> AMCore.proxy.particleManager
+                .handleClientPacketData(Minecraft.getMinecraft().theWorld, payload));
+        packetHandlers.register(AMPacketIDs.PLAYER_VELOCITY_ADD, (player, payload) -> handleVelocityAdd(payload));
+        packetHandlers.register(AMPacketIDs.FLASH_ARMOR_PIECE, (player, payload) -> handleFlashArmor(payload));
+        packetHandlers.register(AMPacketIDs.REMOVE_BUFF_EFFECT, (player, payload) -> handleRemoveBuffEffect(payload));
+        packetHandlers.register(AMPacketIDs.SYNC_EXTENDED_PROPS, (player, payload) -> handleSyncProps(payload));
+        packetHandlers.register(AMPacketIDs.SYNC_BETA_PARTICLES, (player, payload) -> handleSyncBetaParticles(payload));
+        packetHandlers
+            .register(AMPacketIDs.REQUEST_BETA_PARTICLES, (player, payload) -> handleRequestBetaParticles(payload));
+        packetHandlers.register(AMPacketIDs.CASTER_BLOCK_UPDATE, (player, payload) -> handleCasterUpdate(payload));
+        packetHandlers
+            .register(AMPacketIDs.ENERVATOR_BLOCK_UPDATE, (player, payload) -> handleEnervatorUpdate(payload));
+        packetHandlers.register(AMPacketIDs.SYNC_AIR_CHANGE, (player, payload) -> handleSyncAir(payload));
+        packetHandlers.register(AMPacketIDs.SYNC_AFFINITY_DATA, (player, payload) -> handleSyncAffinity(payload));
+        packetHandlers
+            .register(AMPacketIDs.SYNC_SPELL_KNOWLEDGE, (player, payload) -> handleSyncSpellKnowledge(payload));
+        packetHandlers
+            .register(AMPacketIDs.ENTITY_ACTION_UPDATE, (player, payload) -> handleEntityActionUpdate(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.PLAYER_LOGIN_DATA, (player, payload) -> handlePlayerLoginData(payload, player));
+        packetHandlers.register(AMPacketIDs.NBT_DUMP, (player, payload) -> handleNBTDump(player));
+        packetHandlers
+            .register(AMPacketIDs.SET_MAG_WORK_REC, (player, payload) -> handleSetMagicicansWorkbenchRecipe(player));
+        packetHandlers.register(AMPacketIDs.COMPENDIUM_UNLOCK, (player, payload) -> handleCompendiumUnlock(payload));
+        packetHandlers.register(AMPacketIDs.SYNC_WORLD_NAME, (player, payload) -> handleSyncWorldName(payload));
+        packetHandlers.register(AMPacketIDs.STAR_FALL, (player, payload) -> handleStarFall(payload));
+        packetHandlers.register(
+            AMPacketIDs.HIDDEN_COMPONENT_UNLOCK,
+            (player, payload) -> Minecraft.getMinecraft().guiAchievement
+                .func_146256_a(ArcaneCompendium.componentUnlock));
+        packetHandlers.register(AMPacketIDs.SPELL_APPLY_EFFECT, (player, payload) -> handleSpellApplyEffect(payload));
+        packetHandlers.register(AMPacketIDs.HECATE_DEATH, (player, payload) -> handleHecateDeath(payload));
+        packetHandlers.register(AMPacketIDs.REQUEST_PWR_PATHS, (player, payload) -> handleRcvPowerPaths(payload));
+        packetHandlers.register(AMPacketIDs.CAPABILITY_CHANGE, (player, payload) -> handleCapabilityChange(payload));
+        packetHandlers.register(AMPacketIDs.CRAFTING_ALTAR_DATA, (player, payload) -> handleCraftingAltarData(payload));
+        packetHandlers.register(AMPacketIDs.LECTERN_DATA, (player, payload) -> handleLecternData(payload));
+        packetHandlers.register(AMPacketIDs.CALEFACTOR_DATA, (player, payload) -> handleCalefactorData(payload));
+        packetHandlers.register(AMPacketIDs.OBELISK_DATA, (player, payload) -> handleObeliskData(payload));
+    }
+
+    int handlerCount() {
+        return packetHandlers.size();
+    }
+
     @SubscribeEvent
     public void onPacketData(ClientCustomPacketEvent event) {
         ByteBufInputStream bbis = new ByteBufInputStream(event.packet.payload());
@@ -83,113 +143,9 @@ public class AMPacketProcessorClient extends AMPacketProcessorServer {
             EntityPlayer player = Minecraft.getMinecraft().thePlayer;
             byte[] remaining = envelope.payload();
 
-            switch (packetID) {
-                case AMPacketIDs.SPELL_CAST:
-                    handleSpellCast(remaining);
-                    break;
-                case AMPacketIDs.CLOAKING:
-                    handleCloaking(remaining);
-                    break;
-                case AMPacketIDs.DEAFEN:
-                    handleDeafen(remaining);
-                    break;
-                case AMPacketIDs.SYNCMAPTOCLIENTS:
-                    handleSyncMap(remaining);
-                    break;
-                case AMPacketIDs.SYNCCOMPENDIUMRESPONSE:
-                    handleCompendiumSync(remaining);
-                    break;
-                case AMPacketIDs.SYNCWORLDDATATOCLIENTS:
-                    handleSyncWorldData(remaining);
-                    break;
-                case AMPacketIDs.MAGIC_LEVEL_UP:
-                    handleMagicLevelUpResponse(remaining);
-                    break;
-                case AMPacketIDs.PARTICLE_SPAWN_SPECIAL:
-                    AMCore.proxy.particleManager.handleClientPacketData(Minecraft.getMinecraft().theWorld, remaining);
-                    break;
-                case AMPacketIDs.PLAYER_VELOCITY_ADD:
-                    handleVelocityAdd(remaining);
-                    break;
-                case AMPacketIDs.FLASH_ARMOR_PIECE:
-                    handleFlashArmor(remaining);
-                    break;
-                case AMPacketIDs.REMOVE_BUFF_EFFECT:
-                    handleRemoveBuffEffect(remaining);
-                    break;
-                case AMPacketIDs.SYNC_EXTENDED_PROPS:
-                    handleSyncProps(remaining);
-                    break;
-                case AMPacketIDs.SYNC_BETA_PARTICLES:
-                    handleSyncBetaParticles(remaining);
-                    break;
-                case AMPacketIDs.REQUEST_BETA_PARTICLES:
-                    handleRequestBetaParticles(remaining);
-                    break;
-                case AMPacketIDs.CASTER_BLOCK_UPDATE:
-                    handleCasterUpdate(remaining);
-                    break;
-                case AMPacketIDs.ENERVATOR_BLOCK_UPDATE:
-                    handleEnervatorUpdate(remaining);
-                    break;
-                case AMPacketIDs.SYNC_AIR_CHANGE:
-                    handleSyncAir(remaining);
-                    break;
-                case AMPacketIDs.SYNC_AFFINITY_DATA:
-                    handleSyncAffinity(remaining);
-                    break;
-                case AMPacketIDs.SYNC_SPELL_KNOWLEDGE:
-                    handleSyncSpellKnowledge(remaining);
-                    break;
-                case AMPacketIDs.ENTITY_ACTION_UPDATE:
-                    handleEntityActionUpdate(remaining, player);
-                    break;
-                case AMPacketIDs.PLAYER_LOGIN_DATA:
-                    handlePlayerLoginData(remaining, player);
-                    break;
-                case AMPacketIDs.NBT_DUMP:
-                    handleNBTDump(player);
-                    break;
-                case AMPacketIDs.SET_MAG_WORK_REC:
-                    handleSetMagicicansWorkbenchRecipe(player);
-                    break;
-                case AMPacketIDs.COMPENDIUM_UNLOCK:
-                    handleCompendiumUnlock(remaining);
-                    break;
-                case AMPacketIDs.SYNC_WORLD_NAME:
-                    handleSyncWorldName(remaining);
-                    break;
-                case AMPacketIDs.STAR_FALL:
-                    handleStarFall(remaining);
-                    break;
-                case AMPacketIDs.HIDDEN_COMPONENT_UNLOCK:
-                    Minecraft.getMinecraft().guiAchievement.func_146256_a(ArcaneCompendium.componentUnlock);
-                    break;
-                case AMPacketIDs.SPELL_APPLY_EFFECT:
-                    handleSpellApplyEffect(remaining);
-                    break;
-                case AMPacketIDs.HECATE_DEATH:
-                    handleHecateDeath(remaining);
-                    break;
-                case AMPacketIDs.REQUEST_PWR_PATHS:
-                    handleRcvPowerPaths(remaining);
-                    break;
-                case AMPacketIDs.CAPABILITY_CHANGE:
-                    handleCapabilityChange(remaining);
-                    break;
-                case AMPacketIDs.CRAFTING_ALTAR_DATA:
-                    handleCraftingAltarData(remaining);
-                    break;
-                case AMPacketIDs.LECTERN_DATA:
-                    handleLecternData(remaining);
-                    break;
-                case AMPacketIDs.CALEFACTOR_DATA:
-                    handleCalefactorData(remaining);
-                    break;
-                case AMPacketIDs.OBELISK_DATA:
-                    handleObeliskData(remaining);
-                    break;
-            }
+            PacketRegistry.Handler<EntityPlayer> handler = packetHandlers.get(packetID);
+            if (handler == null) return;
+            handler.handle(player, remaining);
         } catch (Throwable t) {
             LogHelper.error("Client Packet Failed to Handle!");
             LogHelper.error("Packet Type: " + packetID);

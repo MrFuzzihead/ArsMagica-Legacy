@@ -42,6 +42,72 @@ import io.netty.buffer.ByteBufInputStream;
 
 public class AMPacketProcessorServer {
 
+    private final PacketRegistry<EntityPlayerMP> packetHandlers = new PacketRegistry<EntityPlayerMP>();
+
+    public AMPacketProcessorServer() {
+        registerPacketHandlers();
+    }
+
+    private void registerPacketHandlers() {
+        packetHandlers.register(
+            AMPacketIDs.SPELL_SHAPE_GROUP_CHANGE,
+            (player, payload) -> handleCastingModeChange(payload, player));
+        packetHandlers.register(AMPacketIDs.MAGIC_LEVEL_UP, (player, payload) -> handleMagicLevelUp(payload, player));
+        packetHandlers.register(AMPacketIDs.SYNCMAPTOSERVER, (player, payload) -> handleSyncMapServer(payload));
+        packetHandlers.register(AMPacketIDs.SYNCCOMPENDIUM, (player, payload) -> handleSyncCompendium(payload, player));
+        packetHandlers.register(
+            AMPacketIDs.SYNCCOMPENDIUMREQUEST,
+            (player, payload) -> handleSyncCompendiumRequest(payload, player));
+        packetHandlers.register(
+            AMPacketIDs.REQUESTWORLDDATACHANGE,
+            (player, payload) -> handleRequestWorldDataChange(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.SYNC_BETA_PARTICLES, (player, payload) -> handleSyncBetaParticles(payload, player));
+        packetHandlers.register(
+            AMPacketIDs.POSSIBLE_CLIENT_EXPROP_DESYNC,
+            (player, payload) -> handlePossibleClientExpropDesync(payload, player));
+        packetHandlers.register(
+            AMPacketIDs.REQUEST_BETA_PARTICLES,
+            (player, payload) -> handleRequestBetaParticles(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.SPELL_CUSTOMIZE, (player, payload) -> handleSpellCustomize(payload, player));
+        packetHandlers.register(
+            AMPacketIDs.SPELLBOOK_CHANGE_ACTIVE_SLOT,
+            (player, payload) -> handleSpellBookChangeActiveSlot(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.SYNC_SPELL_KNOWLEDGE, (player, payload) -> handleSyncSpellKnowledge(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.DECO_BLOCK_UPDATE, (player, payload) -> handleDecoBlockUpdate(payload, player));
+        packetHandlers.register(
+            AMPacketIDs.INSCRIPTION_TABLE_UPDATE,
+            (player, payload) -> handleInscriptionTableUpdate(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.CASTER_BLOCK_UPDATE, (player, payload) -> handleCasterUpdate(payload, player));
+        packetHandlers.register(AMPacketIDs.TK_DISTANCE_SYNC, (player, payload) -> handleTkDistance(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.SAVE_KEYSTONE_COMBO, (player, payload) -> handleSaveKeystoneCombo(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.SET_KEYSTONE_COMBO, (player, payload) -> handleSetKeystoneCombo(payload, player));
+        packetHandlers.register(
+            AMPacketIDs.SET_MAG_WORK_REC,
+            (player, payload) -> handleSetMagiciansWorkbenchRecipe(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.RUNE_BAG_GUI_OPEN, (player, payload) -> handleRuneBagGUIOpen(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.M_BENCH_LOCK_RECIPE, (player, payload) -> handleMBenchLockRecipe(payload, player));
+        packetHandlers.register(AMPacketIDs.IMBUE_ARMOR, (player, payload) -> handleImbueArmor(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.REQUEST_PWR_PATHS, (player, payload) -> handlePowerPathSync(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.SYNC_EXTENDED_PROPS, (player, payload) -> handleExpropOperation(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.AFFINITY_ACTIVATE, (player, payload) -> handleAffinityActivate(payload, player));
+    }
+
+    int handlerCount() {
+        return packetHandlers.size();
+    }
+
     @SubscribeEvent
     public void onServerPacketData(ServerCustomPacketEvent event) {
         ByteBufInputStream bbis = new ByteBufInputStream(event.packet.payload());
@@ -62,87 +128,9 @@ public class AMPacketProcessorServer {
             EntityPlayerMP player = srv.playerEntity;
             byte[] remaining = envelope.payload();
 
-            switch (packetID) {
-                case AMPacketIDs.SPELL_SHAPE_GROUP_CHANGE:
-                    handleCastingModeChange(remaining, player);
-                    break;
-                case AMPacketIDs.MAGIC_LEVEL_UP:
-                    handleMagicLevelUp(remaining, player);
-                    break;
-                case AMPacketIDs.SYNCMAPTOSERVER:
-                    handleSyncMapServer(remaining);
-                    break;
-                case AMPacketIDs.SYNCCOMPENDIUM:
-                    handleSyncCompendium(remaining, player);
-                    break;
-                case AMPacketIDs.SYNCCOMPENDIUMREQUEST:
-                    handleSyncCompendiumRequest(remaining, player);
-                    break;
-                case AMPacketIDs.REQUESTWORLDDATACHANGE:
-                    handleRequestWorldDataChange(remaining, player);
-                    break;
-                case AMPacketIDs.SYNC_BETA_PARTICLES:
-                    handleSyncBetaParticles(remaining, player);
-                    break;
-                case AMPacketIDs.POSSIBLE_CLIENT_EXPROP_DESYNC:
-                    handlePossibleClientExpropDesync(remaining, player);
-                    break;
-                case AMPacketIDs.REQUEST_BETA_PARTICLES:
-                    handleRequestBetaParticles(remaining, player);
-                    break;
-                case AMPacketIDs.SPELL_CUSTOMIZE:
-                    handleSpellCustomize(remaining, player);
-                    break;
-                case AMPacketIDs.SPELLBOOK_CHANGE_ACTIVE_SLOT:
-                    handleSpellBookChangeActiveSlot(remaining, player);
-                    break;
-                case AMPacketIDs.SYNC_SPELL_KNOWLEDGE:
-                    handleSyncSpellKnowledge(remaining, player);
-                    break;
-                case AMPacketIDs.DECO_BLOCK_UPDATE:
-                    handleDecoBlockUpdate(remaining, player);
-                    break;
-                case AMPacketIDs.INSCRIPTION_TABLE_UPDATE:
-                    handleInscriptionTableUpdate(remaining, player);
-                    break;
-                case AMPacketIDs.CASTER_BLOCK_UPDATE:
-                    handleCasterUpdate(remaining, player);
-                    break;
-                case AMPacketIDs.TK_DISTANCE_SYNC:
-                    AMDataReader tkReader = new AMDataReader(remaining, false);
-                    float tkDistance = tkReader.getFloat();
-                    if (!tkReader.hasFailed()) {
-                        ExtendedProperties.For(player).TK_Distance = tkDistance;
-                    }
-                    break;
-                case AMPacketIDs.SAVE_KEYSTONE_COMBO:
-                    handleSaveKeystoneCombo(remaining, player);
-                    break;
-                case AMPacketIDs.SET_KEYSTONE_COMBO:
-                    handleSetKeystoneCombo(remaining, player);
-                    break;
-                case AMPacketIDs.SET_MAG_WORK_REC:
-                    handleSetMagiciansWorkbenchRecipe(remaining, player);
-                    break;
-                case AMPacketIDs.RUNE_BAG_GUI_OPEN:
-                    handleRuneBagGUIOpen(remaining, player);
-                    break;
-                case AMPacketIDs.M_BENCH_LOCK_RECIPE:
-                    handleMBenchLockRecipe(remaining, player);
-                    break;
-                case AMPacketIDs.IMBUE_ARMOR:
-                    handleImbueArmor(remaining, player);
-                    break;
-                case AMPacketIDs.REQUEST_PWR_PATHS:
-                    handlePowerPathSync(remaining, player);
-                    break;
-                case AMPacketIDs.SYNC_EXTENDED_PROPS:
-                    handleExpropOperation(remaining, player);
-                    break;
-                case AMPacketIDs.AFFINITY_ACTIVATE:
-                    handleAffinityActivate(remaining, player);
-                    break;
-            }
+            PacketRegistry.Handler<EntityPlayerMP> handler = packetHandlers.get(packetID);
+            if (handler == null) return;
+            handler.handle(player, remaining);
         } catch (Throwable t) {
             LogHelper.error("Server Packet Failed to Handle!");
             LogHelper.error("Packet Type: " + packetID);
@@ -199,6 +187,14 @@ public class AMPacketProcessorServer {
 
     private void handleSyncMapServer(byte[] remaining) {
         AMNetHandler.INSTANCE.sendPacketToAllClients(AMPacketIDs.SYNCMAPTOCLIENTS, remaining);
+    }
+
+    private void handleTkDistance(byte[] data, EntityPlayerMP player) {
+        AMDataReader rdr = new AMDataReader(data, false);
+        float distance = rdr.getFloat();
+        if (!rdr.hasFailed()) {
+            ExtendedProperties.For(player).TK_Distance = distance;
+        }
     }
 
     private void handleCasterUpdate(byte[] data, EntityPlayerMP player) {
