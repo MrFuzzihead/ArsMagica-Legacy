@@ -952,8 +952,8 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 
 ### Current state
 
-- 19 JUnit tests cover `AMVector2`, `AMVector3`, `MathUtilities`, and `ManaContainerInfo`.
-- The server game test has 109 assertions: mostly registration smoke tests (blocks, items, TEs, ore dictionary, one recipe, API singleton non-null), plus a couple of world placements.
+- 399 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
+- The server game test has 142 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
 - The client game test has 23 assertions at the main menu (proxy, key bindings, creative tabs, localisation).
 - Coverage is 177/69,939 lines (0.25%), with a 0.2% floor. The game-test coverage report is generated but not enforced.
 
@@ -961,6 +961,11 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 
 1. **Coremod registration test** — assert that `MysteriumPatchesFixLoaderMagicka` was loaded and that at least one transformation marker is present. This would have caught 2.1 immediately. If the coremod is intentionally removed, assert its absence and remove the code.
 2. **Network/reader tests** — `AMDataReader`/`AMDataWriter` round-trips for every type, malformed length/negative length/short read, oversized NBT, non-multiple-of-3 reagent arrays.
+
+> **Status: Fixed.** `AMDataRoundTripTest` covers every primitive/array/NBT writer type and every scalar getter's
+> truncated-input failure path; existing reader tests cover negative/oversized lengths, oversized NBT and malformed int
+> arrays, and `SpellUtilsReagentTest` covers non-multiple-of-3 reagent arrays. `ItemStack` is excluded because its reader
+> needs the Minecraft item registry.
 3. **Packet authority tests** — unit-test `SkillData.handlePacketData` with a `CLIENT_SYNC` payload and assert the server rejects/ignores it; test `TileEntityInscriptionTable.HandleUpdatePacket` with a non-player entity ID and with an invalid recipe; test `AMPacketProcessorServer.handleDecoBlockUpdate` with a far-away TE.
 4. **NBT round-trip tests** — `ExtendedProperties` with non-empty `extra_properties` + compendium entries + all five contingencies; `SkillData` with corrupt `SpellPoints`/`PrimarySkillTree`; `AffinityData` with an out-of-range ordinal; `RiftStorage` with duplicate/invalid slot indices.
 5. **Power system tests** — comparator ordering with multiple insertion orders; `PowerNodeEntry` path save/load; `PowerNodeCache` save → chunk unload → world save → reload; two dimensions with the same region coordinates; two different worlds with the same dimension ID.
