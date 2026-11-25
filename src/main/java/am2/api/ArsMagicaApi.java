@@ -161,30 +161,38 @@ public class ArsMagicaApi {
     }
 
     /**
-     * Returns the extended properties for the passed in entity living
+     * Returns the extended properties for the passed in entity living, or {@code null} if the entity is null, AM2 has
+     * not initialized its identifier yet, or the entity has no AM2 properties.
      */
     public final IExtendedProperties getExtendedProperties(EntityLivingBase entity) {
+        if (entity == null || extendedPropertiesIdentifier == null) return null;
         return (IExtendedProperties) entity.getExtendedProperties(extendedPropertiesIdentifier);
     }
 
     /**
-     * Returns the skill data instance (known shapes/modifiers/components/talents)
+     * Returns the skill data instance (known shapes/modifiers/components/talents), or {@code null} if the player is
+     * null, AM2 has not initialized its identifier yet, or the player has no skill data.
      */
     public final ISkillData getSkillData(EntityPlayer entity) {
+        if (entity == null || skillDataIdentifier == null) return null;
         return (ISkillData) entity.getExtendedProperties(skillDataIdentifier);
     }
 
     /**
-     * Returns the affinity data for the passed in entity
+     * Returns the affinity data for the passed in entity, or {@code null} if the entity is null, AM2 has not
+     * initialized its identifier yet, or the entity has no affinity data.
      */
     public final IAffinityData getAffinityData(EntityLivingBase entity) {
+        if (entity == null || affinityDataIdentifier == null) return null;
         return (IAffinityData) entity.getExtendedProperties(affinityDataIdentifier);
     }
 
     /**
-     * Returns the rift storage for the passed in player.
+     * Returns the rift storage for the passed in player, or {@code null} if the player is null, AM2 has not
+     * initialized its identifier yet, or the player has no rift storage.
      */
     public final IInventory getRiftStorage(EntityPlayer entity) {
+        if (entity == null || riftStorageIdentifier == null) return null;
         return (IInventory) entity.getExtendedProperties(riftStorageIdentifier);
     }
 
