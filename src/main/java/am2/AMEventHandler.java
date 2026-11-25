@@ -1669,20 +1669,24 @@ public class AMEventHandler {
         }
     }
 
+    boolean shouldCancelSlowedEntity(EntityLivingBase ent) {
+        if (slowedEntitiesUUIDs.isEmpty()) return false;
+
+        Integer updateInterval = slowedEntitiesUUIDs.get(ent.getUniqueID());
+        return updateInterval != null
+            && !SkillTreeManager.instance.isSkillDisabled(SkillManager.instance.getSkill("DiluteTime"))
+            && updateInterval > 0
+            && ent.ticksExisted % updateInterval != 0;
+    }
+
     @SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event) {
 
         EntityLivingBase ent = event.entityLiving;
 
-        if (!slowedEntitiesUUIDs.isEmpty()) {
-            Integer updateInterval = slowedEntitiesUUIDs.get(ent.getUniqueID());
-            if (updateInterval != null
-                && !SkillTreeManager.instance.isSkillDisabled(SkillManager.instance.getSkill("DiluteTime"))
-                && updateInterval > 0
-                && ent.ticksExisted % updateInterval != 0) {
-                event.setCanceled(true);
-                return;
-            }
+        if (shouldCancelSlowedEntity(ent)) {
+            event.setCanceled(true);
+            return;
         }
 
         World world = ent.worldObj;

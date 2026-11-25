@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
+import java.util.UUID;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -58,6 +59,12 @@ public class AMEventHandlerPerfGuardTest {
     }
 
     @Before
+    @After
+    public void clearSlowedEntities() {
+        AMEventHandler.slowedEntitiesUUIDs.clear();
+    }
+
+    @Before
     public void saveFlags() {
         accelerate = AMEventHandler.enabled_accelerate;
         slow = AMEventHandler.enabled_slow;
@@ -91,6 +98,36 @@ public class AMEventHandlerPerfGuardTest {
 
         assertFalse(AMEventHandler.shouldTickAcceleratedBlocks(null));
         assertFalse(AMEventHandler.shouldTickTimedEffects(null));
+    }
+
+    @Test
+    public void emptySlowedMapNeverCancels() {
+        EntityLivingBase entity = mock(EntityLivingBase.class);
+
+        assertFalse(new AMEventHandler().shouldCancelSlowedEntity(entity));
+        verifyNoInteractions(entity);
+    }
+
+    @Test
+    public void slowedEntitySkipsNonIntervalTicks() {
+        UUID uuid = UUID.randomUUID();
+        EntityLivingBase entity = mock(EntityLivingBase.class);
+        when(entity.getUniqueID()).thenReturn(uuid);
+        entity.ticksExisted = 1;
+        AMEventHandler.slowedEntitiesUUIDs.put(uuid, 5);
+
+        assertTrue(new AMEventHandler().shouldCancelSlowedEntity(entity));
+    }
+
+    @Test
+    public void slowedEntityRunsOnItsInterval() {
+        UUID uuid = UUID.randomUUID();
+        EntityLivingBase entity = mock(EntityLivingBase.class);
+        when(entity.getUniqueID()).thenReturn(uuid);
+        entity.ticksExisted = 10;
+        AMEventHandler.slowedEntitiesUUIDs.put(uuid, 5);
+
+        assertFalse(new AMEventHandler().shouldCancelSlowedEntity(entity));
     }
 
     @Test
