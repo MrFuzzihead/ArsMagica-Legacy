@@ -101,6 +101,10 @@ import am2.playerextensions.AffinityData;
 import am2.playerextensions.ExtendedProperties;
 import am2.playerextensions.RiftStorage;
 import am2.playerextensions.SkillData;
+import am2.playerextensions.effects.SpatialVortexEffect;
+import am2.playerextensions.effects.TimedBlockEffect;
+import am2.playerextensions.effects.TimedEffectCodec;
+import am2.playerextensions.effects.TimedEntityEffect;
 import am2.power.PowerNodeRegistry;
 import am2.spell.SkillManager;
 import am2.spell.SkillTreeManager;
@@ -815,49 +819,49 @@ public class AMEventHandler {
         }
     }
 
-    private static final BoundedKeyCache<AcceleratedTileKey> acceleratedTileKeys = new BoundedKeyCache<AcceleratedTileKey>();
-    private static final BoundedKeyCache<AcceleratedEntityKey> acceleratedEntityKeys = new BoundedKeyCache<AcceleratedEntityKey>();
-    private static final BoundedKeyCache<SpatialVortexKey> spatialVortexKeys = new BoundedKeyCache<SpatialVortexKey>();
-    private static final BoundedKeyCache<TimedBlockKey> timedBlockKeys = new BoundedKeyCache<TimedBlockKey>();
+    private static final BoundedKeyCache<TimedBlockEffect> acceleratedTileKeys = new BoundedKeyCache<TimedBlockEffect>();
+    private static final BoundedKeyCache<TimedEntityEffect> acceleratedEntityKeys = new BoundedKeyCache<TimedEntityEffect>();
+    private static final BoundedKeyCache<SpatialVortexEffect> spatialVortexKeys = new BoundedKeyCache<SpatialVortexEffect>();
+    private static final BoundedKeyCache<TimedBlockEffect> timedBlockKeys = new BoundedKeyCache<TimedBlockEffect>();
 
-    static AcceleratedTileKey acceleratedTileKey(String raw) {
-        AcceleratedTileKey cached = acceleratedTileKeys.get(raw);
+    static TimedBlockEffect acceleratedTileKey(String raw) {
+        TimedBlockEffect cached = acceleratedTileKeys.get(raw);
         if (cached != null) return cached;
 
-        AcceleratedTileKey parsed = AcceleratedTileKey.parse(raw);
+        TimedBlockEffect parsed = TimedEffectCodec.parseAcceleratedTile(raw);
         if (parsed != null) {
             acceleratedTileKeys.put(raw, parsed);
         }
         return parsed;
     }
 
-    static AcceleratedEntityKey acceleratedEntityKey(String raw) {
-        AcceleratedEntityKey cached = acceleratedEntityKeys.get(raw);
+    static TimedEntityEffect acceleratedEntityKey(String raw) {
+        TimedEntityEffect cached = acceleratedEntityKeys.get(raw);
         if (cached != null) return cached;
 
-        AcceleratedEntityKey parsed = AcceleratedEntityKey.parse(raw);
+        TimedEntityEffect parsed = TimedEffectCodec.parseEntity(raw);
         if (parsed != null) {
             acceleratedEntityKeys.put(raw, parsed);
         }
         return parsed;
     }
 
-    static SpatialVortexKey spatialVortexKey(String raw) {
-        SpatialVortexKey cached = spatialVortexKeys.get(raw);
+    static SpatialVortexEffect spatialVortexKey(String raw) {
+        SpatialVortexEffect cached = spatialVortexKeys.get(raw);
         if (cached != null) return cached;
 
-        SpatialVortexKey parsed = SpatialVortexKey.parse(raw);
+        SpatialVortexEffect parsed = TimedEffectCodec.parseSpatialVortex(raw);
         if (parsed != null) {
             spatialVortexKeys.put(raw, parsed);
         }
         return parsed;
     }
 
-    static TimedBlockKey timedBlockKey(String raw) {
-        TimedBlockKey cached = timedBlockKeys.get(raw);
+    static TimedBlockEffect timedBlockKey(String raw) {
+        TimedBlockEffect cached = timedBlockKeys.get(raw);
         if (cached != null) return cached;
 
-        TimedBlockKey parsed = TimedBlockKey.parse(raw);
+        TimedBlockEffect parsed = TimedEffectCodec.parseTimedBlock(raw);
         if (parsed != null) {
             timedBlockKeys.put(raw, parsed);
         }
@@ -879,127 +883,6 @@ public class AMEventHandler {
         timedBlockKeys.clear();
     }
 
-    static final class AcceleratedTileKey {
-
-        final int x;
-        final int y;
-        final int z;
-        final int dimension;
-        final int power;
-
-        private AcceleratedTileKey(int x, int y, int z, int dimension, int power) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.dimension = dimension;
-            this.power = power;
-        }
-
-        static AcceleratedTileKey parse(String raw) {
-            if (raw == null) return null;
-            String[] parts = raw.split("_");
-            if (parts.length < 8) return null;
-            try {
-                return new AcceleratedTileKey(
-                    Integer.parseInt(parts[3]),
-                    Integer.parseInt(parts[4]),
-                    Integer.parseInt(parts[5]),
-                    Integer.parseInt(parts[6]),
-                    Integer.parseInt(parts[7]));
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        }
-    }
-
-    static final class AcceleratedEntityKey {
-
-        final UUID entityUUID;
-        final int power;
-
-        private AcceleratedEntityKey(UUID entityUUID, int power) {
-            this.entityUUID = entityUUID;
-            this.power = power;
-        }
-
-        static AcceleratedEntityKey parse(String raw) {
-            if (raw == null) return null;
-            String[] parts = raw.split("_");
-            if (parts.length < 5) return null;
-            UUID uuid = parseUUID(parts[4]);
-            if (uuid == null) return null;
-            try {
-                return new AcceleratedEntityKey(uuid, Integer.parseInt(parts[3]));
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        }
-    }
-
-    static final class SpatialVortexKey {
-
-        final int x;
-        final int y;
-        final int z;
-        final int dimension;
-
-        private SpatialVortexKey(int x, int y, int z, int dimension) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.dimension = dimension;
-        }
-
-        static SpatialVortexKey parse(String raw) {
-            if (raw == null) return null;
-            String[] parts = raw.split("_");
-            if (parts.length < 5) return null;
-            try {
-                return new SpatialVortexKey(
-                    Integer.parseInt(parts[1]),
-                    Integer.parseInt(parts[2]),
-                    Integer.parseInt(parts[3]),
-                    Integer.parseInt(parts[4]));
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        }
-    }
-
-    static final class TimedBlockKey {
-
-        final int x;
-        final int y;
-        final int z;
-        final int dimension;
-
-        private TimedBlockKey(int x, int y, int z, int dimension) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.dimension = dimension;
-        }
-
-        static TimedBlockKey parse(String raw) {
-            if (raw == null) return null;
-            String[] parts = raw.split("_");
-            if (parts.length < 6) return null;
-            try {
-                return new TimedBlockKey(
-                    Integer.parseInt(parts[2]),
-                    Integer.parseInt(parts[3]),
-                    Integer.parseInt(parts[4]),
-                    Integer.parseInt(parts[5]));
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        }
-
-        String representation() {
-            return x + "_" + y + "_" + z + "_" + dimension;
-        }
-    }
-
     /** Runs one accelerated update for a block position, reusing the tile/block lookups for all requested ticks. */
     static void tickAcceleratedBlock(World world, int x, int y, int z) {
         TileEntity tile = world.getTileEntity(x, y, z);
@@ -1019,7 +902,7 @@ public class AMEventHandler {
             // accelerated blocks and entities are done outside the 5-tick performance optimisation to make them smooth
             acceleratedBlocks = extendedProperties.getExtraVariablesContains("accelerated_fast_tile_");
             for (Map.Entry<String, String> entry : acceleratedBlocks.entrySet()) {
-                AcceleratedTileKey key = acceleratedTileKey(entry.getKey());
+                TimedBlockEffect key = acceleratedTileKey(entry.getKey());
                 if (key == null) {
                     // Do not leave malformed legacy data in a live extra-property map.
                     extendedProperties.removeFromExtraVariables(entry.getKey());
@@ -1061,7 +944,7 @@ public class AMEventHandler {
                         acceleratedBlocks.clear();
                     }
                     for (Map.Entry<String, String> entry : acceleratedEntities.entrySet()) {
-                        AcceleratedEntityKey key = acceleratedEntityKey(entry.getKey());
+                        TimedEntityEffect key = acceleratedEntityKey(entry.getKey());
                         if (key == null) {
                             // Do not leave malformed legacy data in a live extra-property map.
                             extendedProperties.removeFromExtraVariables(entry.getKey());
@@ -1092,7 +975,7 @@ public class AMEventHandler {
                         slowedBlocks.clear();
                     }
                     for (Map.Entry<String, String> entry : slowedEntities.entrySet()) {
-                        AcceleratedEntityKey key = acceleratedEntityKey(entry.getKey());
+                        TimedEntityEffect key = acceleratedEntityKey(entry.getKey());
                         if (key == null) {
                             // Do not leave malformed legacy data in a live extra-property map.
                             extendedProperties.removeFromExtraVariables(entry.getKey());
@@ -1140,7 +1023,7 @@ public class AMEventHandler {
 
                         int vIndex = 0;
                         for (Map.Entry<String, String> entry : spatialVortices.entrySet()) {
-                            SpatialVortexKey key = spatialVortexKey(entry.getKey());
+                            SpatialVortexEffect key = spatialVortexKey(entry.getKey());
                             if (key == null) continue;
                             int x = key.x;
                             int y = key.y;
@@ -1222,7 +1105,7 @@ public class AMEventHandler {
                                     System.out.println(minE[0]);
                                 }
                                 if (tIndex == minE[0]) {
-                                    SpatialVortexKey key = spatialVortexKey(entry.getKey());
+                                    SpatialVortexEffect key = spatialVortexKey(entry.getKey());
                                     if (key == null) continue;
                                     int x = key.x;
                                     int y = key.y;
@@ -1263,7 +1146,7 @@ public class AMEventHandler {
                             int toSubtractE = toTransferEActual;
                             for (Map.Entry<String, String> entry : spatialVortices.entrySet()) {
                                 if (localIndex == maxE[0]) {
-                                    SpatialVortexKey key = spatialVortexKey(entry.getKey());
+                                    SpatialVortexEffect key = spatialVortexKey(entry.getKey());
                                     if (key == null) continue;
                                     int x = key.x;
                                     int y = key.y;
@@ -1289,7 +1172,7 @@ public class AMEventHandler {
                             int toSubtractD = toTransferD;
                             for (Map.Entry<String, String> entry : spatialVortices.entrySet()) {
                                 if (localIndex == maxD[0]) {
-                                    SpatialVortexKey key = spatialVortexKey(entry.getKey());
+                                    SpatialVortexEffect key = spatialVortexKey(entry.getKey());
                                     if (key == null) continue;
                                     int x = key.x;
                                     int y = key.y;
@@ -1316,7 +1199,7 @@ public class AMEventHandler {
                             int toSubtractL = toTransferL;
                             for (Map.Entry<String, String> entry : spatialVortices.entrySet()) {
                                 if (localIndex == maxL[0]) {
-                                    SpatialVortexKey key = spatialVortexKey(entry.getKey());
+                                    SpatialVortexEffect key = spatialVortexKey(entry.getKey());
                                     if (key == null) continue;
                                     int x = key.x;
                                     int y = key.y;
@@ -1345,7 +1228,7 @@ public class AMEventHandler {
                             int fIndex = 0;
                             for (Map.Entry<String, String> entry : spatialVortices.entrySet()) {
                                 if (fIndex == minE[0] && ELeft) {
-                                    SpatialVortexKey key = spatialVortexKey(entry.getKey());
+                                    SpatialVortexEffect key = spatialVortexKey(entry.getKey());
                                     if (key == null) continue;
                                     int x = key.x;
                                     int y = key.y;
@@ -1371,7 +1254,7 @@ public class AMEventHandler {
                                     if (AMCore.config.getDebugVortex()) {
                                         System.out.println(fIndex + " fIndex when minD");
                                     }
-                                    SpatialVortexKey key = spatialVortexKey(entry.getKey());
+                                    SpatialVortexEffect key = spatialVortexKey(entry.getKey());
                                     if (key == null) continue;
                                     int x = key.x;
                                     int y = key.y;
@@ -1395,7 +1278,7 @@ public class AMEventHandler {
                                     if (AMCore.config.getDebugVortex()) {
                                         System.out.println(fIndex + " fIndex when minL");
                                     }
-                                    SpatialVortexKey key = spatialVortexKey(entry.getKey());
+                                    SpatialVortexEffect key = spatialVortexKey(entry.getKey());
                                     if (key == null) continue;
                                     int x = key.x;
                                     int y = key.y;
@@ -1430,7 +1313,7 @@ public class AMEventHandler {
                         if (remaining < 3) {
                             extendedProperties.removeFromExtraVariables(entry.getKey());
                             if (!world.isRemote) {
-                                TimedBlockKey key = timedBlockKey(entry.getKey());
+                                TimedBlockEffect key = timedBlockKey(entry.getKey());
                                 if (key != null) {
                                     releaseFortifiedChunk(
                                         DimensionManager.getWorld(key.dimension),
@@ -1448,7 +1331,7 @@ public class AMEventHandler {
                     Map<String, String> shieldedBlocks = extendedProperties.getExtraVariablesContains("shielded_tile_");
 
                     for (Map.Entry<String, String> entry : shieldedBlocks.entrySet()) {
-                        TimedBlockKey key = timedBlockKey(entry.getKey());
+                        TimedBlockEffect key = timedBlockKey(entry.getKey());
                         if (key == null) {
                             // Do not leave malformed legacy data in a live extra-property map.
                             extendedProperties.removeFromExtraVariables(entry.getKey());

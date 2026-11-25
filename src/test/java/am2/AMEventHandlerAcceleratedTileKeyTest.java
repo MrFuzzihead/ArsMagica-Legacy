@@ -10,6 +10,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import am2.playerextensions.effects.TimedBlockEffect;
+
 /**
  * The accelerated-tile duration is keyed by a string such as {@code accelerated_fast_tile_x_y_z_dim_power}. Parsing
  * that string every tick was unnecessary; the bounded cache keeps the parsed coordinates for the effect's lifetime.
@@ -28,7 +30,7 @@ public class AMEventHandlerAcceleratedTileKeyTest {
 
     @Test
     public void parsesAllCoordinatesAndPower() {
-        AMEventHandler.AcceleratedTileKey key = AMEventHandler.acceleratedTileKey("accelerated_fast_tile_10_64_-3_0_4");
+        TimedBlockEffect key = AMEventHandler.acceleratedTileKey("accelerated_fast_tile_10_64_-3_0_4");
 
         assertEquals(10, key.x);
         assertEquals(64, key.y);
@@ -49,8 +51,8 @@ public class AMEventHandlerAcceleratedTileKeyTest {
     public void repeatedLookupsReuseTheParsedKey() {
         String raw = "accelerated_fast_tile_1_2_3_4_5";
 
-        AMEventHandler.AcceleratedTileKey first = AMEventHandler.acceleratedTileKey(raw);
-        AMEventHandler.AcceleratedTileKey second = AMEventHandler.acceleratedTileKey(raw);
+        TimedBlockEffect first = AMEventHandler.acceleratedTileKey(raw);
+        TimedBlockEffect second = AMEventHandler.acceleratedTileKey(raw);
 
         assertSame(first, second);
         assertEquals(1, AMEventHandler.acceleratedTileKeyCacheSize());

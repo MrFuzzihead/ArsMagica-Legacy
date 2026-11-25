@@ -11,6 +11,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import am2.playerextensions.effects.SpatialVortexEffect;
+import am2.playerextensions.effects.TimedBlockEffect;
+import am2.playerextensions.effects.TimedEntityEffect;
+
 /**
  * Parsers for the remaining timed-effect key formats. Malformed legacy keys must be rejected rather than throwing from
  * the per-tick bookkeeping.
@@ -30,8 +34,7 @@ public class AMEventHandlerParsedEffectKeyTest {
     @Test
     public void acceleratedEntityKeyParsesPowerAndUuid() {
         UUID uuid = UUID.randomUUID();
-        AMEventHandler.AcceleratedEntityKey key = AMEventHandler
-            .acceleratedEntityKey("accelerated_fast_entity_3_" + uuid);
+        TimedEntityEffect key = AMEventHandler.acceleratedEntityKey("accelerated_fast_entity_3_" + uuid);
 
         assertEquals(3, key.power);
         assertEquals(uuid, key.entityUUID);
@@ -48,7 +51,7 @@ public class AMEventHandlerParsedEffectKeyTest {
 
     @Test
     public void spatialVortexKeyParsesCoordinatesAndDimension() {
-        AMEventHandler.SpatialVortexKey key = AMEventHandler.spatialVortexKey("spatialvortex_10_64_-3_7");
+        SpatialVortexEffect key = AMEventHandler.spatialVortexKey("spatialvortex_10_64_-3_7");
 
         assertEquals(10, key.x);
         assertEquals(64, key.y);
@@ -66,7 +69,7 @@ public class AMEventHandlerParsedEffectKeyTest {
 
     @Test
     public void timedBlockKeyParsesCoordinatesAndBuildsTheShieldKey() {
-        AMEventHandler.TimedBlockKey key = AMEventHandler.timedBlockKey("shielded_tile_10_64_-3_7");
+        TimedBlockEffect key = AMEventHandler.timedBlockKey("shielded_tile_10_64_-3_7");
 
         assertEquals(10, key.x);
         assertEquals(64, key.y);
@@ -86,7 +89,7 @@ public class AMEventHandlerParsedEffectKeyTest {
     @Test
     public void clearingCachesDropsParsedInstances() {
         String raw = "spatialvortex_1_2_3_4";
-        AMEventHandler.SpatialVortexKey first = AMEventHandler.spatialVortexKey(raw);
+        SpatialVortexEffect first = AMEventHandler.spatialVortexKey(raw);
         AMEventHandler.clearParsedEffectKeyCaches();
 
         assertTrue(first != null);
