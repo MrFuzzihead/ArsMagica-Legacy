@@ -84,7 +84,7 @@ and the automated tests that now cover the fix.
 | 6.1 Bucket handler extraction | **Partially fixed** — bucket fill moved to `am2.handlers.BucketHandler` | `5d9dc43` | `BucketHandlerTest`, game-test bucket checks |
 | 6.1 Handler section extraction | **Partially fixed** — `onEntityLiving` fully decomposed into named sections; other event families remain | `c8e815f`, `3cb040e`, `6bb2836`, `01e293e`, `6817ebc`, `a9c056a`, `5e101ac`, `b1c6314`, `3f47f30`, `3689056`, `9b76b22`, `aaeaf3b`, `388e527`, `6227d51` | `AMEventHandlerPerfGuardTest` |
 | 6.4 Packet payload validation | **Partially fixed** — 1 MiB cap before payload allocation on both processors | `092f9ea` | `PacketValidationTest` |
-| 6.4 Strict packet reads | **Fixed for server handlers** — failure guards across all server packet handlers | `74fc17f`, `e10b97c` | `AMDataReaderTest`, `AMPacketProcessorServerStrictReadTest` |
+| 6.4 Strict packet reads | **Fixed for both processors** — failure guards across server and client packet handlers | `74fc17f`, `e10b97c`, `eadef7a` | `AMDataReaderTest`, `AMPacketProcessorServerStrictReadTest`, `AMPacketProcessorClientStrictReadTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -867,10 +867,10 @@ The network code has a single `AMDataReader`/`AMDataWriter` pair, no length vali
 would remove a whole class of bugs. At minimum, add a `PacketValidation` utility and use it in the handlers listed in 2.2.
 
 > **Status: Partially fixed.** `PacketValidation` enforces a 1 MiB payload cap before either processor allocates the
-> remaining byte array, and every server handler now checks `AMDataReader.hasFailed()` before mutating player/world
-> state. The typed packet framework, direction tags and client-handler migration remain open. Covered by
-> `PacketValidationTest` (`092f9ea`), `AMDataReaderTest` (`74fc17f`) and `AMPacketProcessorServerStrictReadTest`
-> (`e10b97c`).
+> remaining byte array, and both server and client handlers now check `AMDataReader.hasFailed()` before mutating
+> player/world/GUI state. The typed packet framework, direction tags and the full per-handler authority contract remain
+> open. Covered by `PacketValidationTest` (`092f9ea`), `AMDataReaderTest` (`74fc17f`),
+> `AMPacketProcessorServerStrictReadTest` (`e10b97c`) and `AMPacketProcessorClientStrictReadTest` (`eadef7a`).
 
 ### 6.5 Decide the ASM strategy
 
