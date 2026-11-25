@@ -94,6 +94,20 @@ public class AMEventHandlerPerfGuardTest {
     }
 
     @Test
+    public void serverManaLinkTickSkipsOffIntervalWorldWork() {
+        AMEventHandler handler = new AMEventHandler();
+        ExtendedProperties properties = new ExtendedProperties();
+        EntityLivingBase entity = mock(EntityLivingBase.class);
+        World world = mock(World.class);
+        entity.worldObj = world;
+        entity.ticksExisted = 1;
+
+        handler.tickManaLinksAndLocalMovement(entity, properties, world);
+
+        verifyNoInteractions(world);
+    }
+
+    @Test
     public void groundedNonBurningEntitySkipsFallContingencyAndAuraSync() {
         AMEventHandler handler = new AMEventHandler();
         ExtendedProperties properties = new ExtendedProperties();

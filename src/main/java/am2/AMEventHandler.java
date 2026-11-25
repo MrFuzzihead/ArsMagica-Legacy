@@ -1641,6 +1641,17 @@ public class AMEventHandler {
 
     }
 
+    void tickManaLinksAndLocalMovement(EntityLivingBase ent, ExtendedProperties extendedProperties, World world) {
+        // mana link pfx
+        if (ent.worldObj.isRemote) extendedProperties.spawnManaLinkParticles();
+
+        if (ent.ticksExisted % 20 == 0) extendedProperties.cleanupManaLinks();
+
+        if (world.isRemote) {
+            AMCore.proxy.sendLocalMovementData(ent);
+        }
+    }
+
     @SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event) {
 
@@ -1765,14 +1776,7 @@ public class AMEventHandler {
             }
         }
 
-        // mana link pfx
-        if (ent.worldObj.isRemote) extendedProperties.spawnManaLinkParticles();
-
-        if (ent.ticksExisted % 20 == 0) extendedProperties.cleanupManaLinks();
-
-        if (world.isRemote) {
-            AMCore.proxy.sendLocalMovementData(ent);
-        }
+        tickManaLinksAndLocalMovement(ent, extendedProperties, world);
     }
 
     public static Map<EntityPlayer, ArrayList<EntityCreature>> hallucinationMap = new HashMap<EntityPlayer, ArrayList<EntityCreature>>();
