@@ -75,6 +75,10 @@ public class AMPacketProcessorClient extends AMPacketProcessorServer {
 
             // constant details all packets share: ID, player, and remaining data
             packetID = bbis.readByte();
+            if (!PacketValidation.isAllowedDirection(packetID, Side.CLIENT)) {
+                LogHelper.warn("Rejected packet %d on the wrong side", packetID);
+                return;
+            }
             int remainingBytes = bbis.available();
             if (!PacketValidation.isValidPayloadLength(remainingBytes)) {
                 LogHelper.warn("Rejected invalid packet payload of %d bytes (type %d)", remainingBytes, packetID);
