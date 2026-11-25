@@ -952,7 +952,7 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 
 ### Current state
 
-- 411 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
+- 429 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
 - The server game test has 142 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
 - The client game test has 23 assertions at the main menu (proxy, key bindings, creative tabs, localisation).
 - Coverage is 177/69,939 lines (0.25%), with a 0.2% floor. The game-test coverage report is generated but not enforced.
@@ -975,7 +975,15 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 > invalid, duplicate and missing slot indices.
 5. **Power system tests** — comparator ordering with multiple insertion orders; `PowerNodeEntry` path save/load; `PowerNodeCache` save → chunk unload → world save → reload; two dimensions with the same region coordinates; two different worlds with the same dimension ID.
 6. **Spell tests** — `constructSpellStack` with duplicate modifiers, multiple shape groups, a Summon in a later stage; `parseSpellRequirements` with malformed arrays; `changeEnchantmentsForShapeGroup` with fortune/silk/looting combinations; `SpellValidator` stage rules; `createSpellStack` with an empty recipe.
+
+> **Status: Partially fixed.** `SpellValidatorTest` pins stage rules (component/shape requirements, terminus, principum,
+> Summon) and stage splitting. Construction/requirement/enchantment cases still need an initialized spell item and
+> skill registry.
 7. **Item tests** — `ItemSpellBook` active slot with `-1`, `8`, `39`, `100`; a non-spell item in the active slot; `ItemSpellBook.SetNextSlot` return value; `ItemManaStone`/`ItemSoulspike` negative NBT values.
+
+> **Status: Fixed.** `ItemSpellBookTest` covers all four slot boundaries, non-spell stacks and next-slot return values;
+> `ItemManaStorageTest` covers negative NBT, zero clamps and caps. The storage helpers now clamp reads and writes at
+> zero.
 8. **Config/worldgen tests** — `AMConfig` with zero/negative `witchwoodFrequency`, `wakebloomFrequency`, equal ore min/max, invalid dimension/biome/potion IDs; `AM2WorldDecorator` on a `WorldType.FLAT` and on the MMF dimension.
 9. **Game tests** — place and break a fully formed crafting altar and assert the multiblock/TE state; cast a spell with a spell book and assert mana/burnout sync; place a mana battery and assert metadata changes only on change; unload/reload a chunk with a power network; run a dedicated-server test without CoFH to prove the optional-dependency guards.
 10. **Thread-safety/leak tests** — a single-player integration test that creates a world, ticks 200 ticks, unloads the world, and asserts the static maps are empty (or at least bounded). This would catch the `ItemFrameWatcher`/`AMEventHandler` leaks.
