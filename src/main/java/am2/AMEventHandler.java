@@ -17,7 +17,6 @@ import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityEnderman;
-import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemSnowball;
@@ -32,7 +31,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.living.EnderTeleportEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 
@@ -43,8 +41,6 @@ import am2.api.spell.enums.BuffPowerLevel;
 import am2.armor.ArmorHelper;
 import am2.armor.infusions.GenericImbuement;
 import am2.blocks.tileentities.TileEntityAstralBarrier;
-import am2.blocks.tileentities.TileEntityInfusedStem;
-import am2.bosses.BossSpawnHelper;
 import am2.buffs.BuffEffectScrambleSynapses;
 import am2.buffs.BuffList;
 import am2.buffs.BuffStatModifiers;
@@ -73,7 +69,6 @@ import am2.utility.EntityUtilities;
 import am2.utility.KeystoneUtilities;
 import am2.utility.MathUtilities;
 import cofh.api.energy.IEnergyHandler;
-import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class AMEventHandler {
@@ -159,61 +154,6 @@ public class AMEventHandler {
     // }
     // }
     // }
-
-    @SubscribeEvent(priority = EventPriority.LOW)
-    public void onEntityDeath(LivingDeathEvent event) {
-        EntityLivingBase soonToBeDead = event.entityLiving;
-        if (!(ExtendedProperties.For(soonToBeDead)
-            .getContingencyEffect(1)
-            .getItem() instanceof ItemSnowball)) {
-            ExtendedProperties.For(soonToBeDead)
-                .procContingency(1, null);
-        }
-
-        if (soonToBeDead instanceof EntityHallucination && event.source.getSourceOfDamage() != null) {
-            if (event.source.getSourceOfDamage() instanceof EntityPlayer) { // bad karma with the world
-                ExtendedProperties exProps = ExtendedProperties.For((EntityPlayer) event.source.getSourceOfDamage());
-                exProps.addToExtraVariables("karma", "bad");
-            }
-        } else if (soonToBeDead instanceof EntityCreature) {
-            if (!EntityUtilities.isSummon(soonToBeDead) && EntityUtilities.isAIEnabled((EntityCreature) soonToBeDead)
-                && event.source.getSourceOfDamage() instanceof EntityPlayer) {
-                EntityUtilities.handleCrystalPhialAdd(
-                    (EntityCreature) soonToBeDead,
-                    (EntityPlayer) event.source.getSourceOfDamage());
-            }
-        }
-
-        if (EntityUtilities.isSummon(soonToBeDead)) {
-            int ownerID = EntityUtilities.getOwner(soonToBeDead);
-            Entity e = soonToBeDead.worldObj.getEntityByID(ownerID);
-            if (e != null & e instanceof EntityLivingBase) {
-                ExtendedProperties.For((EntityLivingBase) e)
-                    .removeSummon();
-            }
-        }
-
-        if (soonToBeDead instanceof EntityVillager) {
-            BossSpawnHelper.instance.onVillagerChildKilled((EntityVillager) soonToBeDead);
-        }
-
-        if (soonToBeDead instanceof EntityLiving && !soonToBeDead.worldObj.isRemote) {
-            int x = (int) Math.floor(soonToBeDead.posX);
-            int y = (int) Math.floor(soonToBeDead.posY);
-            int z = (int) Math.floor(soonToBeDead.posZ);
-            for (int newx = x - 3; newx <= x + 3; newx++) {
-                for (int newy = y - 3; newy <= y + 3; newy++) {
-                    for (int newz = z - 3; newz <= z + 3; newz++) {
-                        if (soonToBeDead.worldObj.getTileEntity(newx, newy, newz) instanceof TileEntityInfusedStem) {
-                            ((TileEntityInfusedStem) soonToBeDead.worldObj
-                                .getTileEntity(newx, newy, newz)).killedEntities.add((EntityLiving) soonToBeDead);
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     public static java.util.Set<String> forceShielded = new java.util.HashSet<>();
     public static Map<UUID, Integer> acceleratedEntitiesUUIDs = new HashMap<>();
