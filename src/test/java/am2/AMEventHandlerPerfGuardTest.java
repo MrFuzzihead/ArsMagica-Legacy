@@ -129,7 +129,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void agilityPotionRaisesStepHeight() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         EntityLivingBase entity = mock(EntityLivingBase.class);
         when(entity.isPotionActive(BuffList.agility.id)).thenReturn(true);
 
@@ -140,7 +140,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void losingAgilityRestoresStepHeight() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         EntityLivingBase entity = mock(EntityLivingBase.class);
         entity.stepHeight = 1.01F;
 
@@ -151,7 +151,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void prepareEntityPropertiesRunsTheBootstrapAndReturnsTheStore() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         ExtendedProperties properties = mock(ExtendedProperties.class);
         EntityLivingBase entity = mock(EntityLivingBase.class);
         when(entity.getExtendedProperties(ExtendedProperties.identifier)).thenReturn(properties);
@@ -165,7 +165,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void playerPropertySyncDelegatesToAllThreeStores() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         ExtendedProperties properties = mock(ExtendedProperties.class);
         AffinityData affinity = mock(AffinityData.class);
         SkillData skill = mock(SkillData.class);
@@ -182,7 +182,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void nonPlayerPropertySyncOnlyTouchesExtendedProperties() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         ExtendedProperties properties = mock(ExtendedProperties.class);
         EntityLivingBase entity = mock(EntityLivingBase.class);
 
@@ -194,7 +194,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void ordinaryEntityDoesNoSummonWorldWork() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         EntityLivingBase entity = mock(EntityLivingBase.class);
         World world = mock(World.class);
         entity.worldObj = world;
@@ -207,7 +207,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void emptyArmorAndNoInfusionIsSafe() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         ExtendedProperties properties = new ExtendedProperties();
         EntityPlayer player = mock(EntityPlayer.class);
         World world = mock(World.class);
@@ -229,7 +229,7 @@ public class AMEventHandlerPerfGuardTest {
     public void emptySlowedMapNeverCancels() {
         EntityLivingBase entity = mock(EntityLivingBase.class);
 
-        assertFalse(new AMEventHandler().shouldCancelSlowedEntity(entity));
+        assertFalse(new LivingUpdateHandler().shouldCancelSlowedEntity(entity));
         verifyNoInteractions(entity);
     }
 
@@ -241,7 +241,7 @@ public class AMEventHandlerPerfGuardTest {
         entity.ticksExisted = 1;
         AMEventHandler.slowedEntitiesUUIDs.put(uuid, 5);
 
-        assertTrue(new AMEventHandler().shouldCancelSlowedEntity(entity));
+        assertTrue(new LivingUpdateHandler().shouldCancelSlowedEntity(entity));
     }
 
     @Test
@@ -252,12 +252,12 @@ public class AMEventHandlerPerfGuardTest {
         entity.ticksExisted = 10;
         AMEventHandler.slowedEntitiesUUIDs.put(uuid, 5);
 
-        assertFalse(new AMEventHandler().shouldCancelSlowedEntity(entity));
+        assertFalse(new LivingUpdateHandler().shouldCancelSlowedEntity(entity));
     }
 
     @Test
     public void serverPlayerWithoutPsychedelicDoesNoHallucinationWork() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         EntityPlayer player = mock(EntityPlayer.class);
         World world = mock(World.class);
         player.worldObj = world;
@@ -269,7 +269,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void serverManaLinkTickSkipsOffIntervalWorldWork() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         ExtendedProperties properties = new ExtendedProperties();
         EntityLivingBase entity = mock(EntityLivingBase.class);
         World world = mock(World.class);
@@ -283,7 +283,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void groundedNonBurningEntitySkipsFallContingencyAndAuraSync() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         ExtendedProperties properties = new ExtendedProperties();
         EntityLivingBase entity = mock(EntityLivingBase.class);
         World world = mock(World.class);
@@ -299,7 +299,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void flightIsRemovedWhenNoSourceRemains() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         ExtendedProperties properties = new ExtendedProperties();
         properties.hadFlight = true;
         EntityPlayer player = mock(EntityPlayer.class);
@@ -314,7 +314,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void activeFlightSourceKeepsHadFlightSet() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         ExtendedProperties properties = new ExtendedProperties();
         EntityPlayer player = mock(EntityPlayer.class);
         player.capabilities = new PlayerCapabilities();
@@ -327,7 +327,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void levitationWhileFlyingScalesMotion() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         ExtendedProperties properties = new ExtendedProperties();
         EntityPlayer player = mock(EntityPlayer.class);
         player.capabilities = new PlayerCapabilities();
@@ -347,7 +347,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void etherealFormCountsDownWithoutDeactivating() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         ExtendedProperties properties = new ExtendedProperties();
         properties.addToExtraVariables("ethereal", "10");
 
@@ -358,7 +358,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void etherealFormDeactivatesAtTheEndOfItsDuration() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         ExtendedProperties properties = new ExtendedProperties();
         properties.addToExtraVariables("ethereal", "2");
         EntityPlayer player = mock(EntityPlayer.class);
@@ -372,7 +372,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void movementBuffsLeaveMotionAloneWithoutPotions() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         ExtendedProperties properties = new ExtendedProperties();
         EntityLivingBase entity = mock(EntityLivingBase.class);
         entity.motionX = 2.0D;
@@ -388,7 +388,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void unflippedStateDoesNotTouchTheWorldOrEntity() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         ExtendedProperties properties = new ExtendedProperties();
         World world = mock(World.class);
         EntityLivingBase entity = mock(EntityLivingBase.class);
@@ -400,7 +400,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void timedEffectsMethodNoOpsWithoutTimedKeys() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         ExtendedProperties properties = new ExtendedProperties();
         World serverWorld = mock(World.class);
         serverWorld.isRemote = false;
@@ -413,7 +413,7 @@ public class AMEventHandlerPerfGuardTest {
 
     @Test
     public void timedEffectsMethodNoOpsOnTheClient() {
-        AMEventHandler handler = new AMEventHandler();
+        LivingUpdateHandler handler = new LivingUpdateHandler();
         ExtendedProperties properties = new ExtendedProperties();
         properties.addToExtraVariables("shielded_tile_1_2_3_4", "10");
         World clientWorld = mock(World.class);

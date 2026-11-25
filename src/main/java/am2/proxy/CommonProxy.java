@@ -30,11 +30,11 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 
 import am2.AMCore;
-import am2.AMEventHandler;
 import am2.AMWorldEventHandler;
 import am2.EnervatorRecipeHelper;
 import am2.EntityItemWatcher;
 import am2.ItemFrameWatcher;
+import am2.LivingUpdateHandler;
 import am2.ObeliskFuelHelper;
 import am2.PlayerTracker;
 import am2.ShrinkHandler;
@@ -150,7 +150,6 @@ public class CommonProxy {
 
         BuffList.postInit();
 
-        MinecraftForge.EVENT_BUS.register(new AMEventHandler());
         MinecraftForge.EVENT_BUS.register(new BucketHandler());
         MinecraftForge.EVENT_BUS.register(new PotionBrewingHandler());
         MinecraftForge.EVENT_BUS.register(new TemporalAnchorHandler());
@@ -173,9 +172,7 @@ public class CommonProxy {
         MinecraftForge.EVENT_BUS.register(new EndermanTeleportHandler());
         MinecraftForge.EVENT_BUS.register(new LivingHurtHandler());
         MinecraftForge.EVENT_BUS.register(new AcceleratedEntityTickHandler());
-        FMLCommonHandler.instance()
-            .bus()
-            .register(new AMEventHandler());
+        MinecraftForge.EVENT_BUS.register(new LivingUpdateHandler());
         MinecraftForge.EVENT_BUS.register(PowerNodeCache.instance);
         MinecraftForge.EVENT_BUS.register(new AffinityHelper());
         MinecraftForge.EVENT_BUS.register(new SpellUnlockManager());
