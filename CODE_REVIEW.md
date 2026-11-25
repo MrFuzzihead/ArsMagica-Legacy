@@ -100,6 +100,7 @@ and the automated tests that now cover the fix.
 | 6.1 Temporal-anchor death | **Partially fixed** — death prevention consolidated into `TemporalAnchorHandler` | `aed2560` | `SmallEffectHandlersTest` |
 | 6.1 Entity death handling | **Partially fixed** — contingencies/summon cleanup/karma/stem notification extracted | `fdc4bc5` | `EntityDeathHandlerTest` |
 | 6.1 Enderman teleport | **Partially fixed** — astral barrier/flicker teleport behavior extracted | `ab5f3a1` | `EndermanTeleportHandlerTest` |
+| 6.1 Living hurt handling | **Partially fixed** — armor/shield/contingency damage modifiers extracted | `47234c4` | `LivingHurtHandlerTest` |
 | 6.1 Handler section extraction | **Partially fixed** — `onEntityLiving` fully decomposed into named sections; other event families remain | `c8e815f`, `3cb040e`, `6bb2836`, `01e293e`, `6817ebc`, `a9c056a`, `5e101ac`, `b1c6314`, `3f47f30`, `3689056`, `9b76b22`, `aaeaf3b`, `388e527`, `6227d51` | `AMEventHandlerPerfGuardTest` |
 | 6.4 Packet payload validation | **Partially fixed** — 1 MiB cap before payload allocation on both processors | `092f9ea` | `PacketValidationTest` |
 | 6.4 Strict packet reads | **Fixed for both processors** — failure guards across server and client packet handlers | `74fc17f`, `e10b97c`, `eadef7a` | `AMDataReaderTest`, `AMPacketProcessorServerStrictReadTest`, `AMPacketProcessorClientStrictReadTest` |
@@ -872,12 +873,9 @@ See 3.4. Every tick, per block. This is likely the single largest source of pack
 
 `AMEventHandler.java` is 2,161 lines and handles potions, souls, death/clone, combat, buffs, adjacency/spatial mechanics, block protection, world interactions, and dozens of unrelated events. Split it into focused classes (`PlayerLifecycleHandler`, `CombatEventHandler`, `TimeEffectsHandler`, `SpatialVortexHandler`, `ShieldHandler`, `BucketHandler`, etc.). This will make the static-state leaks and side guards reviewable in isolation.
 
-> **Status: Partially fixed.** `onEntityLiving` is fully decomposed into named sections, and bucket filling, potion
-> brewing, temporal-anchor cleanup, fury break-speed, mana cost, client overlays, item watching, entity construction,
-> summon drops, compendium pickup, soulspike attacks, connection tickrate, force-shield block protection, accelerated
-> entity ticking, soulbound death handling, player-clone copying, jump movement buffs, living-attack defense, fall
-> handling, entity-death handling and enderman teleporting now live in focused handler classes. `AMEventHandler` still
-> contains 2 active event handlers and 1,519 lines, so the class split is not complete.
+> **Status: Partially fixed.** `onEntityLiving` is fully decomposed into named sections, and all other event families now
+> live in focused handler classes. `AMEventHandler` still contains `onEntityLiving` plus its shared helper/state code
+> (1,325 lines), so the class split is not quite complete.
 
 ### 6.2 Introduce a world-scoped manager for AM2 state
 
