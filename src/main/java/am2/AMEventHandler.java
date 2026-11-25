@@ -48,7 +48,6 @@ import net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.world.BlockEvent;
 
@@ -321,34 +320,6 @@ public class AMEventHandler {
     // }
     // }
     // }
-
-    @SubscribeEvent
-    public void onAttack(AttackEntityEvent event) {
-        if (event.entityPlayer.getHeldItem() != null) {
-            if (event.entityPlayer.getHeldItem()
-                .getItem() instanceof ItemSoulspike) {
-                if (event.target instanceof EntityHallucination) {
-                    ItemSoulspike.addManaToSpike(event.entityPlayer.getHeldItem(), 15);
-                    event.target.attackEntityFrom(DamageSource.outOfWorld, 15);
-                    event.target.attackEntityFrom(DamageSource.magic, 15);
-                } else if (event.target instanceof EntityLivingBase) {
-                    if (event.target instanceof EntityPlayer) {
-                        EntityPlayer pl = (EntityPlayer) event.target;
-                        if (!AMCore.config.getAllowCreativeTargets() && pl.capabilities.isCreativeMode) return;
-                        ExtendedProperties properties = ExtendedProperties.For(pl);
-                        if (properties.hasExtraVariable("ethereal")) {
-                            ItemSoulspike.addManaToSpike(
-                                event.entityPlayer.getHeldItem(),
-                                (int) (properties.getCurrentMana() / 4));
-                            properties.deductMana(properties.getCurrentMana() / 4);
-                        }
-                    }
-                    ItemSoulspike.addManaToSpike(event.entityPlayer.getHeldItem(), 3);
-                    event.target.attackEntityFrom(DamageSource.outOfWorld, 3);
-                }
-            }
-        }
-    }
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onEntityDeath(LivingDeathEvent event) {

@@ -75,6 +75,7 @@ import am2.handlers.EntityConstructionHandler;
 import am2.handlers.ItemWatchHandler;
 import am2.handlers.ManaCostHandler;
 import am2.handlers.PotionBrewingHandler;
+import am2.handlers.SoulspikeAttackHandler;
 import am2.handlers.SummonDropHandler;
 import am2.handlers.TemporalAnchorHandler;
 import am2.items.ItemOre;
@@ -149,6 +150,7 @@ public class CommonProxy {
         MinecraftForge.EVENT_BUS.register(new EntityConstructionHandler());
         MinecraftForge.EVENT_BUS.register(new SummonDropHandler());
         MinecraftForge.EVENT_BUS.register(new CompendiumPickupHandler());
+        MinecraftForge.EVENT_BUS.register(new SoulspikeAttackHandler());
         FMLCommonHandler.instance()
             .bus()
             .register(new AMEventHandler());
