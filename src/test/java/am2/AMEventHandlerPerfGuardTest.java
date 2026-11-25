@@ -5,6 +5,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Field;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -16,6 +19,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import am2.buffs.ArsMagicaPotion;
+import am2.buffs.BuffList;
 import am2.playerextensions.ExtendedProperties;
 
 /**
@@ -29,6 +34,28 @@ public class AMEventHandlerPerfGuardTest {
     private boolean vortex;
     private boolean fortify;
     private boolean shield;
+    private ArsMagicaPotion previousFlight;
+    private ArsMagicaPotion previousLevitation;
+
+    @Before
+    public void stubPotionStatics() throws Exception {
+        previousFlight = BuffList.flight;
+        previousLevitation = BuffList.levitation;
+        setPotion("flight", mock(ArsMagicaPotion.class));
+        setPotion("levitation", mock(ArsMagicaPotion.class));
+    }
+
+    @After
+    public void restorePotionStatics() throws Exception {
+        setPotion("flight", previousFlight);
+        setPotion("levitation", previousLevitation);
+    }
+
+    private static void setPotion(String fieldName, ArsMagicaPotion value) throws Exception {
+        Field field = BuffList.class.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(null, value);
+    }
 
     @Before
     public void saveFlags() {
@@ -64,6 +91,54 @@ public class AMEventHandlerPerfGuardTest {
 
         assertFalse(AMEventHandler.shouldTickAcceleratedBlocks(null));
         assertFalse(AMEventHandler.shouldTickTimedEffects(null));
+    }
+
+    @Test
+    public void flightIsRemovedWhenNoSourceRemains() {
+        AMEventHandler handler = new AMEventHandler();
+        ExtendedProperties properties = new ExtendedProperties();
+        properties.hadFlight = true;
+        EntityPlayer player = mock(EntityPlayer.class);
+        player.capabilities = new PlayerCapabilities();
+
+        handler.tickPlayerFlight(player, properties);
+
+        assertFalse(properties.hadFlight);
+        assertFalse(player.capabilities.allowFlying);
+        assertFalse(player.capabilities.isFlying);
+    }
+
+    @Test
+    public void activeFlightSourceKeepsHadFlightSet() {
+        AMEventHandler handler = new AMEventHandler();
+        ExtendedProperties properties = new ExtendedProperties();
+        EntityPlayer player = mock(EntityPlayer.class);
+        player.capabilities = new PlayerCapabilities();
+        when(player.isPotionActive(BuffList.flight.id)).thenReturn(true);
+
+        handler.tickPlayerFlight(player, properties);
+
+        assertTrue(properties.hadFlight);
+    }
+
+    @Test
+    public void levitationWhileFlyingScalesMotion() {
+        AMEventHandler handler = new AMEventHandler();
+        ExtendedProperties properties = new ExtendedProperties();
+        EntityPlayer player = mock(EntityPlayer.class);
+        player.capabilities = new PlayerCapabilities();
+        player.capabilities.isFlying = true;
+        player.motionX = 10.0D;
+        player.motionY = 10.0D;
+        player.motionZ = 10.0D;
+        when(player.isPotionActive(BuffList.levitation.id)).thenReturn(true);
+        when(player.isPotionActive(BuffList.levitation)).thenReturn(true);
+
+        handler.tickPlayerFlight(player, properties);
+
+        assertEquals(4.0D, player.motionX, 0.001D);
+        assertEquals(0.001D, player.motionY, 0.001D);
+        assertEquals(4.0D, player.motionZ, 0.001D);
     }
 
     @Test

@@ -1602,6 +1602,25 @@ public class AMEventHandler {
         }
     }
 
+    void tickPlayerFlight(EntityPlayer player, ExtendedProperties extendedProperties) {
+        if (player.isPotionActive(BuffList.flight.id) || player.isPotionActive(BuffList.levitation.id)
+            || player.capabilities.isCreativeMode) {
+            extendedProperties.hadFlight = true;
+            if (player.isPotionActive(BuffList.levitation)) {
+                if (player.capabilities.isFlying) {
+                    float factor = 0.4f;
+                    player.motionX *= factor;
+                    player.motionZ *= factor;
+                    player.motionY *= 0.0001f;
+                }
+            }
+        } else if (extendedProperties.hadFlight) {
+            player.capabilities.allowFlying = false;
+            player.capabilities.isFlying = false;
+            extendedProperties.hadFlight = false;
+        }
+    }
+
     @SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event) {
 
@@ -1697,22 +1716,7 @@ public class AMEventHandler {
             SkillData.For((EntityPlayer) ent)
                 .handleExtendedPropertySync();
 
-            if (ent.isPotionActive(BuffList.flight.id) || ent.isPotionActive(BuffList.levitation.id)
-                || ((EntityPlayer) ent).capabilities.isCreativeMode) {
-                extendedProperties.hadFlight = true;
-                if (ent.isPotionActive(BuffList.levitation)) {
-                    if (((EntityPlayer) ent).capabilities.isFlying) {
-                        float factor = 0.4f;
-                        ent.motionX *= factor;
-                        ent.motionZ *= factor;
-                        ent.motionY *= 0.0001f;
-                    }
-                }
-            } else if (extendedProperties.hadFlight) {
-                ((EntityPlayer) ent).capabilities.allowFlying = false;
-                ((EntityPlayer) ent).capabilities.isFlying = false;
-                extendedProperties.hadFlight = false;
-            }
+            tickPlayerFlight((EntityPlayer) ent, extendedProperties);
         }
 
         if (ent.isPotionActive(BuffList.agility.id)) {
