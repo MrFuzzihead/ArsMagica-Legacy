@@ -74,6 +74,7 @@ and the automated tests that now cover the fix.
 | 5.7 Arcane reconstructor sync | **Fixed** — marks the block only on active-state transitions | `6e968e0` | `TileEntityArcaneReconstructorUpdateTest` |
 | 5.7 Worldgen tree reuse | **Fixed** — cached generators with per-tree height reset | `1c402cb` | `WitchwoodTreeHugeReuseTest` |
 | 5.7 Power-node NBT loading | **Fixed** — in-place top-level read and O(1) nested-path removal | `ce8fd9e` | `PowerNodeEntryNbtTest` |
+| 5.7 Client timed-effect bookkeeping | **Fixed** — `onEntityLiving` skips server-only timed effects on the client | `a75cbf4` | `AMEventHandlerPerfGuardTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -814,10 +815,11 @@ See 3.4. Every tick, per block. This is likely the single largest source of pack
 - `TileEntityArcaneReconstructor.queueRepairableItem` calls `markBlockForUpdate` every time it finds no valid item, even when the state did not change (`TileEntityArcaneReconstructor.java:260-282`).
 
 > **Status: Partially fixed.** The arcane reconstructor now only marks the block when its active state changes, worldgen
-> reuses the witchwood generators, power-node path NBT loading is linear/non-destructive, and the extra-properties
-> no-match fast path is in place. The remaining 5.7 item is splitting/early-returning in `onEntityLiving`. Covered by
-> `TileEntityArcaneReconstructorUpdateTest` (`6e968e0`), `WitchwoodTreeHugeReuseTest` (`1c402cb`) and
-> `PowerNodeEntryNbtTest` (`ce8fd9e`).
+> reuses the witchwood generators, power-node path NBT loading is linear/non-destructive, and `onEntityLiving` no longer
+> runs the server-only timed-effect bookkeeping on the client. The remaining 5.7 item is the broader split/early-return
+> of `onEntityLiving` into player/mob/server paths. Covered by `TileEntityArcaneReconstructorUpdateTest` (`6e968e0`),
+> `WitchwoodTreeHugeReuseTest` (`1c402cb`), `PowerNodeEntryNbtTest` (`ce8fd9e`) and `AMEventHandlerPerfGuardTest`
+> (`a75cbf4`).
 
 ---
 
