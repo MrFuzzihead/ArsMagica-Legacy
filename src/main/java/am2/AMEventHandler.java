@@ -24,7 +24,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemSnowball;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.tileentity.TileEntity;
@@ -33,7 +32,6 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.living.EnderTeleportEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
@@ -68,7 +66,6 @@ import am2.mixins.early.EntityInvoker;
 import am2.network.AMNetHandler;
 import am2.playerextensions.AffinityData;
 import am2.playerextensions.ExtendedProperties;
-import am2.playerextensions.RiftStorage;
 import am2.playerextensions.SkillData;
 import am2.playerextensions.effects.SpatialVortexEffect;
 import am2.playerextensions.effects.TimedBlockEffect;
@@ -122,44 +119,6 @@ public class AMEventHandler {
             flicker.setFlickerType(Affinity.ENDER);
             ent.worldObj.spawnEntityInWorld(flicker);
         }
-    }
-
-    @SubscribeEvent
-    public void onclone(net.minecraftforge.event.entity.player.PlayerEvent.Clone event) {
-        if (event.original == null || event.entityPlayer == null || event.entityPlayer instanceof FakePlayer) {
-            return;
-        }
-        EntityPlayer original = event.original;
-        EntityPlayer newplayer = event.entityPlayer;
-
-        // ExtendedProp.
-        NBTTagCompound OldNBT = new NBTTagCompound();
-        ExtendedProperties.For(original)
-            .saveNBTData(OldNBT);
-        ExtendedProperties.For(newplayer)
-            .loadNBTData(OldNBT);
-
-        // skill data.
-        NBTTagCompound OldSkill = new NBTTagCompound();
-        SkillData.For(original)
-            .saveNBTData(OldSkill);
-        SkillData.For(newplayer)
-            .loadNBTData(OldSkill);
-
-        // Rift storage.
-        NBTTagCompound OldRift = new NBTTagCompound();
-        RiftStorage.For(original)
-            .saveNBTData(OldRift);
-        RiftStorage.For(newplayer)
-            .loadNBTData(OldRift);
-
-        // Affinity data.
-        NBTTagCompound OldAffinity = new NBTTagCompound();
-        AffinityData.For(original)
-            .saveNBTData(OldAffinity);
-        AffinityData.For(newplayer)
-            .loadNBTData(OldAffinity);
-
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
