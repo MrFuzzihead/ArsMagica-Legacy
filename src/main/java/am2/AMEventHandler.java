@@ -1063,7 +1063,7 @@ public class AMEventHandler {
         }
 
         Map<String, String> acceleratedBlocks = null;
-        if (shouldTickAcceleratedBlocks(world)) {
+        if (extendedProperties.hasTimedEffects() && shouldTickAcceleratedBlocks(world)) {
             // accelerated blocks and entities are done outside the 5-tick performance optimisation to make them smooth
             acceleratedBlocks = extendedProperties.getExtraVariablesContains("accelerated_fast_tile_");
             for (Map.Entry<String, String> entry : acceleratedBlocks.entrySet()) {
@@ -1090,7 +1090,7 @@ public class AMEventHandler {
             // LivingUpdateEvent. Keeping the entity-list scan out of this hot path avoids the old L^2 behavior.
         }
 
-        if (shouldTickTimedEffects(world)) {
+        if (extendedProperties.hasTimedEffects() && shouldTickTimedEffects(world)) {
             tick++;
             if (tick > 100000) tick = 0;
             if ((tick % ((ent.worldObj.playerEntities.size() + 1) * 5)) == 0) { // only does behavior every 5 player

@@ -3,10 +3,12 @@ package am2.playerextensions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
@@ -80,7 +82,16 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     // I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
     // I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
     /** I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!! */
+    private static final String[] TIMED_EFFECT_PREFIXES = { "accelerated_fast_tile_", "accelerated_fast_entity_",
+        "accelerated_slow_tile_", "accelerated_slow_entity_", "spatialvortex_", "timefortified_tile_",
+        "shielded_tile_" };
+
     private final Map<String, String> extra_properties = new HashMap<String, String>();
+    /**
+     * Tracks whether any timed-effect keys are present so onEntityLiving can skip the per-entity timed bookkeeping
+     * entirely for the common case.
+     */
+    private final transient Set<String> timedEffectKeys = new HashSet<String>();
 
     private final Map<String, String> compendium_entries = new HashMap<String, String>();
 
@@ -1092,6 +1103,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         extra_properties.clear();
         NBTTagCompound nbt = rdr.getNBTTagCompound();
         readStringMap(nbt, "persistentobj", "persistentobjname", "persistentobjsize", extra_properties);
+        rebuildTimedEffectKeys();
 
         return true;
     }
@@ -1290,10 +1302,12 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
         readStringMap(compound, "persistentobj", "persistentobjname", "persistentobjsize", extra_properties);
         readStringMap(compound, "compentry", "compentryname", "compendiumsize", compendium_entries);
+        rebuildTimedEffectKeys();
     }
 
     public void addToExtraVariables(String name, String value) {
         extra_properties.put(name, value);
+        trackTimedEffectKey(name);
         setFullSync();
     }
 
@@ -1366,11 +1380,13 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
     public void removeFromExtraVariables(String name) {
         extra_properties.remove(name);
+        untrackTimedEffectKey(name);
         setFullSync();
     }
 
     public void clearExtraVariables() {
         extra_properties.clear();
+        timedEffectKeys.clear();
         setFullSync();
     }
 
@@ -1378,7 +1394,35 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     public void removeExtraVariablesContaining(String contains) {
         extra_properties.keySet()
             .removeIf(key -> key != null && key.contains(contains));
+        timedEffectKeys.removeIf(key -> key.contains(contains));
         setFullSync();
+    }
+
+    public boolean hasTimedEffects() {
+        return !timedEffectKeys.isEmpty();
+    }
+
+    private static boolean isTimedEffectKey(String name) {
+        if (name == null) return false;
+        for (String prefix : TIMED_EFFECT_PREFIXES) {
+            if (name.startsWith(prefix)) return true;
+        }
+        return false;
+    }
+
+    private void trackTimedEffectKey(String name) {
+        if (isTimedEffectKey(name)) timedEffectKeys.add(name);
+    }
+
+    private void untrackTimedEffectKey(String name) {
+        if (isTimedEffectKey(name)) timedEffectKeys.remove(name);
+    }
+
+    private void rebuildTimedEffectKeys() {
+        timedEffectKeys.clear();
+        for (String key : extra_properties.keySet()) {
+            trackTimedEffectKey(key);
+        }
     }
 
     public Map<String, String> getExtraVariablesContains(String contains) {
