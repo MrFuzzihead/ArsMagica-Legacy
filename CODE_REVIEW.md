@@ -954,7 +954,7 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 ### Current state
 
 - 444 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
-- The server game test has 230 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
+- The server game test has 232 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
 - The client game test has 23 assertions at the main menu (proxy, key bindings, creative tabs, localisation).
 - Coverage is 177/69,939 lines (0.25%), with a 0.2% floor. The game-test coverage report is generated but not enforced.
 
@@ -1004,9 +1004,9 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 > `TileEntityManaBatteryUpdateTest`.
 10. **Thread-safety/leak tests** — a single-player integration test that creates a world, ticks 200 ticks, unloads the world, and asserts the static maps are empty (or at least bounded). This would catch the `ItemFrameWatcher`/`AMEventHandler` leaks.
 
-> **Status: Partially fixed.** `AMEventHandlerStateTest` covers world-scoped/full cleanup and 200 repeated world
-> lifecycles, `ItemFrameWatcherKeyTest` covers key scoping, and `PowerNodeRegistryWorldScopeTest` covers world identity.
-> A live single-player 200-tick create/unload test remains.
+> **Status: Fixed.** `AMEventHandlerStateTest` covers world-scoped/full cleanup and 200 repeated world lifecycles;
+> `checksWorldLifecycle` creates a temporary Anvil world, ticks it 200 times, unloads it, and verifies transient state is
+> released. `ItemFrameWatcherKeyTest` covers key scoping and `PowerNodeRegistryWorldScopeTest` covers world identity.
 
 ### Coverage gate
 
