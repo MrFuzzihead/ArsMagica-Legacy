@@ -1,18 +1,22 @@
 package am2.mixins;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
 
 import com.gtnewhorizon.gtnhmixins.builders.AbstractBuilder;
 import com.gtnewhorizon.gtnhmixins.builders.IBaseTransformer;
+import com.gtnewhorizon.gtnhmixins.builders.ITargetMod;
 import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
 
 /**
@@ -59,6 +63,22 @@ public class MixinsTest {
         @SuppressWarnings("unchecked")
         List<String> client = (List<String>) read(builder, "clientClasses");
         assertTrue(client == null || client.isEmpty());
+
+        @SuppressWarnings("unchecked")
+        List<ITargetMod> excluded = (List<ITargetMod>) read(builder, "excludedMods");
+        assertNotNull(excluded);
+        assertEquals(1, excluded.size());
+        assertTrue(excluded.contains(TargetMods.ENDLESS_IDS));
+    }
+
+    @Test
+    public void potionMixinIsSkippedWhenEndlessIdsIsLoaded() throws Exception {
+        MixinBuilder builder = Mixins.POTION_IDS.getBuilder();
+        java.lang.reflect.Method shouldLoad = AbstractBuilder.class.getDeclaredMethod("shouldLoad", Set.class);
+        shouldLoad.setAccessible(true);
+
+        assertTrue((Boolean) shouldLoad.invoke(builder, Collections.emptySet()));
+        assertFalse((Boolean) shouldLoad.invoke(builder, Collections.singleton(TargetMods.ENDLESS_IDS)));
     }
 
     @Test

@@ -20,7 +20,8 @@ public enum Mixins implements IMixins {
     // Grows Potion.potionTypes to 128 so the mod's own buff IDs stay below the byte-safe limit of 127. This is also
     // the smoke mixin that proves the Mixin loader, manifest and refmap are wired up.
     POTION_IDS(new MixinBuilder().setPhase(Phase.EARLY)
-        .addCommonMixins("PotionMixin")),
+        .addCommonMixins("PotionMixin")
+        .addExcludedMod(TargetMods.ENDLESS_IDS)),
 
     // Accessors and invokers that replace ReflectionHelper calls from normal AM2 code. They are common because the
     // replaced calls (entity physics, potion classification, damage sources) run on both sides.
