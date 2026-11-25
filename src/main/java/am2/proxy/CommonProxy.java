@@ -70,6 +70,7 @@ import am2.entities.ai.MageVillagerTrade;
 import am2.handlers.BlockOverlayHandler;
 import am2.handlers.BreakSpeedHandler;
 import am2.handlers.BucketHandler;
+import am2.handlers.EntityConstructionHandler;
 import am2.handlers.ItemWatchHandler;
 import am2.handlers.ManaCostHandler;
 import am2.handlers.PotionBrewingHandler;
@@ -143,6 +144,7 @@ public class CommonProxy {
         MinecraftForge.EVENT_BUS.register(new ManaCostHandler());
         MinecraftForge.EVENT_BUS.register(new BlockOverlayHandler());
         MinecraftForge.EVENT_BUS.register(new ItemWatchHandler());
+        MinecraftForge.EVENT_BUS.register(new EntityConstructionHandler());
         FMLCommonHandler.instance()
             .bus()
             .register(new AMEventHandler());

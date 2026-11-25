@@ -20,7 +20,6 @@ import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.item.EntityBoat;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.entity.item.EntityMinecart;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.passive.EntityHorse;
@@ -48,7 +47,6 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
 import net.minecraftforge.event.entity.living.EnderTeleportEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -62,7 +60,6 @@ import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.world.BlockEvent;
 
-import am2.api.ArsMagicaApi;
 import am2.api.power.IPowerNode;
 import am2.api.power.PowerTypes;
 import am2.api.spell.enums.Affinity;
@@ -148,35 +145,6 @@ public class AMEventHandler {
             flicker.setPosition(ent.posX, ent.posY, ent.posZ);
             flicker.setFlickerType(Affinity.ENDER);
             ent.worldObj.spawnEntityInWorld(flicker);
-        }
-    }
-
-    @SubscribeEvent
-    public void onEntityConstructing(EntityConstructing event) {
-
-        if (event.entity instanceof EntityLivingBase) {
-            EntityLivingBase entityLB = (EntityLivingBase) event.entity;
-            entityLB.registerExtendedProperties(ExtendedProperties.identifier, new ExtendedProperties());
-            entityLB.getAttributeMap()
-                .registerAttribute(ArsMagicaApi.maxManaBonus);
-            entityLB.getAttributeMap()
-                .registerAttribute(ArsMagicaApi.maxBurnoutBonus);
-            entityLB.getAttributeMap()
-                .registerAttribute(ArsMagicaApi.xpGainModifier);
-            entityLB.getAttributeMap()
-                .registerAttribute(ArsMagicaApi.burnoutReductionRate);
-            entityLB.getAttributeMap()
-                .registerAttribute(ArsMagicaApi.manaRegenTimeModifier);
-            ExtendedProperties.For(entityLB)
-                .register(event.entity.worldObj, entityLB);
-            if (event.entity instanceof EntityPlayer) {
-                event.entity.registerExtendedProperties(RiftStorage.identifier, new RiftStorage());
-                event.entity.registerExtendedProperties(AffinityData.identifier, new AffinityData());
-                event.entity
-                    .registerExtendedProperties(SkillData.identifier, new SkillData((EntityPlayer) event.entity));
-            }
-        } else if (event.entity instanceof EntityItemFrame) {
-            AMCore.proxy.itemFrameWatcher.startWatchingFrame((EntityItemFrame) event.entity);
         }
     }
 
