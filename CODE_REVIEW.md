@@ -953,7 +953,7 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 
 ### Current state
 
-- 437 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
+- 443 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
 - The server game test has 226 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
 - The client game test has 23 assertions at the main menu (proxy, key bindings, creative tabs, localisation).
 - Coverage is 177/69,939 lines (0.25%), with a 0.2% floor. The game-test coverage report is generated but not enforced.
@@ -981,9 +981,9 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 > same-coordinate isolation by dimension and world identity.
 6. **Spell tests** — `constructSpellStack` with duplicate modifiers, multiple shape groups, a Summon in a later stage; `parseSpellRequirements` with malformed arrays; `changeEnchantmentsForShapeGroup` with fortune/silk/looting combinations; `SpellValidator` stage rules; `createSpellStack` with an empty recipe.
 
-> **Status: Partially fixed.** `SpellValidatorTest` pins stage rules and stage splitting. `SpellUtilsConstructionTest`
-> covers selected shape groups, duplicate modifiers, copied Summon stages and the empty recipe. Requirement parsing and
-> the fortune/silk/looting matrix remain.
+> **Status: Fixed.** `SpellValidatorTest` pins stage rules and stage splitting. `SpellUtilsConstructionTest` covers
+> selected shape groups, duplicate modifiers, copied Summon stages, the empty recipe and the
+> fortune/looting/silk-touch matrix. `SpellUtilsRequirementsTest` covers malformed and incomplete reagent arrays.
 7. **Item tests** — `ItemSpellBook` active slot with `-1`, `8`, `39`, `100`; a non-spell item in the active slot; `ItemSpellBook.SetNextSlot` return value; `ItemManaStone`/`ItemSoulspike` negative NBT values.
 
 > **Status: Fixed.** `ItemSpellBookTest` covers all four slot boundaries, non-spell stacks and next-slot return values;
