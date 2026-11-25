@@ -80,6 +80,7 @@ and the automated tests that now cover the fix.
 | 6.7 Helper stack mutation | **Fixed** — fuel comparators and enervator outputs are copied | `0d5a4d7` | `ObeliskFuelHelperTest`, `EnervatorRecipeHelperTest` |
 | 6.7 API property getters | **Fixed** — null-safe entities/identifiers and lifecycle docs | `d148bbc` | `ArsMagicaApiPropertiesTest` |
 | 6.7 Legacy second mana API | **Fixed** — live legacy types deprecated, commented-out dead types removed | `9ff50da` | `LegacyManaApiTest` |
+| 6.6 Duplicated sync countdown | **Fixed** — shared `SyncWindow` for all three synced stores | `c268948` | `SyncWindowTest`, `SyncWindowIntegrationTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -864,6 +865,9 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 ### 6.6 Reduce duplicated sync code
 
 `ExtendedProperties`, `AffinityData`, and `SkillData` each implement their own `ticksToSync`/`forcingSync`/`hasUpdate`/`getUpdateData`/`handlePacketData` pattern with slightly different semantics. Extract a base `SyncedExtendedProperties` helper. This will also make the `syncTickDelay` behavior consistent and testable.
+
+> **Status: Fixed.** The duplicated countdown, delayed-sync and forced-sync state now lives in `SyncWindow`; each store
+> keeps its own payload and “has data” rule. Covered by `SyncWindowTest` and `SyncWindowIntegrationTest` (`c268948`).
 
 ### 6.7 Clean up the API surface
 
