@@ -84,6 +84,7 @@ and the automated tests that now cover the fix.
 | 6.1 Bucket handler extraction | **Partially fixed** — bucket fill moved to `am2.handlers.BucketHandler` | `5d9dc43` | `BucketHandlerTest`, game-test bucket checks |
 | 6.1 Handler section extraction | **Partially fixed** — `onEntityLiving` fully decomposed into named sections; other event families remain | `c8e815f`, `3cb040e`, `6bb2836`, `01e293e`, `6817ebc`, `a9c056a`, `5e101ac`, `b1c6314`, `3f47f30`, `3689056`, `9b76b22`, `aaeaf3b`, `388e527`, `6227d51` | `AMEventHandlerPerfGuardTest` |
 | 6.4 Packet payload validation | **Partially fixed** — 1 MiB cap before payload allocation on both processors | `092f9ea` | `PacketValidationTest` |
+| 6.4 Strict packet reads | **Partially fixed** — reader failure flag and tile-handler rejection on bad reads | `74fc17f` | `AMDataReaderTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -865,9 +866,10 @@ The network code has a single `AMDataReader`/`AMDataWriter` pair, no length vali
 
 would remove a whole class of bugs. At minimum, add a `PacketValidation` utility and use it in the handlers listed in 2.2.
 
-> **Status: Partially fixed.** `PacketValidation` now enforces a 1 MiB payload cap before either processor allocates
-> the remaining byte array. The typed packet framework, direction tags and per-handler validation contract remain open.
-> Covered by `PacketValidationTest` (`092f9ea`).
+> **Status: Partially fixed.** `PacketValidation` enforces a 1 MiB payload cap before either processor allocates the
+> remaining byte array, and `AMDataReader` now tracks truncation/invalid-length failures so tile handlers can reject bad
+> packets before using zeroed values. The typed packet framework, direction tags and the full per-handler validation
+> contract remain open. Covered by `PacketValidationTest` (`092f9ea`) and `AMDataReaderTest` (`74fc17f`).
 
 ### 6.5 Decide the ASM strategy
 
