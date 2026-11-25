@@ -3,6 +3,7 @@ package am2.gametest;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.UUID;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -29,13 +30,19 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.oredict.OreDictionary;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.mojang.authlib.GameProfile;
 
 import am2.AMChunkLoader;
 import am2.AMCore;
 import am2.api.ArsMagicaApi;
 import am2.api.blocks.MultiblockStructureDefinition;
 import am2.api.power.PowerTypes;
+import am2.api.spell.component.interfaces.ISpellComponent;
+import am2.api.spell.component.interfaces.ISpellShape;
 import am2.blocks.BlocksCommonProxy;
 import am2.blocks.tileentities.TileEntityCraftingAltar;
 import am2.blocks.tileentities.TileEntityEssenceRefiner;
@@ -47,12 +54,17 @@ import am2.entities.EntityManaCreeper;
 import am2.handlers.BucketHandler;
 import am2.items.AMSpawnEgg;
 import am2.items.ItemOre;
+import am2.items.ItemSpellBook;
 import am2.items.ItemsCommonProxy;
 import am2.mixins.early.DamageSourceAccessor;
 import am2.mixins.early.EntityArrowAccessor;
 import am2.mixins.early.EntityFishHookAccessor;
 import am2.mixins.early.PotionAccessor;
+import am2.playerextensions.ExtendedProperties;
+import am2.playerextensions.SkillData;
 import am2.power.PowerNodeRegistry;
+import am2.spell.SkillManager;
+import am2.spell.SpellUtils;
 import am2.utility.RedstoneInlayState;
 import am2.utility.TickrateController;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -115,6 +127,7 @@ final class ArsMagicaGameTests {
         checksWorldPlacement(pWorld);
         checksAltarLifecycle(pWorld);
         checksPowerChunkReload(pWorld);
+        checksSpellBookCast(pWorld);
         checksBucketFill(pWorld);
         checksOreDictionary();
         checksRecipes();
@@ -502,6 +515,52 @@ final class ArsMagicaGameTests {
         } finally {
             pWorld.setBlockToAir(x, y, z);
         }
+    }
+
+    /** Casts a real projectile spell through a spell book and verifies mana/burnout are applied. */
+    private static void checksSpellBookCast(WorldServer pWorld) {
+        FakePlayer player = new FakePlayer(pWorld, new GameProfile(UUID.randomUUID(), "AM2GameTest"));
+        ExtendedProperties properties = ExtendedProperties.For(player);
+        if (properties == null) {
+            properties = new ExtendedProperties();
+            properties.setEntityReference(player);
+            player.registerExtendedProperties(ExtendedProperties.identifier, properties);
+        }
+        if (SkillData.For(player) == null) {
+            player.registerExtendedProperties(SkillData.identifier, new SkillData(player));
+        }
+        properties.setMaxMana(100000.0F);
+        properties.setMaxFatigue(1000.0F);
+        properties.setCurrentMana(50000.0F);
+        properties.setCurrentFatigue(5.0F);
+
+        ISpellShape shape = (ISpellShape) SkillManager.instance.getSkill("Projectile");
+        ISpellComponent component = (ISpellComponent) SkillManager.instance.getSkill("PhysicalDamage");
+        check(shape != null, "the Projectile shape must be registered");
+        check(component != null, "the PhysicalDamage component must be registered");
+        if (shape == null || component == null) return;
+
+        ItemStack scroll = new ItemStack(ItemsCommonProxy.spell);
+        SpellUtils.instance.addSpellStageToScroll(
+            scroll,
+            shape.getID(),
+            new int[] { SkillManager.instance.getShiftedPartID(component) },
+            ArrayListMultimap.create());
+        SpellUtils.instance.writeModVersionToStack(scroll);
+
+        ItemStack bookStack = new ItemStack(ItemsCommonProxy.spellBook);
+        ItemSpellBook book = (ItemSpellBook) bookStack.getItem();
+        ItemStack[] inventory = new ItemStack[40];
+        inventory[0] = scroll;
+        book.UpdateStackTagCompound(bookStack, inventory);
+        book.SetActiveSlot(bookStack, 0);
+
+        float manaBefore = properties.getCurrentMana();
+        float fatigueBefore = properties.getCurrentFatigue();
+        book.onPlayerStoppedUsing(bookStack, pWorld, player, 0);
+
+        check(properties.getCurrentMana() < manaBefore, "casting from the spell book must deduct mana");
+        check(properties.getCurrentFatigue() > fatigueBefore, "casting from the spell book must add burnout");
     }
 
     private static void checksBucketFill(WorldServer pWorld) {

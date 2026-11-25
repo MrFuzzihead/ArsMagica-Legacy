@@ -106,6 +106,23 @@ public class AMEventHandlerStateTest {
         assertTrue(WorldStateManager.isEmpty());
     }
 
+    @Test
+    public void twoHundredWorldLifecyclesDoNotAccumulateState() throws Exception {
+        for (int i = 0; i < 200; i++) {
+            World world = world(i % 4);
+            WorldStateManager.forceShielded(world)
+                .add("world_" + i);
+            WorldStateManager.acceleratedEntities(world)
+                .put(java.util.UUID.randomUUID(), i);
+            WorldStateManager.retroGenChunks(world)
+                .add(new net.minecraft.world.ChunkCoordIntPair(i, i));
+
+            AMEventHandler.clearWorldState(world);
+        }
+
+        assertTrue(WorldStateManager.isEmpty());
+    }
+
     private static EntityPlayer playerIn(World world) {
         EntityPlayer player = mock(EntityPlayer.class);
         player.worldObj = world;
