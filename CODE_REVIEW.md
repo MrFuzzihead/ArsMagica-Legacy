@@ -89,6 +89,7 @@ and the automated tests that now cover the fix.
 | 6.4 Self-scoped packet authority | **Partially fixed** — sender-bound desync/beta requests and spellbook slot bounds | `0e32562` | `PacketAuthorityTest` |
 | 6.4 Container authority rechecks | **Fixed** — workbench reach rechecked; customization bound to sender | `9dd5a72` | `PacketAuthorityTest` (reach/self helpers) |
 | 6.4 Validated packet envelope | **Partially fixed** — direction/size/id/payload centralized in `PacketEnvelope` | `f8a478b` | `PacketEnvelopeTest` |
+| 6.4 Typed handler registries | **Fixed** — packet switches replaced by typed per-side handler tables | `65de89d` | `PacketRegistryTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -870,13 +871,12 @@ The network code has a single `AMDataReader`/`AMDataWriter` pair, no length vali
 
 would remove a whole class of bugs. At minimum, add a `PacketValidation` utility and use it in the handlers listed in 2.2.
 
-> **Status: Partially fixed.** `PacketEnvelope` centralizes packet ID/direction/size validation and payload extraction;
-> both processors use it. Both client and server handlers check `AMDataReader.hasFailed()` before mutating state,
-> self-scoped requests are sender-bound, and container-based workbench/customization requests revalidate authority. A
-> full typed handler registry remains open. Covered by `PacketValidationTest` (`092f9ea`, `493cb80`),
-> `AMDataReaderTest` (`74fc17f`), `AMPacketProcessorServerStrictReadTest` (`e10b97c`),
-> `AMPacketProcessorClientStrictReadTest` (`eadef7a`), `PacketAuthorityTest` (`0e32562`, `9dd5a72`) and
-> `PacketEnvelopeTest` (`f8a478b`).
+> **Status: Fixed.** `PacketEnvelope` centralizes ID/direction/size validation and payload extraction; both processors
+> dispatch through typed `PacketRegistry` tables. Client and server handlers check `AMDataReader.hasFailed()` before
+> mutating state, self-scoped requests are sender-bound, and container-based workbench/customization requests revalidate
+> authority. Covered by `PacketValidationTest` (`092f9ea`, `493cb80`), `AMDataReaderTest` (`74fc17f`),
+> `AMPacketProcessorServerStrictReadTest` (`e10b97c`), `AMPacketProcessorClientStrictReadTest` (`eadef7a`),
+> `PacketAuthorityTest` (`0e32562`, `9dd5a72`), `PacketEnvelopeTest` (`f8a478b`) and `PacketRegistryTest` (`65de89d`).
 
 ### 6.5 Decide the ASM strategy
 
