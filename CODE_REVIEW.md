@@ -953,8 +953,8 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 
 ### Current state
 
-- 433 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
-- The server game test has 218 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
+- 437 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
+- The server game test has 226 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
 - The client game test has 23 assertions at the main menu (proxy, key bindings, creative tabs, localisation).
 - Coverage is 177/69,939 lines (0.25%), with a 0.2% floor. The game-test coverage report is generated but not enforced.
 
@@ -981,9 +981,9 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 > same-coordinate isolation by dimension and world identity.
 6. **Spell tests** — `constructSpellStack` with duplicate modifiers, multiple shape groups, a Summon in a later stage; `parseSpellRequirements` with malformed arrays; `changeEnchantmentsForShapeGroup` with fortune/silk/looting combinations; `SpellValidator` stage rules; `createSpellStack` with an empty recipe.
 
-> **Status: Partially fixed.** `SpellValidatorTest` pins stage rules (component/shape requirements, terminus, principum,
-> Summon) and stage splitting. Construction/requirement/enchantment cases still need an initialized spell item and
-> skill registry.
+> **Status: Partially fixed.** `SpellValidatorTest` pins stage rules and stage splitting. `SpellUtilsConstructionTest`
+> covers selected shape groups, duplicate modifiers, copied Summon stages and the empty recipe. Requirement parsing and
+> the fortune/silk/looting matrix remain.
 7. **Item tests** — `ItemSpellBook` active slot with `-1`, `8`, `39`, `100`; a non-spell item in the active slot; `ItemSpellBook.SetNextSlot` return value; `ItemManaStone`/`ItemSoulspike` negative NBT values.
 
 > **Status: Fixed.** `ItemSpellBookTest` covers all four slot boundaries, non-spell stacks and next-slot return values;
@@ -996,11 +996,11 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 > MMF/overworld routing, nether routing and the empty end case.
 9. **Game tests** — place and break a fully formed crafting altar and assert the multiblock/TE state; cast a spell with a spell book and assert mana/burnout sync; place a mana battery and assert metadata changes only on change; unload/reload a chunk with a power network; run a dedicated-server test without CoFH to prove the optional-dependency guards.
 
-> **Status: Partially fixed.** `gameTestServer` now runs 218 real assertions and fails if the success marker is absent;
-> `checksAltarLifecycle` builds a tier-1 altar, validates it, removes a wall and verifies invalidation and TE removal.
-> The run is a dedicated server without CoFH. Battery metadata change-gating is covered by
-> `TileEntityManaBatteryUpdateTest`. Spell-book casting/mana-burnout sync and a live chunk unload/reload power test
-> remain.
+> **Status: Partially fixed.** `gameTestServer` now runs 226 real assertions and fails if the success marker is absent;
+> `checksAltarLifecycle` builds a tier-1 altar, validates it, removes a wall and verifies invalidation and TE removal;
+> `checksPowerChunkReload` saves, unloads and reloads a chunk and verifies the battery power survives. The run is a
+> dedicated server without CoFH. Battery metadata change-gating is covered by `TileEntityManaBatteryUpdateTest`.
+> Spell-book casting/mana-burnout sync remains.
 10. **Thread-safety/leak tests** — a single-player integration test that creates a world, ticks 200 ticks, unloads the world, and asserts the static maps are empty (or at least bounded). This would catch the `ItemFrameWatcher`/`AMEventHandler` leaks.
 
 > **Status: Partially fixed.** `AMEventHandlerStateTest` covers world-scoped and full transient-state cleanup,
