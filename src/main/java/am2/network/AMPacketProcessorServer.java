@@ -199,7 +199,11 @@ public class AMPacketProcessorServer {
     private void handleCasterUpdate(byte[] data, EntityPlayerMP player) {
         World world = player.worldObj;
         AMDataReader rdr = new AMDataReader(data, false);
-        TileEntity te = world.getTileEntity(rdr.getInt(), rdr.getInt(), rdr.getInt());
+        int x = rdr.getInt();
+        int y = rdr.getInt();
+        int z = rdr.getInt();
+        if (rdr.hasFailed()) return;
+        TileEntity te = world.getTileEntity(x, y, z);
         if (!(te instanceof TileEntityBlockCaster) || !PacketAuthority.isWithinReach(player, te)) return;
         AMDataWriter writer = new AMDataWriter();
         writer.add(te.xCoord);
@@ -246,9 +250,14 @@ public class AMPacketProcessorServer {
 
     private void handleImbueArmor(byte[] data, EntityPlayerMP player) {
         AMDataReader rdr = new AMDataReader(data, false);
-        TileEntity te = player.worldObj.getTileEntity(rdr.getInt(), rdr.getInt(), rdr.getInt());
+        int x = rdr.getInt();
+        int y = rdr.getInt();
+        int z = rdr.getInt();
+        String infusion = rdr.getString();
+        if (rdr.hasFailed()) return;
+        TileEntity te = player.worldObj.getTileEntity(x, y, z);
         if (te instanceof TileEntityArmorImbuer && PacketAuthority.isWithinReach(player, te)) {
-            ((TileEntityArmorImbuer) te).imbueCurrentArmor(rdr.getString());
+            ((TileEntityArmorImbuer) te).imbueCurrentArmor(infusion);
         }
     }
 
@@ -314,24 +323,34 @@ public class AMPacketProcessorServer {
     private void handleInscriptionTableUpdate(byte[] data, EntityPlayerMP player) {
         World world = player.worldObj;
         AMDataReader rdr = new AMDataReader(data, false);
-        TileEntity te = world.getTileEntity(rdr.getInt(), rdr.getInt(), rdr.getInt());
+        int x = rdr.getInt();
+        int y = rdr.getInt();
+        int z = rdr.getInt();
+        if (rdr.hasFailed()) return;
+        TileEntity te = world.getTileEntity(x, y, z);
         if (!(te instanceof TileEntityInscriptionTable)) return;
 
         TileEntityInscriptionTable table = (TileEntityInscriptionTable) te;
         if (!PacketAuthority.isUsingInscriptionTable(player, table)) return;
 
-        table.HandleUpdatePacket(rdr.getRemainingBytes(), player);
+        byte[] payload = rdr.getRemainingBytes();
+        if (rdr.hasFailed()) return;
+        table.HandleUpdatePacket(payload, player);
         world.markBlockForUpdate(te.xCoord, te.yCoord, te.zCoord);
     }
 
     private void handleDecoBlockUpdate(byte[] data, EntityPlayerMP player) {
         World world = player.worldObj;
         AMDataReader rdr = new AMDataReader(data, false);
-        TileEntity te = world.getTileEntity(rdr.getInt(), rdr.getInt(), rdr.getInt());
+        int x = rdr.getInt();
+        int y = rdr.getInt();
+        int z = rdr.getInt();
+        if (rdr.hasFailed()) return;
+        TileEntity te = world.getTileEntity(x, y, z);
         if (!(te instanceof TileEntityParticleEmitter) || !PacketAuthority.isWithinReach(player, te)) return;
 
         NBTTagCompound compound = rdr.getNBTTagCompound();
-        if (compound == null) return;
+        if (rdr.hasFailed() || compound == null) return;
         te.readFromNBT(compound);
         world.markBlockForUpdate(te.xCoord, te.yCoord, te.zCoord);
     }

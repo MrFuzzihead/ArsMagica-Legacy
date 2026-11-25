@@ -2,8 +2,10 @@ package am2.network;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -55,6 +57,27 @@ public class AMDataReaderTest {
         data.writeInt(3);
         data.writeInt(1);
         assertArrayEquals(new int[0], reader(out.toByteArray()).getIntArray());
+    }
+
+    @Test
+    public void invalidLengthsAndTruncationSetTheFailureFlag() throws Exception {
+        AMDataReader invalidNbt = reader(intBytes(AMDataReader.MAX_NBT_BYTES + 1));
+        assertNull(invalidNbt.getNBTTagCompound());
+        assertTrue(invalidNbt.hasFailed());
+
+        AMDataReader truncated = reader(new byte[0]);
+        truncated.getInt();
+        assertTrue(truncated.hasFailed());
+    }
+
+    @Test
+    public void successfulReadsDoNotSetTheFailureFlag() {
+        AMDataWriter writer = new AMDataWriter();
+        writer.add(42);
+        AMDataReader valid = reader(writer.generate());
+
+        assertEquals(42, valid.getInt());
+        assertFalse(valid.hasFailed());
     }
 
     @Test

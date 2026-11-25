@@ -20,6 +20,7 @@ public class AMDataReader {
     ByteArrayInputStream input;
     DataInputStream dataStream;
     public byte ID;
+    private boolean failed;
 
     public AMDataReader(byte[] data) {
         this(data, true);
@@ -36,6 +37,7 @@ public class AMDataReader {
             } catch (IOException e) {
                 LogHelper.error("AMDataReader (getID): " + e.toString());
                 e.printStackTrace();
+                failed = true;
             }
         }
     }
@@ -47,6 +49,7 @@ public class AMDataReader {
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getInt): " + e.toString());
             e.printStackTrace();
+            failed = true;
         }
         return value;
     }
@@ -58,6 +61,7 @@ public class AMDataReader {
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getFloat): " + e.toString());
             e.printStackTrace();
+            failed = true;
         }
         return value;
     }
@@ -69,6 +73,7 @@ public class AMDataReader {
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getDouble): " + e.toString());
             e.printStackTrace();
+            failed = true;
         }
         return value;
     }
@@ -80,6 +85,7 @@ public class AMDataReader {
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getBoolean): " + e.toString());
             e.printStackTrace();
+            failed = true;
         }
         return value;
     }
@@ -91,6 +97,7 @@ public class AMDataReader {
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getString): " + e.toString());
             e.printStackTrace();
+            failed = true;
         }
         return value;
     }
@@ -102,6 +109,7 @@ public class AMDataReader {
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getByte): " + e.toString());
             e.printStackTrace();
+            failed = true;
         }
         return value;
     }
@@ -113,6 +121,7 @@ public class AMDataReader {
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getShort): " + e.toString());
             e.printStackTrace();
+            failed = true;
         }
         return value;
     }
@@ -124,6 +133,7 @@ public class AMDataReader {
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getLong): " + e.toString());
             e.printStackTrace();
+            failed = true;
         }
         return value;
     }
@@ -133,6 +143,7 @@ public class AMDataReader {
             int len = dataStream.readInt();
             if (len < 0 || len > MAX_NBT_BYTES) {
                 LogHelper.error("AMDataReader (getNBTTagCompound): invalid length %d", len);
+                failed = true;
                 return null;
             }
             byte[] bytes = new byte[len];
@@ -142,8 +153,13 @@ public class AMDataReader {
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getNBTTagCompound): " + e.toString());
             e.printStackTrace();
+            failed = true;
         }
         return null;
+    }
+
+    public boolean hasFailed() {
+        return failed;
     }
 
     public byte[] getRemainingBytes() {
@@ -154,6 +170,7 @@ public class AMDataReader {
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getRemainingBytes): " + e.toString());
             e.printStackTrace();
+            failed = true;
         }
 
         return remaining;
@@ -174,6 +191,7 @@ public class AMDataReader {
                     "AMDataReader (getIntArray): invalid length %d for %d available bytes",
                     len,
                     dataStream.available());
+                failed = true;
                 return new int[0];
             }
             int[] arr = new int[len];
@@ -182,6 +200,7 @@ public class AMDataReader {
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getIntArray): " + e.toString());
             e.printStackTrace();
+            failed = true;
         }
 
         return new int[0];
