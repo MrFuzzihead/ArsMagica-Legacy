@@ -3,6 +3,7 @@ package am2;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -802,6 +803,74 @@ public class AMEventHandler {
             && (enabled_accelerate || enabled_slow || enable_spatialVortex || enabled_timeFortified || enabled_shield);
     }
 
+    static final int MAX_ACCELERATED_TILE_KEYS = 256;
+    /**
+     * Parsed accelerated-tile keys. The raw strings live in player extra-properties and stay stable for the effect's
+     * duration, so caching avoids splitting/parsing the same key every tick. Bounded and server-thread only.
+     */
+    private static final LinkedHashMap<String, AcceleratedTileKey> acceleratedTileKeys = new LinkedHashMap<String, AcceleratedTileKey>(
+        64,
+        0.75F,
+        true) {
+
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, AcceleratedTileKey> eldest) {
+            return size() > MAX_ACCELERATED_TILE_KEYS;
+        }
+    };
+
+    static AcceleratedTileKey acceleratedTileKey(String raw) {
+        AcceleratedTileKey cached = acceleratedTileKeys.get(raw);
+        if (cached != null) return cached;
+
+        AcceleratedTileKey parsed = AcceleratedTileKey.parse(raw);
+        if (parsed != null) {
+            acceleratedTileKeys.put(raw, parsed);
+        }
+        return parsed;
+    }
+
+    static int acceleratedTileKeyCacheSize() {
+        return acceleratedTileKeys.size();
+    }
+
+    static void clearAcceleratedTileKeyCache() {
+        acceleratedTileKeys.clear();
+    }
+
+    static final class AcceleratedTileKey {
+
+        final int x;
+        final int y;
+        final int z;
+        final int dimension;
+        final int power;
+
+        private AcceleratedTileKey(int x, int y, int z, int dimension, int power) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.dimension = dimension;
+            this.power = power;
+        }
+
+        static AcceleratedTileKey parse(String raw) {
+            if (raw == null) return null;
+            String[] parts = raw.split("_");
+            if (parts.length < 8) return null;
+            try {
+                return new AcceleratedTileKey(
+                    Integer.parseInt(parts[3]),
+                    Integer.parseInt(parts[4]),
+                    Integer.parseInt(parts[5]),
+                    Integer.parseInt(parts[6]),
+                    Integer.parseInt(parts[7]));
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+    }
+
     /** Runs one accelerated update for a block position, reusing the tile/block lookups for all requested ticks. */
     static void tickAcceleratedBlock(World world, int x, int y, int z) {
         TileEntity tile = world.getTileEntity(x, y, z);
@@ -864,22 +933,21 @@ public class AMEventHandler {
             // accelerated blocks and entities are done outside the 5-tick performance optimisation to make them smooth
             acceleratedBlocks = extendedProperties.getExtraVariablesContains("accelerated_fast_tile_");
             for (Map.Entry<String, String> entry : acceleratedBlocks.entrySet()) {
+                AcceleratedTileKey key = acceleratedTileKey(entry.getKey());
+                if (key == null) {
+                    // Do not leave malformed legacy data in a live extra-property map.
+                    extendedProperties.removeFromExtraVariables(entry.getKey());
+                    continue;
+                }
                 int remaining = Integer.parseInt(entry.getValue());
                 if (remaining < 3) {
                     extendedProperties.removeFromExtraVariables(entry.getKey());
                 } else {
                     extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(remaining - 1));
-                    String[] entryvalues = entry.getKey()
-                        .split("_");
-                    int x = Integer.parseInt(entryvalues[3]);
-                    int y = Integer.parseInt(entryvalues[4]);
-                    int z = Integer.parseInt(entryvalues[5]);
-                    int dim = Integer.parseInt(entryvalues[6]);
-                    int power = Integer.parseInt(entryvalues[7]);
-                    World wrld = DimensionManager.getWorld(dim);
+                    World wrld = DimensionManager.getWorld(key.dimension);
                     if (wrld != null) {
-                        for (int i = 0; i < power; i++) {
-                            tickAcceleratedBlock(wrld, x, y, z);
+                        for (int i = 0; i < key.power; i++) {
+                            tickAcceleratedBlock(wrld, key.x, key.y, key.z);
                         }
                     }
                 }
