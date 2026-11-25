@@ -68,6 +68,7 @@ and the automated tests that now cover the fix.
 | 4.9 Potion ID validation | **Fixed** — free-slot resolution, null-safe clash check, single config save | `4c806ab` | `AMConfigPotionIdTest` |
 | 4.10 Dimension/biome registration | **Fixed** — reserved/occupied IDs validated with fallbacks | `4c806ab` | `AMConfigIdTest` |
 | 5.1 Skill-tree hot path | **Fixed** — identity index and cached unmodifiable tree views (`getTree` copy kept for API compatibility) | `f65e0ae`, `994404e` | `SkillTreeManagerLookupTest` |
+| 5.2 Accelerated-block hot path | **Fixed** — one duration parse and one tile/block lookup per accelerated tick | `be436de` | `AMEventHandlerAcceleratedBlockTest` |
 | 5.5 `PowerTypes` allocation/lookup | **Fixed** — shared cached array plus concurrent ID map | `f65e0ae` | `PowerTypesTest` |
 | 5.6 Retroactive worldgen | **Fixed** — FIFO deque, server-only, END phase only | `f65e0ae` | `RetroactiveWorldgeneratorTest` |
 | 5.4 Altar multiblock rebuild | **Fixed** — shared static primary/fake definitions built once | `6e968e0` | game-test altar definition checks |
@@ -773,9 +774,10 @@ A single spell cast can allocate hundreds of `ArrayList`s and scan thousands of 
 **Fix:** store effects in typed data structures (for example `Map<BlockPos, Effect>` keyed by dimension) instead of encoded strings; at minimum return `Collections.emptyMap()` when there are no matches and use a cached parsed representation. Move the “accelerated blocks/entities” bookkeeping out of `LivingUpdateEvent` into a server-side manager.
 
 > **Status: Partially fixed.** `getExtraVariablesContains` now returns the shared empty map when there is no match,
-> handles null prefixes, and uses one `entrySet` walk instead of `keySet` plus a second lookup. The encoded-string
-> parsing in `AMEventHandler.onEntityLiving` and typed effect storage remain open. Covered by
-> `ExtendedPropertiesExtraVariablesTest` (`6e968e0`).
+> handles null prefixes, and uses one `entrySet` walk instead of `keySet` plus a second lookup. The accelerated-block
+> tick also parses its duration once and reuses one tile/block lookup per tick. The remaining work is typed effect
+> storage and removing the encoded-string parsing for the other effect families. Covered by
+> `ExtendedPropertiesExtraVariablesTest` (`6e968e0`) and `AMEventHandlerAcceleratedBlockTest` (`be436de`).
 
 ### 5.3 Mana battery / enervator network spam
 
