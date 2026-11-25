@@ -42,6 +42,10 @@ public class AM2WorldDecorator implements IWorldGenerator {
     // pools
     private final AM2PoolGen pools;
 
+    // Tree generators are stateful but reseed/reset for each generation; reuse them instead of allocating per tree.
+    private final WitchwoodTreeHuge hugeTree = new WitchwoodTreeHuge(true);
+    private final WitchwoodTreeEvenMoreHuge evenMoreHugeTree = new WitchwoodTreeEvenMoreHuge(true);
+
     // config
     private final int witchChance = AMCore.config.getWitchwoodFrequency();
     private final int poolChance = AMCore.config.getPoolFrequency();
@@ -169,8 +173,7 @@ public class AM2WorldDecorator implements IWorldGenerator {
         if (!(AMCore.config.BlacklistAffectTrees() && isDimensionBlacklisted)) {
             if (WorldgenMath.chance(random, witchChance)) {
                 generateTree(
-                    random.nextInt(AMCore.config.spawnHugeTrees() ? 6 : 1) == 0 ? new WitchwoodTreeHuge(true)
-                        : new WitchwoodTreeEvenMoreHuge(true),
+                    random.nextInt(AMCore.config.spawnHugeTrees() ? 6 : 1) == 0 ? hugeTree : evenMoreHugeTree,
                     world,
                     random,
                     chunkX,

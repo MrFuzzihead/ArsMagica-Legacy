@@ -437,9 +437,8 @@ public class WitchwoodTreeHuge extends WorldGenAbstractTree {
         this.basePos[1] = par4;
         this.basePos[2] = par5;
 
-        if (this.heightLimit == 0) {
-            this.heightLimit = 5 + this.rand.nextInt(this.heightLimitLimit);
-        }
+        // The generator is reused: always roll a fresh height instead of keeping the previous tree's value.
+        this.heightLimit = 5 + this.rand.nextInt(this.heightLimitLimit);
 
         if (!this.validTreeLocation()) {
             return false;
