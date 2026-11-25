@@ -8,6 +8,10 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.EnumSet;
+
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -18,6 +22,7 @@ import org.junit.Test;
 
 import am2.api.spell.component.interfaces.ISpellModifier;
 import am2.api.spell.component.interfaces.ISpellShape;
+import am2.api.spell.enums.SpellModifiers;
 import am2.items.ItemsCommonProxy;
 
 public class SpellUtilsConstructionTest {
@@ -28,6 +33,8 @@ public class SpellUtilsConstructionTest {
     private ISpellShape shapeA;
     private ISpellShape shapeB;
     private ISpellModifier modifier;
+    private ISpellModifier fortuneModifier;
+    private ISpellModifier silkTouchModifier;
 
     @Before
     public void installRegistry() {
@@ -53,6 +60,9 @@ public class SpellUtilsConstructionTest {
         when(skillManager.getShiftedPartID(shapeB)).thenReturn(11);
         when(skillManager.getShiftedPartID(modifier)).thenReturn(5001);
 
+        fortuneModifier = enchantModifier(2, SpellModifiers.FORTUNE_LEVEL);
+        silkTouchModifier = enchantModifier(3, SpellModifiers.SILKTOUCH_LEVEL);
+
         SkillManager.instance = skillManager;
         ItemsCommonProxy.spell = mock(am2.items.SpellBase.class);
     }
@@ -61,6 +71,39 @@ public class SpellUtilsConstructionTest {
     public void restoreRegistry() {
         SkillManager.instance = previousSkillManager;
         ItemsCommonProxy.spell = (am2.items.SpellBase) previousSpell;
+    }
+
+    @Test
+    public void fortuneModifiersSetFortuneAndLootingButNotSilkTouch() {
+        ItemStack input = stackWithModifiers(5002, 5002);
+
+        SpellUtils.instance.changeEnchantmentsForShapeGroup(input);
+
+        assertEquals(2, EnchantmentHelper.getEnchantmentLevel(Enchantment.fortune.effectId, input));
+        assertEquals(2, EnchantmentHelper.getEnchantmentLevel(Enchantment.looting.effectId, input));
+        assertEquals(0, EnchantmentHelper.getEnchantmentLevel(Enchantment.silkTouch.effectId, input));
+    }
+
+    @Test
+    public void silkTouchModifiersSetOnlySilkTouch() {
+        ItemStack input = stackWithModifiers(5003);
+
+        SpellUtils.instance.changeEnchantmentsForShapeGroup(input);
+
+        assertEquals(1, EnchantmentHelper.getEnchantmentLevel(Enchantment.silkTouch.effectId, input));
+        assertEquals(0, EnchantmentHelper.getEnchantmentLevel(Enchantment.fortune.effectId, input));
+        assertEquals(0, EnchantmentHelper.getEnchantmentLevel(Enchantment.looting.effectId, input));
+    }
+
+    @Test
+    public void bothModifierTypesCoexist() {
+        ItemStack input = stackWithModifiers(5002, 5003, 5003);
+
+        SpellUtils.instance.changeEnchantmentsForShapeGroup(input);
+
+        assertEquals(1, EnchantmentHelper.getEnchantmentLevel(Enchantment.fortune.effectId, input));
+        assertEquals(1, EnchantmentHelper.getEnchantmentLevel(Enchantment.looting.effectId, input));
+        assertEquals(2, EnchantmentHelper.getEnchantmentLevel(Enchantment.silkTouch.effectId, input));
     }
 
     @Test
@@ -144,8 +187,31 @@ public class SpellUtilsConstructionTest {
     }
 
     private static ItemStack inputStack() {
-        ItemStack stack = new ItemStack(mock(Item.class));
+        ItemStack stack = new ItemStack(new Item());
         stack.setTagCompound(new NBTTagCompound());
         return stack;
+    }
+
+    private ItemStack stackWithModifiers(int... modifierIds) {
+        ItemStack input = inputStack();
+        NBTTagCompound tag = input.getTagCompound();
+        tag.setInteger("NumShapeGroups", 1);
+        tag.setInteger("CurrentShapeGroup", 0);
+        int[] group = new int[modifierIds.length + 1];
+        group[0] = 10;
+        System.arraycopy(modifierIds, 0, group, 1, modifierIds.length);
+        tag.setIntArray("ShapeGroup_0", group);
+        return input;
+    }
+
+    private ISpellModifier enchantModifier(int id, SpellModifiers aspect) {
+        ISpellModifier result = mock(ISpellModifier.class);
+        when(result.getID()).thenReturn(id);
+        when(result.getAspectsModified()).thenReturn(EnumSet.of(aspect));
+        int shifted = id + 5000;
+        when(skillManager.getSkill(shifted)).thenReturn(result);
+        when(skillManager.getShiftedPartID(result)).thenReturn(shifted);
+        when(skillManager.getModifier(shifted)).thenReturn(result);
+        return result;
     }
 }
