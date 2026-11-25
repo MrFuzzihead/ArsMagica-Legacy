@@ -16,6 +16,7 @@ import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.player.PlayerCapabilities;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
 import org.junit.After;
@@ -100,6 +101,19 @@ public class AMEventHandlerPerfGuardTest {
 
         assertFalse(AMEventHandler.shouldTickAcceleratedBlocks(null));
         assertFalse(AMEventHandler.shouldTickTimedEffects(null));
+    }
+
+    @Test
+    public void ordinaryEntityDoesNoSummonWorldWork() {
+        AMEventHandler handler = new AMEventHandler();
+        EntityLivingBase entity = mock(EntityLivingBase.class);
+        World world = mock(World.class);
+        entity.worldObj = world;
+        when(entity.getEntityData()).thenReturn(new NBTTagCompound());
+
+        handler.tickSummon(entity);
+
+        verifyNoInteractions(world);
     }
 
     @Test

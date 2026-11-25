@@ -1707,6 +1707,27 @@ public class AMEventHandler {
         }
     }
 
+    void tickSummon(EntityLivingBase ent) {
+        if (!ent.worldObj.isRemote && EntityUtilities.isSummon(ent) && !EntityUtilities.isTileSpawnedAndValid(ent)) {
+            int owner = EntityUtilities.getOwner(ent);
+            Entity ownerEnt = ent.worldObj.getEntityByID(owner);
+            if (!EntityUtilities.decrementSummonDuration(ent)) {
+                ent.attackEntityFrom(DamageSources.unsummon, 5000);
+            }
+            if (owner == -1 || ownerEnt == null || ownerEnt.isDead || ownerEnt.getDistanceSqToEntity(ent) > 900) {
+                if (ent instanceof EntityLiving && !((EntityLiving) ent).getCustomNameTag()
+                    .isEmpty()) {
+                    EntityUtilities.setOwner(ent, null);
+                    EntityUtilities.setSummonDuration(ent, -1);
+                    EntityUtilities.revertAI((EntityCreature) ent);
+                } else {
+                    ent.attackEntityFrom(DamageSources.unsummon, 5000);
+                }
+            }
+        }
+
+    }
+
     @SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event) {
 
@@ -1764,23 +1785,7 @@ public class AMEventHandler {
             ent.stepHeight = 0.5f;
         }
 
-        if (!ent.worldObj.isRemote && EntityUtilities.isSummon(ent) && !EntityUtilities.isTileSpawnedAndValid(ent)) {
-            int owner = EntityUtilities.getOwner(ent);
-            Entity ownerEnt = ent.worldObj.getEntityByID(owner);
-            if (!EntityUtilities.decrementSummonDuration(ent)) {
-                ent.attackEntityFrom(DamageSources.unsummon, 5000);
-            }
-            if (owner == -1 || ownerEnt == null || ownerEnt.isDead || ownerEnt.getDistanceSqToEntity(ent) > 900) {
-                if (ent instanceof EntityLiving && !((EntityLiving) ent).getCustomNameTag()
-                    .isEmpty()) {
-                    EntityUtilities.setOwner(ent, null);
-                    EntityUtilities.setSummonDuration(ent, -1);
-                    EntityUtilities.revertAI((EntityCreature) ent);
-                } else {
-                    ent.attackEntityFrom(DamageSources.unsummon, 5000);
-                }
-            }
-        }
+        tickSummon(ent);
 
         tickMovementBuffs(ent, extendedProperties);
 
