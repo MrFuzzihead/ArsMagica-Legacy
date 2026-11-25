@@ -33,7 +33,6 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemPotion;
 import net.minecraft.item.ItemSnowball;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -50,7 +49,6 @@ import net.minecraftforge.client.event.RenderBlockOverlayEvent;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.event.brewing.PotionBrewedEvent;
 import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
@@ -109,7 +107,6 @@ import am2.spell.SkillManager;
 import am2.spell.SkillTreeManager;
 import am2.utility.DimensionUtilities;
 import am2.utility.EntityUtilities;
-import am2.utility.InventoryUtilities;
 import am2.utility.KeystoneUtilities;
 import am2.utility.MathUtilities;
 import am2.utility.TickrateController;
@@ -132,31 +129,6 @@ public class AMEventHandler {
 
     private static final Random rand = new Random();
     private static final Map<ExtendedProperties, Integer> tempFlipped = new HashMap<ExtendedProperties, Integer>();
-
-    @SubscribeEvent
-    @SuppressWarnings("deprecation")
-    public void onPotionBrewed(PotionBrewedEvent brewEvent) {
-        for (ItemStack stack : brewEvent.brewingStacks) {
-            if (stack == null) continue;
-            if (stack.getItem() instanceof ItemPotion) {
-                ItemPotion ptn = ((ItemPotion) stack.getItem());
-                List<PotionEffect> fx = ptn.getEffects(stack.getItemDamage());
-                if (fx == null) return;
-                for (PotionEffect pe : fx) {
-                    if (pe.getPotionID() == BuffList.greaterManaPotion.id) {
-                        stack = InventoryUtilities.replaceItem(stack, ItemsCommonProxy.greaterManaPotion);
-                        break;
-                    } else if (pe.getPotionID() == BuffList.epicManaPotion.id) {
-                        stack = InventoryUtilities.replaceItem(stack, ItemsCommonProxy.epicManaPotion);
-                        break;
-                    } else if (pe.getPotionID() == BuffList.legendaryManaPotion.id) {
-                        stack = InventoryUtilities.replaceItem(stack, ItemsCommonProxy.legendaryManaPotion);
-                        break;
-                    }
-                }
-            }
-        }
-    }
 
     @SubscribeEvent
     public void onEndermanTeleport(EnderTeleportEvent event) {

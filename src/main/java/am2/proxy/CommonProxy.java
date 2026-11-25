@@ -68,6 +68,7 @@ import am2.enchantments.AMEnchantments;
 import am2.entities.EntityManager;
 import am2.entities.ai.MageVillagerTrade;
 import am2.handlers.BucketHandler;
+import am2.handlers.PotionBrewingHandler;
 import am2.items.ItemOre;
 import am2.items.ItemsCommonProxy;
 import am2.network.AMNetHandler;
@@ -131,6 +132,7 @@ public class CommonProxy {
 
         MinecraftForge.EVENT_BUS.register(new AMEventHandler());
         MinecraftForge.EVENT_BUS.register(new BucketHandler());
+        MinecraftForge.EVENT_BUS.register(new PotionBrewingHandler());
         FMLCommonHandler.instance()
             .bus()
             .register(new AMEventHandler());
