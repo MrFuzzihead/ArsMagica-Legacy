@@ -68,7 +68,7 @@ and the automated tests that now cover the fix.
 | 4.9 Potion ID validation | **Fixed** — free-slot resolution, null-safe clash check, single config save | `4c806ab` | `AMConfigPotionIdTest` |
 | 4.10 Dimension/biome registration | **Fixed** — reserved/occupied IDs validated with fallbacks | `4c806ab` | `AMConfigIdTest` |
 | 5.1 Skill-tree hot path | **Fixed** — identity index and cached unmodifiable tree views (`getTree` copy kept for API compatibility) | `f65e0ae`, `994404e` | `SkillTreeManagerLookupTest` |
-| 5.2 Accelerated-block hot path | **Fixed** — one duration parse, reused tile/block lookups, bounded parsed-key cache | `be436de`, `771fac4` | `AMEventHandlerAcceleratedBlockTest`, `AMEventHandlerAcceleratedTileKeyTest` |
+| 5.2 Encoded effect parsing | **Fixed** — no-match fast path and bounded parsed-key caches for every timed-effect family | `be436de`, `771fac4`, `4a05007` | `AMEventHandlerAcceleratedBlockTest`, `AMEventHandlerAcceleratedTileKeyTest`, `AMEventHandlerParsedEffectKeyTest` |
 | 5.5 `PowerTypes` allocation/lookup | **Fixed** — shared cached array plus concurrent ID map | `f65e0ae` | `PowerTypesTest` |
 | 5.6 Retroactive worldgen | **Fixed** — FIFO deque, server-only, END phase only | `f65e0ae` | `RetroactiveWorldgeneratorTest` |
 | 5.4 Altar multiblock rebuild | **Fixed** — shared static primary/fake definitions built once | `6e968e0` | game-test altar definition checks |
@@ -773,12 +773,12 @@ A single spell cast can allocate hundreds of `ArrayList`s and scan thousands of 
 
 **Fix:** store effects in typed data structures (for example `Map<BlockPos, Effect>` keyed by dimension) instead of encoded strings; at minimum return `Collections.emptyMap()` when there are no matches and use a cached parsed representation. Move the “accelerated blocks/entities” bookkeeping out of `LivingUpdateEvent` into a server-side manager.
 
-> **Status: Partially fixed.** `getExtraVariablesContains` now returns the shared empty map when there is no match,
-> handles null prefixes, and uses one `entrySet` walk instead of `keySet` plus a second lookup. The accelerated-block
-> tick parses its duration once, reuses one tile/block lookup per tick, and caches parsed tile keys in a bounded map.
-> The remaining work is typed effect storage and removing the encoded-string parsing for the other effect families.
-> Covered by `ExtendedPropertiesExtraVariablesTest` (`6e968e0`), `AMEventHandlerAcceleratedBlockTest` (`be436de`) and
-> `AMEventHandlerAcceleratedTileKeyTest` (`771fac4`).
+> **Status: Fixed.** `getExtraVariablesContains` returns the shared empty map when there is no match, handles null
+> prefixes, and uses one `entrySet` walk. All timed-effect key families now use bounded parsed-key caches, and each
+> effect loop parses its duration once. The only remaining allocation is the snapshot map for effects that actually
+> match; that copy is required because the loops mutate the underlying extra properties. Covered by
+> `ExtendedPropertiesExtraVariablesTest` (`6e968e0`), `AMEventHandlerAcceleratedBlockTest` (`be436de`),
+> `AMEventHandlerAcceleratedTileKeyTest` (`771fac4`) and `AMEventHandlerParsedEffectKeyTest` (`4a05007`).
 
 ### 5.3 Mana battery / enervator network spam
 
