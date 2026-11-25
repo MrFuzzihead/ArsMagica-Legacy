@@ -1477,6 +1477,48 @@ public class AMEventHandler {
 
     }
 
+    void tickFlippedState(EntityLivingBase ent, ExtendedProperties extendedProperties, World world) {
+        // unflip flipped players
+        if (tempFlipped.containsKey(extendedProperties)) {
+            tempFlipped.put(extendedProperties, tempFlipped.get(extendedProperties) - 1);
+            if (tempFlipped.get(extendedProperties) <= 0) {
+                tempFlipped.remove(extendedProperties);
+                extendedProperties.toggleFlipped();
+            }
+        }
+
+        extendedProperties.flipTick();
+
+        if (extendedProperties.getIsFlipped()) {
+            if ((ent).motionY < 2) (ent).motionY += 0.15f;
+
+            double posY = ent.posY + ent.height;
+            if (!world.isRemote) posY += ent.getEyeHeight();
+            if (world.rayTraceBlocks(
+                Vec3.createVectorHelper(ent.posX, posY, ent.posZ),
+                Vec3.createVectorHelper(ent.posX, posY + 1, ent.posZ),
+                true) != null) {
+                if (!ent.onGround) {
+                    if (ent.fallDistance > 0) {
+                        ((EntityInvoker) ent).am2$invokeFall(ent.fallDistance);
+                        ent.fallDistance = 0;
+                    }
+                }
+                ent.onGround = true;
+            } else {
+                if (ent instanceof EntityPlayer) {
+                    if (ent.motionY > 0) {
+                        if (world.isRemote) ent.fallDistance += (float) (ent.posY - ent.prevPosY);
+                        else ent.fallDistance += (float) ((((EntityPlayer) ent).field_71095_bQ
+                            - ((EntityPlayer) ent).field_71096_bN) * 2);
+                    }
+                }
+                ent.onGround = false;
+            }
+        }
+
+    }
+
     @SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event) {
 
@@ -1525,44 +1567,7 @@ public class AMEventHandler {
 
         // ================================================================================
 
-        // unflip flipped players
-        if (tempFlipped.containsKey(extendedProperties)) {
-            tempFlipped.put(extendedProperties, tempFlipped.get(extendedProperties) - 1);
-            if (tempFlipped.get(extendedProperties) <= 0) {
-                tempFlipped.remove(extendedProperties);
-                extendedProperties.toggleFlipped();
-            }
-        }
-
-        extendedProperties.flipTick();
-
-        if (extendedProperties.getIsFlipped()) {
-            if ((ent).motionY < 2) (ent).motionY += 0.15f;
-
-            double posY = ent.posY + ent.height;
-            if (!world.isRemote) posY += ent.getEyeHeight();
-            if (world.rayTraceBlocks(
-                Vec3.createVectorHelper(ent.posX, posY, ent.posZ),
-                Vec3.createVectorHelper(ent.posX, posY + 1, ent.posZ),
-                true) != null) {
-                if (!ent.onGround) {
-                    if (ent.fallDistance > 0) {
-                        ((EntityInvoker) ent).am2$invokeFall(ent.fallDistance);
-                        ent.fallDistance = 0;
-                    }
-                }
-                ent.onGround = true;
-            } else {
-                if (event.entityLiving instanceof EntityPlayer) {
-                    if (ent.motionY > 0) {
-                        if (world.isRemote) ent.fallDistance += (float) (ent.posY - ent.prevPosY);
-                        else ent.fallDistance += (float) ((((EntityPlayer) ent).field_71095_bQ
-                            - ((EntityPlayer) ent).field_71096_bN) * 2);
-                    }
-                }
-                ent.onGround = false;
-            }
-        }
+        tickFlippedState(ent, extendedProperties, world);
 
         // armor effects & infusion
         if (ent instanceof EntityPlayer) {

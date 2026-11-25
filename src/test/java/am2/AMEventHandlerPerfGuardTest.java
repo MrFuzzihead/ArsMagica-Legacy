@@ -63,6 +63,18 @@ public class AMEventHandlerPerfGuardTest {
     }
 
     @Test
+    public void unflippedStateDoesNotTouchTheWorldOrEntity() {
+        AMEventHandler handler = new AMEventHandler();
+        ExtendedProperties properties = new ExtendedProperties();
+        World world = mock(World.class);
+        EntityLivingBase entity = mock(EntityLivingBase.class);
+
+        handler.tickFlippedState(entity, properties, world);
+
+        verifyNoInteractions(world, entity);
+    }
+
+    @Test
     public void timedEffectsMethodNoOpsWithoutTimedKeys() {
         AMEventHandler handler = new AMEventHandler();
         ExtendedProperties properties = new ExtendedProperties();
