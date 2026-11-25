@@ -81,7 +81,7 @@ and the automated tests that now cover the fix.
 | 6.7 API property getters | **Fixed** — null-safe entities/identifiers and lifecycle docs | `d148bbc` | `ArsMagicaApiPropertiesTest` |
 | 6.7 Legacy second mana API | **Fixed** — live legacy types deprecated, commented-out dead types removed | `9ff50da` | `LegacyManaApiTest` |
 | 6.6 Duplicated sync countdown | **Fixed** — shared `SyncWindow` for all three synced stores | `c268948` | `SyncWindowTest`, `SyncWindowIntegrationTest` |
-| 6.1 Handler section extraction | **Partially fixed** — timed effects and flip state moved out of `onEntityLiving` | `c8e815f`, `3cb040e` | `AMEventHandlerPerfGuardTest` |
+| 6.1 Handler section extraction | **Partially fixed** — timed effects, flip state and movement buffs moved out of `onEntityLiving` | `c8e815f`, `3cb040e`, `6bb2836` | `AMEventHandlerPerfGuardTest` |
 | 6.4 Packet payload validation | **Partially fixed** — 1 MiB cap before payload allocation on both processors | `092f9ea` | `PacketValidationTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
@@ -840,9 +840,9 @@ See 3.4. Every tick, per block. This is likely the single largest source of pack
 
 `AMEventHandler.java` is 2,161 lines and handles potions, souls, death/clone, combat, buffs, adjacency/spatial mechanics, block protection, world interactions, and dozens of unrelated events. Split it into focused classes (`PlayerLifecycleHandler`, `CombatEventHandler`, `TimeEffectsHandler`, `SpatialVortexHandler`, `ShieldHandler`, `BucketHandler`, etc.). This will make the static-state leaks and side guards reviewable in isolation.
 
-> **Status: Partially fixed.** The timed-effect and flip-state sections are now isolated in `tickTimedEffects` and
-> `tickFlippedState`, with no-op/client guard coverage. The remaining event families are still in `AMEventHandler` and
-> need the same extraction treatment.
+> **Status: Partially fixed.** The timed-effect, flip-state and movement-buff sections are now isolated in
+> `tickTimedEffects`, `tickFlippedState` and `tickMovementBuffs`, with no-op/client guard coverage. The remaining event
+> families are still in `AMEventHandler` and need the same extraction treatment.
 
 ### 6.2 Introduce a world-scoped manager for AM2 state
 
