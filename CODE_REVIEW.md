@@ -77,6 +77,7 @@ and the automated tests that now cover the fix.
 | 5.7 Power-node NBT loading | **Fixed** — in-place top-level read and O(1) nested-path removal | `ce8fd9e` | `PowerNodeEntryNbtTest` |
 | 5.7 Client timed-effect bookkeeping | **Fixed** — `onEntityLiving` skips server-only timed effects on the client | `a75cbf4` | `AMEventHandlerPerfGuardTest` |
 | 5.7 Timed-effect early-out | **Fixed** — timed-key index skips per-entity timed work when no effects exist | `159e053` | `ExtendedPropertiesTimedEffectsTest` |
+| 6.7 Helper stack mutation | **Fixed** — fuel comparators and enervator outputs are copied | `0d5a4d7` | `ObeliskFuelHelperTest`, `EnervatorRecipeHelperTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -869,6 +870,11 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 - `ObeliskFuelHelper.registerFuelType` mutates the caller's `ItemStack` (`stack.stackSize = 0`, `ObeliskFuelHelper.java:18-21`). Copy first.
 - `EnervatorRecipeHelper.getRecipe` returns the stored output stack itself and mutates `stackSize` (`EnervatorRecipeHelper.java:29-53`). Return a copy.
 - `ArsMagicaApi.getSpellPartManager` and the identifier getters should have clear null/initialisation documentation.
+
+> **Status: Partially fixed.** `ObeliskFuelHelper.registerFuelType` and `EnervatorRecipeHelper.getRecipe` now copy
+> their inputs/outputs, so callers and the recipe registry cannot mutate each other. The abandoned second power API and
+> the identifier-initialisation documentation remain open. Covered by `ObeliskFuelHelperTest` and
+> `EnervatorRecipeHelperTest` (`0d5a4d7`).
 
 ---
 
