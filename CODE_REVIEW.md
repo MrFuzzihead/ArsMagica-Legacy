@@ -974,6 +974,10 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 > defaults; `AffinityDataNbtTest` covers affinity depth/lock round trips and unknown names; `RiftStorageNbtTest` covers
 > invalid, duplicate and missing slot indices.
 5. **Power system tests** — comparator ordering with multiple insertion orders; `PowerNodeEntry` path save/load; `PowerNodeCache` save → chunk unload → world save → reload; two dimensions with the same region coordinates; two different worlds with the same dimension ID.
+
+> **Status: Fixed.** `PowerNodeRegistryComparatorTest`, `PowerNodeEntryNbtTest`, `PowerNodeCacheTest` and
+> `PowerNodeRegistryWorldScopeTest` cover insertion-order independence, path round trips, save/unload/reload, and
+> same-coordinate isolation by dimension and world identity.
 6. **Spell tests** — `constructSpellStack` with duplicate modifiers, multiple shape groups, a Summon in a later stage; `parseSpellRequirements` with malformed arrays; `changeEnchantmentsForShapeGroup` with fortune/silk/looting combinations; `SpellValidator` stage rules; `createSpellStack` with an empty recipe.
 
 > **Status: Partially fixed.** `SpellValidatorTest` pins stage rules (component/shape requirements, terminus, principum,
