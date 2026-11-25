@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -25,7 +26,9 @@ import org.junit.Test;
 
 import am2.buffs.ArsMagicaPotion;
 import am2.buffs.BuffList;
+import am2.playerextensions.AffinityData;
 import am2.playerextensions.ExtendedProperties;
+import am2.playerextensions.SkillData;
 
 /**
  * The timed-effect bookkeeping in {@code onEntityLiving} mutates server worlds and reads server dimensions. These
@@ -101,6 +104,35 @@ public class AMEventHandlerPerfGuardTest {
 
         assertFalse(AMEventHandler.shouldTickAcceleratedBlocks(null));
         assertFalse(AMEventHandler.shouldTickTimedEffects(null));
+    }
+
+    @Test
+    public void playerPropertySyncDelegatesToAllThreeStores() {
+        AMEventHandler handler = new AMEventHandler();
+        ExtendedProperties properties = mock(ExtendedProperties.class);
+        AffinityData affinity = mock(AffinityData.class);
+        SkillData skill = mock(SkillData.class);
+        EntityPlayer player = mock(EntityPlayer.class);
+        when(player.getExtendedProperties(AffinityData.identifier)).thenReturn(affinity);
+        when(player.getExtendedProperties(SkillData.identifier)).thenReturn(skill);
+
+        handler.tickPropertySync(player, properties);
+
+        verify(properties).handleExtendedPropertySync();
+        verify(affinity).handleExtendedPropertySync();
+        verify(skill).handleExtendedPropertySync();
+    }
+
+    @Test
+    public void nonPlayerPropertySyncOnlyTouchesExtendedProperties() {
+        AMEventHandler handler = new AMEventHandler();
+        ExtendedProperties properties = mock(ExtendedProperties.class);
+        EntityLivingBase entity = mock(EntityLivingBase.class);
+
+        handler.tickPropertySync(entity, properties);
+
+        verify(properties).handleExtendedPropertySync();
+        verifyNoInteractions(entity);
     }
 
     @Test

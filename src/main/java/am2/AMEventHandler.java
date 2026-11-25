@@ -1728,6 +1728,18 @@ public class AMEventHandler {
 
     }
 
+    void tickPropertySync(EntityLivingBase ent, ExtendedProperties extendedProperties) {
+        // data sync
+        extendedProperties.handleExtendedPropertySync();
+
+        if (ent instanceof EntityPlayer) {
+            AffinityData.For(ent)
+                .handleExtendedPropertySync();
+            SkillData.For((EntityPlayer) ent)
+                .handleExtendedPropertySync();
+        }
+    }
+
     @SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event) {
 
@@ -1767,15 +1779,9 @@ public class AMEventHandler {
         // if (ent.worldObj.isRemote)
         // AMCore.instance.proxy.particleManager.spawnBuffParticles(ent);
 
-        // data sync
-        extendedProperties.handleExtendedPropertySync();
+        tickPropertySync(ent, extendedProperties);
 
         if (ent instanceof EntityPlayer) {
-            AffinityData.For(ent)
-                .handleExtendedPropertySync();
-            SkillData.For((EntityPlayer) ent)
-                .handleExtendedPropertySync();
-
             tickPlayerFlight((EntityPlayer) ent, extendedProperties);
         }
 
