@@ -110,7 +110,11 @@ public class AMPacketProcessorServer {
                     handleCasterUpdate(remaining, player);
                     break;
                 case AMPacketIDs.TK_DISTANCE_SYNC:
-                    ExtendedProperties.For(player).TK_Distance = new AMDataReader(remaining).getFloat();
+                    AMDataReader tkReader = new AMDataReader(remaining, false);
+                    float tkDistance = tkReader.getFloat();
+                    if (!tkReader.hasFailed()) {
+                        ExtendedProperties.For(player).TK_Distance = tkDistance;
+                    }
                     break;
                 case AMPacketIDs.SAVE_KEYSTONE_COMBO:
                     handleSaveKeystoneCombo(remaining, player);
@@ -181,9 +185,11 @@ public class AMPacketProcessorServer {
 
     private void handleRequestWorldDataChange(byte[] remaining, EntityPlayerMP player) {
         AMDataReader rdr = new AMDataReader(remaining, false);
-        World world = DimensionManager.getWorld(rdr.getInt());
+        int dimension = rdr.getInt();
         String name = rdr.getString();
         String value = rdr.getString();
+        if (rdr.hasFailed()) return;
+        World world = DimensionManager.getWorld(dimension);
         CustomWorldData.processRequest(world, name, value, player);
     }
 
@@ -228,8 +234,11 @@ public class AMPacketProcessorServer {
     }
 
     private void handleExpropOperation(byte[] data, EntityPlayerMP player) {
+        AMDataReader rdr = new AMDataReader(data, false);
+        int operation = rdr.getInt();
+        if (rdr.hasFailed()) return;
         ExtendedProperties.For(player)
-            .performRemoteOp(new AMDataReader(data, false).getInt());
+            .performRemoteOp(operation);
     }
 
     private void handlePowerPathSync(byte[] data, EntityPlayerMP player) {
@@ -237,6 +246,7 @@ public class AMPacketProcessorServer {
         byte nom = rdr.getByte();
         if (nom == 1) {
             AMVector3 loc = new AMVector3(rdr.getFloat(), rdr.getFloat(), rdr.getFloat());
+            if (rdr.hasFailed()) return;
             TileEntity te = player.worldObj.getTileEntity((int) loc.x, (int) loc.y, (int) loc.z);
             if (te instanceof IPowerNode && PacketAuthority.isWithinReach(player, te)) {
                 AMNetHandler.INSTANCE.sendPowerResponseToClient(
@@ -266,10 +276,13 @@ public class AMPacketProcessorServer {
         int x = rdr.getInt();
         int y = rdr.getInt();
         int z = rdr.getInt();
+        int recipe = rdr.getInt();
+        boolean locked = rdr.getBoolean();
+        if (rdr.hasFailed()) return;
 
         TileEntity te = player.worldObj.getTileEntity(x, y, z);
         if (te instanceof TileEntityMagiciansWorkbench && PacketAuthority.isWithinReach(player, te)) {
-            ((TileEntityMagiciansWorkbench) te).setRecipeLocked(rdr.getInt(), rdr.getBoolean());
+            ((TileEntityMagiciansWorkbench) te).setRecipeLocked(recipe, locked);
             te.getWorldObj()
                 .markBlockForUpdate(te.xCoord, te.yCoord, te.zCoord);
         }
@@ -278,6 +291,7 @@ public class AMPacketProcessorServer {
     private void handleRuneBagGUIOpen(byte[] data, EntityPlayerMP player) {
         AMDataReader rdr = new AMDataReader(data, false);
         int entityID = rdr.getInt();
+        if (rdr.hasFailed()) return;
 
         if (player == null) {
             return;
@@ -295,15 +309,19 @@ public class AMPacketProcessorServer {
 
     private void handleSetMagiciansWorkbenchRecipe(byte[] data, EntityPlayerMP player) {
         if (player.openContainer instanceof ContainerMagiciansWorkbench) {
-            ((ContainerMagiciansWorkbench) player.openContainer)
-                .moveRecipeToCraftingGrid(new AMDataReader(data, false).getInt());
+            AMDataReader rdr = new AMDataReader(data, false);
+            int index = rdr.getInt();
+            if (rdr.hasFailed()) return;
+            ((ContainerMagiciansWorkbench) player.openContainer).moveRecipeToCraftingGrid(index);
         }
     }
 
     private void handleSetKeystoneCombo(byte[] data, EntityPlayerMP player) {
         if (player.openContainer instanceof ContainerKeystone) {
             AMDataReader rdr = new AMDataReader(data, false);
-            ((ContainerKeystone) player.openContainer).setInventoryToCombination(rdr.getInt());
+            int combination = rdr.getInt();
+            if (rdr.hasFailed()) return;
+            ((ContainerKeystone) player.openContainer).setInventoryToCombination(combination);
         }
     }
 
@@ -313,6 +331,7 @@ public class AMPacketProcessorServer {
             boolean add = rdr.getBoolean();
             String name = rdr.getString();
             int[] metas = new int[] { rdr.getInt(), rdr.getInt(), rdr.getInt() };
+            if (rdr.hasFailed()) return;
             if (add) ItemsCommonProxy.keystone
                 .addCombination(((ContainerKeystone) player.openContainer).getKeystoneStack(), name, metas);
             else ItemsCommonProxy.keystone
@@ -365,6 +384,7 @@ public class AMPacketProcessorServer {
         byte subID = rdr.getByte();
         int entityID = rdr.getInt();
         int inventorySlot = rdr.getInt();
+        if (rdr.hasFailed()) return;
 
         ItemStack stack = player.inventory.getStackInSlot(inventorySlot);
         if (stack == null || !(stack.getItem() instanceof ItemSpellBook)) return;
@@ -387,6 +407,7 @@ public class AMPacketProcessorServer {
 
         int IIconIndex = rdr.getInt();
         String name = rdr.getString();
+        if (rdr.hasFailed()) return;
 
         if (player.openContainer instanceof ContainerSpellCustomization) {
             ((ContainerSpellCustomization) player.openContainer).setNameAndIndex(name, IIconIndex);
@@ -397,6 +418,7 @@ public class AMPacketProcessorServer {
         AMDataReader rdr = new AMDataReader(data, false);
         int requesterID = rdr.getInt();
         int entityID = rdr.getInt();
+        if (rdr.hasFailed()) return;
         EntityLivingBase entity = getEntityByID(entityID);
 
         if (player == null || !(entity instanceof EntityPlayer)) return;
@@ -416,6 +438,7 @@ public class AMPacketProcessorServer {
     private void handlePossibleClientExpropDesync(byte[] data) {
         AMDataReader rdr = new AMDataReader(data, false);
         int entityID = rdr.getInt();
+        if (rdr.hasFailed()) return;
 
         EntityLivingBase e = getEntityByID(entityID);
 
@@ -445,6 +468,7 @@ public class AMPacketProcessorServer {
         int delay = rdr.getInt();
         int quantity = rdr.getInt();
         float speed = rdr.getFloat();
+        if (rdr.hasFailed()) return;
 
         ExtendedProperties.For(player)
             .updateAuraData(index, behaviour, scale, alpha, randomColor, defaultColor, color, delay, quantity, speed);
@@ -454,6 +478,7 @@ public class AMPacketProcessorServer {
         AMDataReader rdr = new AMDataReader(data, false);
         int newShapeGroupOrdinal = rdr.getInt();
         int index = rdr.getInt();
+        if (rdr.hasFailed()) return;
 
         ItemStack stack = player.getCurrentEquippedItem();
         if (stack != null) {
