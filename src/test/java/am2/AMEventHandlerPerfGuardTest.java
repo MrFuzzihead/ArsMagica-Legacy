@@ -1,5 +1,6 @@
 package am2;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -60,6 +61,22 @@ public class AMEventHandlerPerfGuardTest {
 
         assertFalse(AMEventHandler.shouldTickAcceleratedBlocks(null));
         assertFalse(AMEventHandler.shouldTickTimedEffects(null));
+    }
+
+    @Test
+    public void movementBuffsLeaveMotionAloneWithoutPotions() {
+        AMEventHandler handler = new AMEventHandler();
+        ExtendedProperties properties = new ExtendedProperties();
+        EntityLivingBase entity = mock(EntityLivingBase.class);
+        entity.motionX = 2.0D;
+        entity.motionY = 1.0D;
+        entity.motionZ = 0.5D;
+
+        handler.tickMovementBuffs(entity, properties);
+
+        assertEquals(2.0D, entity.motionX, 0.001D);
+        assertEquals(1.0D, entity.motionY, 0.001D);
+        assertEquals(0.5D, entity.motionZ, 0.001D);
     }
 
     @Test

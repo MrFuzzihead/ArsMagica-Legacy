@@ -1519,6 +1519,71 @@ public class AMEventHandler {
 
     }
 
+    void tickMovementBuffs(EntityLivingBase ent, ExtendedProperties extendedProperties) {
+        // leap buff
+        if (ent.isPotionActive(BuffList.leap)) {
+            int amplifier = ent.getActivePotionEffect(BuffList.leap)
+                .getAmplifier();
+
+            switch (amplifier) {
+                case BuffPowerLevel.Low:
+                    extendedProperties.setFallProtection(8);
+                    break;
+                case BuffPowerLevel.Medium:
+                    extendedProperties.setFallProtection(20);
+                    break;
+                case BuffPowerLevel.High:
+                    extendedProperties.setFallProtection(45);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (ent.isPotionActive(BuffList.gravityWell)) {
+            if (ent.motionY < 0 && ent.motionY > -3f) {
+                ent.motionY *= 1.59999999999999998D;
+            }
+        }
+
+        // slowfall/shrink buff
+        // (isSneaking calls DataWatcher which are slow, so we test it late)
+        if (ent.isPotionActive(BuffList.slowfall) || ent.isPotionActive(BuffList.shrink)
+            || (ent instanceof EntityPlayer && AffinityData.For(ent)
+                .getAffinityDepth(Affinity.NATURE) == 1.0f && !ent.isSneaking())) {
+            if (!ent.onGround && ent.motionY < 0.0D) {
+                ent.motionY *= 0.79999999999999998D;
+            }
+        }
+
+        // swift swim
+        if (ent.isPotionActive(BuffList.swiftSwim)) {
+            if (ent.isInWater()) {
+                if (!(ent instanceof EntityPlayer) || !((EntityPlayer) ent).capabilities.isFlying) {
+                    ent.motionX *= (1.133f + 0.03 * ent.getActivePotionEffect(BuffList.swiftSwim)
+                        .getAmplifier());
+                    ent.motionZ *= (1.133f + 0.03 * ent.getActivePotionEffect(BuffList.swiftSwim)
+                        .getAmplifier());
+
+                    if (ent.motionY > 0) {
+                        ent.motionY *= 1.134;
+                    }
+                }
+            }
+        }
+
+        // watery grave
+        if (ent.isPotionActive(BuffList.wateryGrave)) {
+            if (ent.isInWater()) {
+                double pullVel = -0.5f;
+                pullVel *= (ent.getActivePotionEffect(BuffList.wateryGrave)
+                    .getAmplifier() + 1);
+                if (ent.motionY > pullVel) ent.motionY -= 0.1;
+            }
+        }
+
+    }
+
     @SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event) {
 
@@ -1671,70 +1736,7 @@ public class AMEventHandler {
             }
         }
 
-        // leap buff
-        if (event.entityLiving.isPotionActive(BuffList.leap)) {
-            int amplifier = event.entityLiving.getActivePotionEffect(BuffList.leap)
-                .getAmplifier();
-
-            switch (amplifier) {
-                case BuffPowerLevel.Low:
-                    extendedProperties.setFallProtection(8);
-                    break;
-                case BuffPowerLevel.Medium:
-                    extendedProperties.setFallProtection(20);
-                    break;
-                case BuffPowerLevel.High:
-                    extendedProperties.setFallProtection(45);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        if (event.entityLiving.isPotionActive(BuffList.gravityWell)) {
-            if (event.entityLiving.motionY < 0 && event.entityLiving.motionY > -3f) {
-                event.entityLiving.motionY *= 1.59999999999999998D;
-            }
-        }
-
-        // slowfall/shrink buff
-        // (isSneaking calls DataWatcher which are slow, so we test it late)
-        if (event.entityLiving.isPotionActive(BuffList.slowfall) || event.entityLiving.isPotionActive(BuffList.shrink)
-            || (ent instanceof EntityPlayer && AffinityData.For(ent)
-                .getAffinityDepth(Affinity.NATURE) == 1.0f && !ent.isSneaking())) {
-            if (!event.entityLiving.onGround && event.entityLiving.motionY < 0.0D) {
-                event.entityLiving.motionY *= 0.79999999999999998D;
-            }
-        }
-
-        // swift swim
-        if (event.entityLiving.isPotionActive(BuffList.swiftSwim)) {
-            if (event.entityLiving.isInWater()) {
-                if (!(event.entityLiving instanceof EntityPlayer)
-                    || !((EntityPlayer) event.entityLiving).capabilities.isFlying) {
-                    event.entityLiving.motionX *= (1.133f
-                        + 0.03 * event.entityLiving.getActivePotionEffect(BuffList.swiftSwim)
-                            .getAmplifier());
-                    event.entityLiving.motionZ *= (1.133f
-                        + 0.03 * event.entityLiving.getActivePotionEffect(BuffList.swiftSwim)
-                            .getAmplifier());
-
-                    if (event.entityLiving.motionY > 0) {
-                        event.entityLiving.motionY *= 1.134;
-                    }
-                }
-            }
-        }
-
-        // watery grave
-        if (event.entityLiving.isPotionActive(BuffList.wateryGrave)) {
-            if (event.entityLiving.isInWater()) {
-                double pullVel = -0.5f;
-                pullVel *= (event.entityLiving.getActivePotionEffect(BuffList.wateryGrave)
-                    .getAmplifier() + 1);
-                if (event.entityLiving.motionY > pullVel) event.entityLiving.motionY -= 0.1;
-            }
-        }
+        tickMovementBuffs(ent, extendedProperties);
 
         if (ent instanceof EntityPlayer && !ent.worldObj.isRemote) { // hallucination effects
             if (ent.isPotionActive(BuffList.psychedelic)) {
