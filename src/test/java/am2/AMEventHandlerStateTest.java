@@ -39,12 +39,18 @@ public class AMEventHandlerStateTest {
         EntityCreature creatureA = creatureIn(worldA);
         EntityCreature creatureB = creatureIn(worldB);
 
-        AMEventHandler.hallucinationMap.put(playerA, new ArrayList<EntityCreature>());
-        AMEventHandler.hallucinationMap.put(playerB, new ArrayList<EntityCreature>());
-        AMEventHandler.dustMap.put(playerA, new ArrayList<net.minecraft.entity.item.EntityItem>());
-        AMEventHandler.dustMap.put(playerB, new ArrayList<net.minecraft.entity.item.EntityItem>());
-        AMEventHandler.tempCurseMap.put(creatureA, 10);
-        AMEventHandler.tempCurseMap.put(creatureB, 10);
+        WorldStateManager.hallucinationMap(worldA)
+            .put(playerA, new ArrayList<EntityCreature>());
+        WorldStateManager.hallucinationMap(worldB)
+            .put(playerB, new ArrayList<EntityCreature>());
+        WorldStateManager.dustMap(worldA)
+            .put(playerA, new ArrayList<net.minecraft.entity.item.EntityItem>());
+        WorldStateManager.dustMap(worldB)
+            .put(playerB, new ArrayList<net.minecraft.entity.item.EntityItem>());
+        WorldStateManager.tempCurseMap(worldA)
+            .put(creatureA, 10);
+        WorldStateManager.tempCurseMap(worldB)
+            .put(creatureB, 10);
         WorldStateManager.forceShielded(worldA)
             .add("1_2_3_0");
         WorldStateManager.forceShielded(worldB)
@@ -52,12 +58,24 @@ public class AMEventHandlerStateTest {
 
         AMEventHandler.clearWorldState(worldA);
 
-        assertFalse(AMEventHandler.hallucinationMap.containsKey(playerA));
-        assertTrue(AMEventHandler.hallucinationMap.containsKey(playerB));
-        assertFalse(AMEventHandler.dustMap.containsKey(playerA));
-        assertTrue(AMEventHandler.dustMap.containsKey(playerB));
-        assertFalse(AMEventHandler.tempCurseMap.containsKey(creatureA));
-        assertTrue(AMEventHandler.tempCurseMap.containsKey(creatureB));
+        assertFalse(
+            WorldStateManager.hallucinationMap(worldA)
+                .containsKey(playerA));
+        assertTrue(
+            WorldStateManager.hallucinationMap(worldB)
+                .containsKey(playerB));
+        assertFalse(
+            WorldStateManager.dustMap(worldA)
+                .containsKey(playerA));
+        assertTrue(
+            WorldStateManager.dustMap(worldB)
+                .containsKey(playerB));
+        assertFalse(
+            WorldStateManager.tempCurseMap(worldA)
+                .containsKey(creatureA));
+        assertTrue(
+            WorldStateManager.tempCurseMap(worldB)
+                .containsKey(creatureB));
         assertFalse(
             WorldStateManager.forceShielded(worldA)
                 .contains("1_2_3_0"));
@@ -70,9 +88,12 @@ public class AMEventHandlerStateTest {
     public void clearAllTransientStateEmptiesEverything() throws Exception {
         World world = world(0);
         EntityPlayer player = playerIn(world);
-        AMEventHandler.hallucinationMap.put(player, new ArrayList<EntityCreature>());
-        AMEventHandler.dustMap.put(player, new ArrayList<net.minecraft.entity.item.EntityItem>());
-        AMEventHandler.tempCurseMap.put(creatureIn(world(0)), 10);
+        WorldStateManager.hallucinationMap(world)
+            .put(player, new ArrayList<EntityCreature>());
+        WorldStateManager.dustMap(world)
+            .put(player, new ArrayList<net.minecraft.entity.item.EntityItem>());
+        WorldStateManager.tempCurseMap(world)
+            .put(creatureIn(world), 10);
         WorldStateManager.forceShielded(world)
             .add("1_2_3_0");
         AMEventHandler.acceleratedEntitiesUUIDs.put(java.util.UUID.randomUUID(), 1);
@@ -80,9 +101,7 @@ public class AMEventHandlerStateTest {
 
         AMEventHandler.clearAllTransientState();
 
-        assertTrue(AMEventHandler.hallucinationMap.isEmpty());
-        assertTrue(AMEventHandler.dustMap.isEmpty());
-        assertTrue(AMEventHandler.tempCurseMap.isEmpty());
+        assertTrue(WorldStateManager.isEmpty());
         assertTrue(WorldStateManager.isEmpty());
         assertTrue(AMEventHandler.acceleratedEntitiesUUIDs.isEmpty());
         assertTrue(AMEventHandler.slowedEntitiesUUIDs.isEmpty());

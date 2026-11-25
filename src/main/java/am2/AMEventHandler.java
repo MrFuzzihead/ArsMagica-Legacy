@@ -33,6 +33,7 @@ import am2.playerextensions.effects.SpatialVortexEffect;
 import am2.playerextensions.effects.TimedBlockEffect;
 import am2.playerextensions.effects.TimedEffectCodec;
 import am2.playerextensions.effects.TimedEntityEffect;
+import am2.world.WorldStateManager;
 import cofh.api.energy.IEnergyHandler;
 
 public class AMEventHandler {
@@ -229,26 +230,13 @@ public class AMEventHandler {
         }
     }
 
-    public static Map<EntityPlayer, ArrayList<EntityCreature>> hallucinationMap = new HashMap<EntityPlayer, ArrayList<EntityCreature>>();
-    public static Map<EntityPlayer, ArrayList<EntityItem>> dustMap = new HashMap<EntityPlayer, ArrayList<EntityItem>>();
-    public static Map<EntityCreature, Integer> tempCurseMap = new HashMap<EntityCreature, Integer>();
-
     /** Drops world-bound transient state when a dimension unloads. */
     public static void clearWorldState(World world) {
-        hallucinationMap.entrySet()
-            .removeIf(entry -> entry.getKey() == null || entry.getKey().worldObj == world);
-        dustMap.entrySet()
-            .removeIf(entry -> entry.getKey() == null || entry.getKey().worldObj == world);
-        tempCurseMap.entrySet()
-            .removeIf(entry -> entry.getKey() == null || entry.getKey().worldObj == world);
         am2.world.WorldStateManager.unload(world);
     }
 
     /** Clears all transient state on server stop or client disconnect. */
     public static void clearAllTransientState() {
-        hallucinationMap.clear();
-        dustMap.clear();
-        tempCurseMap.clear();
         am2.world.WorldStateManager.clearAll();
         acceleratedEntitiesUUIDs.clear();
         slowedEntitiesUUIDs.clear();
@@ -259,18 +247,24 @@ public class AMEventHandler {
         player.removePotionEffect(BuffList.scrambleSynapses.id);
         player.extinguish();
         player.removePotionEffect(Potion.confusion.id);
-        if (hallucinationMap.get(player) != null) {
-            for (EntityCreature creature : hallucinationMap.get(player)) {
+        if (WorldStateManager.hallucinationMap(player.worldObj)
+            .get(player) != null) {
+            for (EntityCreature creature : WorldStateManager.hallucinationMap(player.worldObj)
+                .get(player)) {
                 if (creature != null) creature.setDead();
             }
-            hallucinationMap.get(player)
+            WorldStateManager.hallucinationMap(player.worldObj)
+                .get(player)
                 .clear();
         }
-        if (dustMap.get(player) != null) {
-            for (EntityItem item : dustMap.get(player)) {
+        if (WorldStateManager.dustMap(player.worldObj)
+            .get(player) != null) {
+            for (EntityItem item : WorldStateManager.dustMap(player.worldObj)
+                .get(player)) {
                 if (item != null) item.setDead();
             }
-            dustMap.get(player)
+            WorldStateManager.dustMap(player.worldObj)
+                .get(player)
                 .clear();
         }
     }
@@ -315,8 +309,10 @@ public class AMEventHandler {
             }
 
             EntityCreature summoned = summonCreature(player.worldObj, halclass, x, y, z, player, 4, 9);
-            hallucinationMap.computeIfAbsent(player, k -> new ArrayList<>());
-            hallucinationMap.get(player)
+            WorldStateManager.hallucinationMap(player.worldObj)
+                .computeIfAbsent(player, k -> new ArrayList<>());
+            WorldStateManager.hallucinationMap(player.worldObj)
+                .get(player)
                 .add(summoned);
         }
         if (player.worldObj.rand.nextInt(100) == 0) { // dust
@@ -327,8 +323,10 @@ public class AMEventHandler {
                 (z - 15) + player.worldObj.rand.nextInt(16));
             item.setEntityItemStack(new ItemStack(ItemsCommonProxy.itemOre, 1, ItemOre.META_COGNITIVEDUST));
             player.worldObj.spawnEntityInWorld(item);
-            dustMap.computeIfAbsent(player, k -> new ArrayList<EntityItem>());
-            dustMap.get(player)
+            WorldStateManager.dustMap(player.worldObj)
+                .computeIfAbsent(player, k -> new ArrayList<EntityItem>());
+            WorldStateManager.dustMap(player.worldObj)
+                .get(player)
                 .add(item);
         }
     }
@@ -433,8 +431,10 @@ public class AMEventHandler {
             }
 
             EntityCreature summoned = summonCreature(player.worldObj, halclass, x, y, z, player, 5, 13);
-            hallucinationMap.computeIfAbsent(player, k -> new ArrayList<>());
-            hallucinationMap.get(player)
+            WorldStateManager.hallucinationMap(player.worldObj)
+                .computeIfAbsent(player, k -> new ArrayList<>());
+            WorldStateManager.hallucinationMap(player.worldObj)
+                .get(player)
                 .add(summoned);
         }
     }

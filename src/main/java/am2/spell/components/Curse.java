@@ -1,7 +1,6 @@
 package am2.spell.components;
 
 import static am2.AMEventHandler.summonCreature;
-import static am2.AMEventHandler.tempCurseMap;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -39,6 +38,7 @@ import am2.mixins.early.PotionAccessor;
 import am2.particles.AMParticle;
 import am2.particles.ParticleArcToEntity;
 import am2.spell.SpellUtils;
+import am2.world.WorldStateManager;
 
 public class Curse implements ISpellComponent, IRitualInteraction {
 
@@ -175,7 +175,8 @@ public class Curse implements ISpellComponent, IRitualInteraction {
                 (int) Math.floor(target.posZ));
         }
 
-        tempCurseMap.put(summonCreature(player.worldObj, halclass, x, y, z, player, 4, 9), duration);
+        WorldStateManager.tempCurseMap(player.worldObj)
+            .put(summonCreature(player.worldObj, halclass, x, y, z, player, 4, 9), duration);
         return true;
     }
 

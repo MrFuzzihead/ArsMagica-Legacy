@@ -1,7 +1,5 @@
 package am2.proxy.tick;
 
-import static am2.AMEventHandler.tempCurseMap;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,6 +26,7 @@ import am2.network.AMPacketIDs;
 import am2.spell.SpellHelper;
 import am2.utility.DimensionUtilities;
 import am2.utility.TickrateController;
+import am2.world.WorldStateManager;
 import am2.worldgen.RetroactiveWorldgenerator;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -100,6 +99,7 @@ public class ServerTickHandler {
         }
 
         // handle temporary curses
+        Map<EntityCreature, Integer> tempCurseMap = WorldStateManager.tempCurseMap(event.world);
         ArrayList<EntityCreature> toRemove = new ArrayList<EntityCreature>();
         HashMap<EntityCreature, Integer> toChange = new HashMap<EntityCreature, Integer>();
         for (Map.Entry<EntityCreature, Integer> entry : tempCurseMap.entrySet()) {

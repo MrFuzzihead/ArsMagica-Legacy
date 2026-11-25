@@ -6,6 +6,9 @@ import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Field;
 
+import net.minecraft.entity.EntityCreature;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProvider;
 
@@ -35,6 +38,36 @@ public class WorldStateManagerTest {
         WorldStateManager.unload(first);
         assertTrue(
             WorldStateManager.forceShielded(second)
+                .isEmpty());
+    }
+
+    @Test
+    public void playerAndCreatureMapsAreWorldScoped() throws Exception {
+        World first = world(0);
+        World second = world(0);
+        EntityPlayer player = mock(EntityPlayer.class);
+        EntityCreature creature = mock(EntityCreature.class);
+
+        WorldStateManager.hallucinationMap(first)
+            .put(player, new java.util.ArrayList<EntityCreature>());
+        WorldStateManager.dustMap(first)
+            .put(player, new java.util.ArrayList<EntityItem>());
+        WorldStateManager.tempCurseMap(first)
+            .put(creature, 10);
+
+        assertTrue(
+            WorldStateManager.hallucinationMap(second)
+                .isEmpty());
+        assertTrue(
+            WorldStateManager.dustMap(second)
+                .isEmpty());
+        assertTrue(
+            WorldStateManager.tempCurseMap(second)
+                .isEmpty());
+
+        WorldStateManager.unload(first);
+        assertTrue(
+            WorldStateManager.hallucinationMap(first)
                 .isEmpty());
     }
 
