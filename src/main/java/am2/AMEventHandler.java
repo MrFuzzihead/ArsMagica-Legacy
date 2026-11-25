@@ -90,15 +90,10 @@ import am2.utility.DimensionUtilities;
 import am2.utility.EntityUtilities;
 import am2.utility.KeystoneUtilities;
 import am2.utility.MathUtilities;
-import am2.utility.TickrateController;
 import cofh.api.energy.IEnergyHandler;
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
-import cpw.mods.fml.common.network.FMLNetworkEvent;
-import cpw.mods.fml.relauncher.Side;
 
 public class AMEventHandler {
 
@@ -601,40 +596,6 @@ public class AMEventHandler {
                 0,
                 0,
                 0);
-        }
-    }
-
-    @SubscribeEvent
-    public void disconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) { // fired at the client. this is
-                                                                                       // to reset it to normal after
-                                                                                       // disconnecting
-        TickrateController.setServerTickrate(TickrateController.DEFAULT_TICKS_PER_SECOND);
-        TickrateController.changeClientTickratePublic(null, TickrateController.DEFAULT_TICKS_PER_SECOND);
-        AMCore.proxy.itemFrameWatcher.clear();
-        clearAllTransientState();
-    }
-
-    @SubscribeEvent
-    public void connect(FMLNetworkEvent.ClientConnectedToServerEvent event) { // fired at client when connects to server
-        if (event.isLocal) { // single player game
-            float tickrate = TickrateController.DEFAULT_TICKS_PER_SECOND;
-            TickrateController.setServerTickrate(tickrate);
-            TickrateController.changeClientTickratePublic(null, tickrate);
-        } else {
-            TickrateController.changeClientTickratePublic(null, TickrateController.DEFAULT_TICKS_PER_SECOND); // it
-                                                                                                              // forces
-                                                                                                              // it
-                                                                                                              // serverside
-                                                                                                              // anyway
-        }
-    }
-
-    @SubscribeEvent
-    public void connect(PlayerEvent.PlayerLoggedInEvent event) {
-        if (FMLCommonHandler.instance()
-            .getEffectiveSide() == Side.SERVER) {
-            float tickrate = (float) 1000L / TickrateController.getServerTickrate(); // 1000/50 = 20 ticks, etc
-            TickrateController.changeClientTickratePublic(event.player, tickrate);
         }
     }
 
