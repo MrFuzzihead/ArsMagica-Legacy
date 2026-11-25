@@ -20,11 +20,10 @@ import am2.LogHelper;
 import am2.api.math.AMVector3;
 import am2.api.power.IPowerNode;
 import am2.api.power.PowerTypes;
+import am2.world.WorldStateManager;
 
 public class PowerNodeRegistry {
 
-    private static final HashMap<Integer, PowerNodeRegistry> serverDimensionPowerManagers = new HashMap<Integer, PowerNodeRegistry>();
-    private static final HashMap<Integer, PowerNodeRegistry> clientDimensionPowerManagers = new HashMap<Integer, PowerNodeRegistry>();
     private static final PowerNodeRegistry dummyRegistry = new PowerNodeRegistry();
 
     static final int POWER_SEARCH_RADIUS = 10; // The literal power search radius
@@ -34,18 +33,7 @@ public class PowerNodeRegistry {
 
     public static final PowerNodeRegistry For(World world) {
         if (world == null) return dummyRegistry;
-
-        HashMap<Integer, PowerNodeRegistry> dimensionPowerManagers = world.isRemote ? clientDimensionPowerManagers
-            : serverDimensionPowerManagers;
-
-        if (dimensionPowerManagers.containsKey(world.provider.dimensionId)) {
-            return dimensionPowerManagers.get(world.provider.dimensionId);
-        } else {
-            PowerNodeRegistry reg = new PowerNodeRegistry();
-            dimensionPowerManagers.put(world.provider.dimensionId, reg);
-            return reg;
-        }
-
+        return WorldStateManager.<PowerNodeRegistry>getOrCreate(world, PowerNodeRegistry.class, PowerNodeRegistry::new);
     }
 
     private PowerNodeRegistry() {

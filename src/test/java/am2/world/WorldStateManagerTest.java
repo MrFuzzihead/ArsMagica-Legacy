@@ -73,6 +73,19 @@ public class WorldStateManagerTest {
     }
 
     @Test
+    public void attachmentsAreScopedAndCachedByWorld() throws Exception {
+        World first = world(0);
+        World second = world(0);
+
+        Object firstValue = WorldStateManager.getOrCreate(first, "key", Object::new);
+        assertTrue(firstValue == WorldStateManager.getOrCreate(first, "key", Object::new));
+        assertFalse(firstValue == WorldStateManager.getOrCreate(second, "key", Object::new));
+
+        WorldStateManager.unload(first);
+        assertFalse(firstValue == WorldStateManager.getOrCreate(first, "key", Object::new));
+    }
+
+    @Test
     public void retroGenQueuesAreWorldScoped() throws Exception {
         World first = world(0);
         World second = world(0);

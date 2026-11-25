@@ -8,6 +8,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.item.EntityItem;
@@ -60,6 +61,18 @@ public final class WorldStateManager {
         return state == null ? Collections.emptyMap() : state.acceleratedEntities;
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T> T getOrCreate(World world, Object key, Supplier<T> factory) {
+        WorldState state = state(world);
+        if (state == null) return factory.get();
+        Object value = state.attachments.get(key);
+        if (value == null) {
+            value = factory.get();
+            state.attachments.put(key, value);
+        }
+        return (T) value;
+    }
+
     public static Deque<ChunkCoordIntPair> retroGenChunks(World world) {
         WorldState state = state(world);
         return state == null ? new java.util.ArrayDeque<ChunkCoordIntPair>() : state.retroGenChunks;
@@ -98,5 +111,6 @@ public final class WorldStateManager {
         final Map<UUID, Integer> acceleratedEntities = new HashMap<UUID, Integer>();
         final Map<UUID, Integer> slowedEntities = new HashMap<UUID, Integer>();
         final Deque<ChunkCoordIntPair> retroGenChunks = new java.util.ArrayDeque<ChunkCoordIntPair>();
+        final Map<Object, Object> attachments = new HashMap<Object, Object>();
     }
 }
