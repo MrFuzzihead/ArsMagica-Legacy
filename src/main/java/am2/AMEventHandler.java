@@ -1621,6 +1621,26 @@ public class AMEventHandler {
         }
     }
 
+    void tickContingenciesAndAura(EntityLivingBase ent, ExtendedProperties extendedProperties, World world) {
+        if (!ent.onGround && ent.fallDistance >= 4f
+            && !(extendedProperties.getContingencyEffect(2)
+                .getItem() instanceof ItemSnowball)) {
+            int distanceToGround = MathUtilities.getDistanceToGround(ent, world);
+            if (distanceToGround < -8 * ent.motionY) {
+                extendedProperties.procContingency(2, null);
+            }
+        }
+        if (!(extendedProperties.getContingencyEffect(3)
+            .getItem() instanceof ItemSnowball) && ent.isBurning()) {
+            extendedProperties.procContingency(3, null);
+        }
+
+        if (!ent.worldObj.isRemote && ent.ticksExisted % 200 == 0) {
+            extendedProperties.setSyncAuras();
+        }
+
+    }
+
     @SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event) {
 
@@ -1686,22 +1706,7 @@ public class AMEventHandler {
             }
         }
 
-        if (!ent.onGround && ent.fallDistance >= 4f
-            && !(extendedProperties.getContingencyEffect(2)
-                .getItem() instanceof ItemSnowball)) {
-            int distanceToGround = MathUtilities.getDistanceToGround(ent, world);
-            if (distanceToGround < -8 * ent.motionY) {
-                extendedProperties.procContingency(2, null);
-            }
-        }
-        if (!(extendedProperties.getContingencyEffect(3)
-            .getItem() instanceof ItemSnowball) && ent.isBurning()) {
-            extendedProperties.procContingency(3, null);
-        }
-
-        if (!ent.worldObj.isRemote && ent.ticksExisted % 200 == 0) {
-            extendedProperties.setSyncAuras();
-        }
+        tickContingenciesAndAura(ent, extendedProperties, world);
 
         // buff particles
         // if (ent.worldObj.isRemote)

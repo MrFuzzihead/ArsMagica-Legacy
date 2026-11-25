@@ -94,6 +94,22 @@ public class AMEventHandlerPerfGuardTest {
     }
 
     @Test
+    public void groundedNonBurningEntitySkipsFallContingencyAndAuraSync() {
+        AMEventHandler handler = new AMEventHandler();
+        ExtendedProperties properties = new ExtendedProperties();
+        EntityLivingBase entity = mock(EntityLivingBase.class);
+        World world = mock(World.class);
+        entity.worldObj = world;
+        entity.onGround = true;
+        entity.fallDistance = 20.0F;
+        entity.ticksExisted = 1;
+
+        handler.tickContingenciesAndAura(entity, properties, world);
+
+        verifyNoInteractions(world);
+    }
+
+    @Test
     public void flightIsRemovedWhenNoSourceRemains() {
         AMEventHandler handler = new AMEventHandler();
         ExtendedProperties properties = new ExtendedProperties();
