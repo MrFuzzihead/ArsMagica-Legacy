@@ -4,13 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
 import net.minecraft.block.Block;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLiving;
@@ -23,9 +21,7 @@ import net.minecraft.entity.item.EntityMinecart;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
-import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemSnowball;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -46,7 +42,6 @@ import net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 
 import am2.api.power.IPowerNode;
 import am2.api.power.PowerTypes;
@@ -63,7 +58,6 @@ import am2.buffs.BuffList;
 import am2.buffs.BuffStatModifiers;
 import am2.damage.DamageSourceFire;
 import am2.damage.DamageSources;
-import am2.enchantments.AMEnchantments;
 import am2.entities.EntityFlicker;
 import am2.entities.EntityHallucination;
 import am2.entities.EntitySpecificHallucinations;
@@ -166,91 +160,6 @@ public class AMEventHandler {
         AffinityData.For(newplayer)
             .loadNBTData(OldAffinity);
 
-    }
-
-    // SoulBound Handler (code taken from @EnderIO)
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public void onPlayerDeath(PlayerDropsEvent evt) {
-        if (evt.entityPlayer == null || evt.entityPlayer instanceof FakePlayer || evt.isCanceled()) {
-            return;
-        }
-        if (evt.entityPlayer.worldObj.getGameRules()
-            .getGameRuleBooleanValue("keepInventory")) {
-            return;
-        }
-        ListIterator<EntityItem> iter = evt.drops.listIterator();
-        while (iter.hasNext()) {
-            EntityItem ei = iter.next();
-            ItemStack item = ei.getEntityItem();
-            if (isSoulBound(item)) {
-                if (addToPlayerInventory(evt.entityPlayer, item)) {
-                    iter.remove();
-                }
-            }
-        }
-    }
-
-    /*
-     * This is called when the user presses the "respawn" button. The original inventory would be empty, but
-     * onPlayerDeath() above placed items in it. Note: Without other death-modifying mods, the content of the old
-     * inventory would always fit into the new one (both being empty but for soulbound items in the old one) and the old
-     * one would be discarded just after this method. But better play it safe and assume that an overflow is possible
-     * and that another mod may move stuff out of the old inventory, too.
-     */
-    @SubscribeEvent
-    public void onPlayerClone(net.minecraftforge.event.entity.player.PlayerEvent.Clone evt) {
-        if (!evt.wasDeath || evt.isCanceled()) {
-            return;
-        }
-        if (evt.original == null || evt.entityPlayer == null || evt.entityPlayer instanceof FakePlayer) {
-            return;
-        }
-        if (evt.entityPlayer.worldObj.getGameRules()
-            .getGameRuleBooleanValue("keepInventory")) {
-            return;
-        }
-        for (int i = 0; i < evt.original.inventory.mainInventory.length; i++) {
-            ItemStack item = evt.original.inventory.mainInventory[i];
-            if (isSoulBound(item)) {
-                if (addToPlayerInventory(evt.entityPlayer, item)) {
-                    evt.original.inventory.mainInventory[i] = null;
-                }
-            }
-        }
-        for (int i = 0; i < evt.original.inventory.armorInventory.length; i++) {
-            ItemStack item = evt.original.inventory.armorInventory[i];
-            if (isSoulBound(item)) {
-                if (addToPlayerInventory(evt.entityPlayer, item)) {
-                    evt.original.inventory.armorInventory[i] = null;
-                }
-            }
-        }
-    }
-
-    private boolean isSoulBound(ItemStack item) {
-        return EnchantmentHelper.getEnchantmentLevel(AMEnchantments.soulbound.effectId, item) > 0;
-    }
-
-    private boolean addToPlayerInventory(EntityPlayer entityPlayer, ItemStack item) {
-        if (item == null || entityPlayer == null) {
-            return false;
-        }
-        if (item.getItem() instanceof ItemArmor) {
-            ItemArmor arm = (ItemArmor) item.getItem();
-            int index = 3 - arm.armorType;
-            if (entityPlayer.inventory.armorItemInSlot(index) == null) {
-                entityPlayer.inventory.armorInventory[index] = item;
-                return true;
-            }
-        }
-        InventoryPlayer inv = entityPlayer.inventory;
-        for (int i = 0; i < inv.mainInventory.length; i++) {
-            if (inv.mainInventory[i] == null) {
-                inv.mainInventory[i] = item.copy();
-                return true;
-            }
-        }
-        return false;
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
