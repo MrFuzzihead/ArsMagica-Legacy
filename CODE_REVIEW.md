@@ -101,6 +101,7 @@ and the automated tests that now cover the fix.
 | 6.1 Entity death handling | **Partially fixed** — contingencies/summon cleanup/karma/stem notification extracted | `fdc4bc5` | `EntityDeathHandlerTest` |
 | 6.1 Enderman teleport | **Partially fixed** — astral barrier/flicker teleport behavior extracted | `ab5f3a1` | `EndermanTeleportHandlerTest` |
 | 6.1 Living hurt handling | **Partially fixed** — armor/shield/contingency damage modifiers extracted | `47234c4` | `LivingHurtHandlerTest` |
+| 6.1 Handler split complete | **Fixed** — all event handlers moved; `AMEventHandler` is shared state/helpers only | `12e0951`, `24b1d02` | unit + game suites |
 | 6.1 Handler section extraction | **Partially fixed** — `onEntityLiving` fully decomposed into named sections; other event families remain | `c8e815f`, `3cb040e`, `6bb2836`, `01e293e`, `6817ebc`, `a9c056a`, `5e101ac`, `b1c6314`, `3f47f30`, `3689056`, `9b76b22`, `aaeaf3b`, `388e527`, `6227d51` | `AMEventHandlerPerfGuardTest` |
 | 6.4 Packet payload validation | **Partially fixed** — 1 MiB cap before payload allocation on both processors | `092f9ea` | `PacketValidationTest` |
 | 6.4 Strict packet reads | **Fixed for both processors** — failure guards across server and client packet handlers | `74fc17f`, `e10b97c`, `eadef7a` | `AMDataReaderTest`, `AMPacketProcessorServerStrictReadTest`, `AMPacketProcessorClientStrictReadTest` |
@@ -873,9 +874,9 @@ See 3.4. Every tick, per block. This is likely the single largest source of pack
 
 `AMEventHandler.java` is 2,161 lines and handles potions, souls, death/clone, combat, buffs, adjacency/spatial mechanics, block protection, world interactions, and dozens of unrelated events. Split it into focused classes (`PlayerLifecycleHandler`, `CombatEventHandler`, `TimeEffectsHandler`, `SpatialVortexHandler`, `ShieldHandler`, `BucketHandler`, etc.). This will make the static-state leaks and side guards reviewable in isolation.
 
-> **Status: Partially fixed.** `onEntityLiving` is fully decomposed into named sections, and all other event families now
-> live in focused handler classes. `AMEventHandler` still contains `onEntityLiving` plus its shared helper/state code
-> (1,325 lines), so the class split is not quite complete.
+> **Status: Fixed.** Every event handler now lives in a focused handler class, including `onEntityLiving` in
+> `LivingUpdateHandler`. `AMEventHandler` is reduced to shared transient state and helper methods (491 lines); moving
+> that state into a world-scoped manager is §6.2's responsibility.
 
 ### 6.2 Introduce a world-scoped manager for AM2 state
 
