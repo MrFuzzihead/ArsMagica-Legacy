@@ -1,6 +1,7 @@
 package am2.power;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -223,28 +224,27 @@ public class PowerNodeEntry {
         }
 
         // power paths
-        // locate list of power paths
-        // removeTag(0) below drains the list while walking it; copy so the caller's NBT is not destroyed.
-        NBTTagList powerPathList = (NBTTagList) compound.getTagList("powerPathList", Constants.NBT.TAG_COMPOUND)
-            .copy();
+        // locate list of power paths. Read it in place; removing entries from the caller's list used to destroy it.
+        NBTTagList powerPathList = compound.getTagList("powerPathList", Constants.NBT.TAG_COMPOUND);
         // sanity check
         if (powerPathList != null) {
             // spin through list
             for (int i = 0; i < powerPathList.tagCount(); ++i) {
                 // reference current node
-                NBTTagCompound powerPathEntry = (NBTTagCompound) powerPathList.getCompoundTagAt(i);
+                NBTTagCompound powerPathEntry = powerPathList.getCompoundTagAt(i);
                 // get the power type
                 PowerTypes type = PowerTypes.getByID(powerPathEntry.getInteger("powerType"));
-                // get the list of node paths for this power type
-                NBTTagList pathNodes = powerPathEntry.getTagList("nodePaths", Constants.NBT.TAG_LIST);
+                // copy only this type's path list; consume the copy from the end so removal is O(1)
+                NBTTagList pathNodes = (NBTTagList) powerPathEntry.getTagList("nodePaths", Constants.NBT.TAG_LIST)
+                    .copy();
                 // initialize list of paths
                 ArrayList<LinkedList<AMVector3>> pathsList = new ArrayList<LinkedList<AMVector3>>();
                 // sanity check
                 if (pathNodes != null) {
-                    // spin through node paths
-                    while (pathNodes.tagCount() > 0) {
+                    // spin through node paths in reverse, then restore NBT order
+                    for (int p = pathNodes.tagCount() - 1; p >= 0; --p) {
                         // reference current node
-                        NBTTagList nodeList = (NBTTagList) pathNodes.removeTag(0);
+                        NBTTagList nodeList = (NBTTagList) pathNodes.removeTag(p);
                         // initialize linked list to hold the path
                         LinkedList<AMVector3> powerPath = new LinkedList<AMVector3>();
                         // sanity check
@@ -262,6 +262,7 @@ public class PowerNodeEntry {
                             pathsList.add(powerPath);
                         }
                     }
+                    Collections.reverse(pathsList);
 
                     // register the list of paths and power type
                     nodePaths.put(type, pathsList);
