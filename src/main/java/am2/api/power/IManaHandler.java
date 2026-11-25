@@ -2,6 +2,7 @@ package am2.api.power;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
+@Deprecated
 public interface IManaHandler {
 
     /**

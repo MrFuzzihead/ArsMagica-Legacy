@@ -10,6 +10,7 @@ import net.minecraftforge.common.util.ForgeDirection;
  *
  * 
  */
+@Deprecated
 public class TileManaHandler extends TileEntity implements IManaHandler {
 
     protected ManaContainer tank;

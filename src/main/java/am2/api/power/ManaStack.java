@@ -13,6 +13,7 @@ import cpw.mods.fml.common.registry.RegistryDelegate;
  * {@link #isManaStackIdentical(ManaStack)} to determine if ManaID, Amount and NBT Tag are all
  * equal.
  */
+@Deprecated
 public class ManaStack {
 
     private final Mana mana;

@@ -14,6 +14,7 @@ import cpw.mods.fml.common.registry.RegistryDelegate;
 
 // Handles Mana registrations. Mana MUST be registered in order to function.
 
+@Deprecated
 public class ManaRegistry {
 
     static int maxID = 0;

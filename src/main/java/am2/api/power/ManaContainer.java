@@ -9,6 +9,7 @@ import net.minecraft.tileentity.TileEntity;
  * @author King Lemming, cpw (LiquidTank)
  *
  */
+@Deprecated
 public class ManaContainer implements IManaContainer {
 
     protected ManaStack mana;

@@ -10,6 +10,7 @@ import net.minecraft.world.World;
  * This class is a mana equivalent to "Item." It describes the nature of a mana
  * and contains its general properties.
  */
+@Deprecated
 public class Mana {
 
     /** The unique identification name for this mana. */
