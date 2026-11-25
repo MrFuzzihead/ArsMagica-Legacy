@@ -3,6 +3,7 @@ package am2;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -804,20 +805,25 @@ public class AMEventHandler {
     }
 
     static final int MAX_ACCELERATED_TILE_KEYS = 256;
-    /**
-     * Parsed accelerated-tile keys. The raw strings live in player extra-properties and stay stable for the effect's
-     * duration, so caching avoids splitting/parsing the same key every tick. Bounded and server-thread only.
-     */
-    private static final LinkedHashMap<String, AcceleratedTileKey> acceleratedTileKeys = new LinkedHashMap<String, AcceleratedTileKey>(
-        64,
-        0.75F,
-        true) {
+
+    private static final class BoundedKeyCache<V> extends LinkedHashMap<String, V> {
+
+        private static final long serialVersionUID = 1L;
+
+        private BoundedKeyCache() {
+            super(64, 0.75F, true);
+        }
 
         @Override
-        protected boolean removeEldestEntry(Map.Entry<String, AcceleratedTileKey> eldest) {
+        protected boolean removeEldestEntry(Map.Entry<String, V> eldest) {
             return size() > MAX_ACCELERATED_TILE_KEYS;
         }
-    };
+    }
+
+    private static final BoundedKeyCache<AcceleratedTileKey> acceleratedTileKeys = new BoundedKeyCache<AcceleratedTileKey>();
+    private static final BoundedKeyCache<AcceleratedEntityKey> acceleratedEntityKeys = new BoundedKeyCache<AcceleratedEntityKey>();
+    private static final BoundedKeyCache<SpatialVortexKey> spatialVortexKeys = new BoundedKeyCache<SpatialVortexKey>();
+    private static final BoundedKeyCache<TimedBlockKey> timedBlockKeys = new BoundedKeyCache<TimedBlockKey>();
 
     static AcceleratedTileKey acceleratedTileKey(String raw) {
         AcceleratedTileKey cached = acceleratedTileKeys.get(raw);
@@ -830,12 +836,52 @@ public class AMEventHandler {
         return parsed;
     }
 
+    static AcceleratedEntityKey acceleratedEntityKey(String raw) {
+        AcceleratedEntityKey cached = acceleratedEntityKeys.get(raw);
+        if (cached != null) return cached;
+
+        AcceleratedEntityKey parsed = AcceleratedEntityKey.parse(raw);
+        if (parsed != null) {
+            acceleratedEntityKeys.put(raw, parsed);
+        }
+        return parsed;
+    }
+
+    static SpatialVortexKey spatialVortexKey(String raw) {
+        SpatialVortexKey cached = spatialVortexKeys.get(raw);
+        if (cached != null) return cached;
+
+        SpatialVortexKey parsed = SpatialVortexKey.parse(raw);
+        if (parsed != null) {
+            spatialVortexKeys.put(raw, parsed);
+        }
+        return parsed;
+    }
+
+    static TimedBlockKey timedBlockKey(String raw) {
+        TimedBlockKey cached = timedBlockKeys.get(raw);
+        if (cached != null) return cached;
+
+        TimedBlockKey parsed = TimedBlockKey.parse(raw);
+        if (parsed != null) {
+            timedBlockKeys.put(raw, parsed);
+        }
+        return parsed;
+    }
+
     static int acceleratedTileKeyCacheSize() {
         return acceleratedTileKeys.size();
     }
 
     static void clearAcceleratedTileKeyCache() {
         acceleratedTileKeys.clear();
+    }
+
+    static void clearParsedEffectKeyCaches() {
+        acceleratedTileKeys.clear();
+        acceleratedEntityKeys.clear();
+        spatialVortexKeys.clear();
+        timedBlockKeys.clear();
     }
 
     static final class AcceleratedTileKey {
@@ -868,6 +914,94 @@ public class AMEventHandler {
             } catch (NumberFormatException e) {
                 return null;
             }
+        }
+    }
+
+    static final class AcceleratedEntityKey {
+
+        final UUID entityUUID;
+        final int power;
+
+        private AcceleratedEntityKey(UUID entityUUID, int power) {
+            this.entityUUID = entityUUID;
+            this.power = power;
+        }
+
+        static AcceleratedEntityKey parse(String raw) {
+            if (raw == null) return null;
+            String[] parts = raw.split("_");
+            if (parts.length < 5) return null;
+            UUID uuid = parseUUID(parts[4]);
+            if (uuid == null) return null;
+            try {
+                return new AcceleratedEntityKey(uuid, Integer.parseInt(parts[3]));
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+    }
+
+    static final class SpatialVortexKey {
+
+        final int x;
+        final int y;
+        final int z;
+        final int dimension;
+
+        private SpatialVortexKey(int x, int y, int z, int dimension) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.dimension = dimension;
+        }
+
+        static SpatialVortexKey parse(String raw) {
+            if (raw == null) return null;
+            String[] parts = raw.split("_");
+            if (parts.length < 5) return null;
+            try {
+                return new SpatialVortexKey(
+                    Integer.parseInt(parts[1]),
+                    Integer.parseInt(parts[2]),
+                    Integer.parseInt(parts[3]),
+                    Integer.parseInt(parts[4]));
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+    }
+
+    static final class TimedBlockKey {
+
+        final int x;
+        final int y;
+        final int z;
+        final int dimension;
+
+        private TimedBlockKey(int x, int y, int z, int dimension) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.dimension = dimension;
+        }
+
+        static TimedBlockKey parse(String raw) {
+            if (raw == null) return null;
+            String[] parts = raw.split("_");
+            if (parts.length < 6) return null;
+            try {
+                return new TimedBlockKey(
+                    Integer.parseInt(parts[2]),
+                    Integer.parseInt(parts[3]),
+                    Integer.parseInt(parts[4]),
+                    Integer.parseInt(parts[5]));
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        String representation() {
+            return x + "_" + y + "_" + z + "_" + dimension;
         }
     }
 
@@ -975,24 +1109,20 @@ public class AMEventHandler {
                         acceleratedBlocks.clear();
                     }
                     for (Map.Entry<String, String> entry : acceleratedEntities.entrySet()) {
-                        String[] entryvalues = entry.getKey()
-                            .split("_");
-                        UUID entityUUID = parseUUID(entryvalues[4]);
-                        if (entityUUID == null) {
+                        AcceleratedEntityKey key = acceleratedEntityKey(entry.getKey());
+                        if (key == null) {
                             // Do not leave malformed legacy data in a live extra-property map.
                             extendedProperties.removeFromExtraVariables(entry.getKey());
                             continue;
                         }
-                        if (Integer.parseInt(entry.getValue()) < 3) {
+                        int remaining = Integer.parseInt(entry.getValue());
+                        if (remaining < 3) {
                             extendedProperties.removeFromExtraVariables(entry.getKey());
-                            acceleratedEntitiesUUIDs.remove(entityUUID);
+                            acceleratedEntitiesUUIDs.remove(key.entityUUID);
                         } else {
-                            extendedProperties.addToExtraVariables(
-                                entry.getKey(),
-                                String.valueOf(Integer.parseInt(entry.getValue()) - 5)); // entryvalue 4 is uuid, 3 is
-                                                                                         // power
-                            if (acceleratedEntitiesUUIDs.get(entityUUID) == null) {
-                                acceleratedEntitiesUUIDs.put(entityUUID, Integer.valueOf(entryvalues[3]));
+                            extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(remaining - 5));
+                            if (acceleratedEntitiesUUIDs.get(key.entityUUID) == null) {
+                                acceleratedEntitiesUUIDs.put(key.entityUUID, Integer.valueOf(key.power));
                             }
                         }
                     }
@@ -1010,35 +1140,30 @@ public class AMEventHandler {
                         slowedBlocks.clear();
                     }
                     for (Map.Entry<String, String> entry : slowedEntities.entrySet()) {
-                        String[] entryvalues = entry.getKey()
-                            .split("_");
-                        UUID entityUUID = parseUUID(entryvalues[4]);
-                        if (entityUUID == null) {
+                        AcceleratedEntityKey key = acceleratedEntityKey(entry.getKey());
+                        if (key == null) {
                             // Do not leave malformed legacy data in a live extra-property map.
                             extendedProperties.removeFromExtraVariables(entry.getKey());
                             continue;
                         }
-                        if (Integer.parseInt(entry.getValue()) < 3) {
+                        int remaining = Integer.parseInt(entry.getValue());
+                        if (remaining < 3) {
                             extendedProperties.removeFromExtraVariables(entry.getKey());
-                            slowedEntitiesUUIDs.remove(entityUUID);
+                            slowedEntitiesUUIDs.remove(key.entityUUID);
                         } else {
-                            extendedProperties.addToExtraVariables(
-                                entry.getKey(),
-                                String.valueOf(Integer.parseInt(entry.getValue()) - 5)); // entryvalue 4 is uuid, 3 is
-                                                                                         // power
-                            if (slowedEntitiesUUIDs.get(entityUUID) == null) {
-                                slowedEntitiesUUIDs.put(entityUUID, Integer.valueOf(entryvalues[3]));
+                            extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(remaining - 5));
+                            if (slowedEntitiesUUIDs.get(key.entityUUID) == null) {
+                                slowedEntitiesUUIDs.put(key.entityUUID, Integer.valueOf(key.power));
                             }
                         }
                     }
 
                     for (Map.Entry<String, String> entry : slowedBlocks.entrySet()) {
-                        if (Integer.parseInt(entry.getValue()) < 3) {
+                        int remaining = Integer.parseInt(entry.getValue());
+                        if (remaining < 3) {
                             extendedProperties.removeFromExtraVariables(entry.getKey());
                         } else {
-                            extendedProperties.addToExtraVariables(
-                                entry.getKey(),
-                                String.valueOf(Integer.parseInt(entry.getValue()) - 5));
+                            extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(remaining - 5));
                         }
                     }
                 }
@@ -1046,6 +1171,15 @@ public class AMEventHandler {
                 if (enable_spatialVortex) {
                     Map<String, String> spatialVortices = extendedProperties
                         .getExtraVariablesContains("spatialvortex_");
+                    for (Iterator<Map.Entry<String, String>> it = spatialVortices.entrySet()
+                        .iterator(); it.hasNext();) {
+                        Map.Entry<String, String> entry = it.next();
+                        if (spatialVortexKey(entry.getKey()) == null) {
+                            // Do not leave malformed legacy data in a live extra-property map.
+                            extendedProperties.removeFromExtraVariables(entry.getKey());
+                            it.remove();
+                        }
+                    }
                     if (!spatialVortices.isEmpty()) {
                         int[] totalenergy = new int[spatialVortices.size()];
                         int[] totalenergyExternallyLimited = new int[spatialVortices.size()];
@@ -1054,12 +1188,12 @@ public class AMEventHandler {
 
                         int vIndex = 0;
                         for (Map.Entry<String, String> entry : spatialVortices.entrySet()) {
-                            String[] entryvalues = entry.getKey()
-                                .split("_");
-                            int x = Integer.parseInt(entryvalues[1]);
-                            int y = Integer.parseInt(entryvalues[2]);
-                            int z = Integer.parseInt(entryvalues[3]);
-                            World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
+                            SpatialVortexKey key = spatialVortexKey(entry.getKey());
+                            if (key == null) continue;
+                            int x = key.x;
+                            int y = key.y;
+                            int z = key.z;
+                            World thisdim = DimensionManager.getWorld(key.dimension);
                             totalenergy[vIndex] = 0;
                             totaletheriumdark[vIndex] = 0;
                             totaletheriumlight[vIndex] = 0;
@@ -1136,12 +1270,12 @@ public class AMEventHandler {
                                     System.out.println(minE[0]);
                                 }
                                 if (tIndex == minE[0]) {
-                                    String[] entryvalues = entry.getKey()
-                                        .split("_");
-                                    int x = Integer.parseInt(entryvalues[1]);
-                                    int y = Integer.parseInt(entryvalues[2]);
-                                    int z = Integer.parseInt(entryvalues[3]);
-                                    World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
+                                    SpatialVortexKey key = spatialVortexKey(entry.getKey());
+                                    if (key == null) continue;
+                                    int x = key.x;
+                                    int y = key.y;
+                                    int z = key.z;
+                                    World thisdim = DimensionManager.getWorld(key.dimension);
                                     for (int xadd = -1; xadd <= 1; xadd += 2) {
                                         for (int zadd = -1; zadd <= 1; zadd += 2) {
                                             TileEntity te = getTileEntitySafe(thisdim, x + xadd, y, z + zadd);
@@ -1177,12 +1311,12 @@ public class AMEventHandler {
                             int toSubtractE = toTransferEActual;
                             for (Map.Entry<String, String> entry : spatialVortices.entrySet()) {
                                 if (localIndex == maxE[0]) {
-                                    String[] entryvalues = entry.getKey()
-                                        .split("_");
-                                    int x = Integer.parseInt(entryvalues[1]);
-                                    int y = Integer.parseInt(entryvalues[2]);
-                                    int z = Integer.parseInt(entryvalues[3]);
-                                    World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
+                                    SpatialVortexKey key = spatialVortexKey(entry.getKey());
+                                    if (key == null) continue;
+                                    int x = key.x;
+                                    int y = key.y;
+                                    int z = key.z;
+                                    World thisdim = DimensionManager.getWorld(key.dimension);
                                     for (int xadd = -1; xadd <= 1; xadd += 2) {
                                         for (int zadd = -1; zadd <= 1; zadd += 2) {
                                             TileEntity te = getTileEntitySafe(thisdim, x + xadd, y, z + zadd);
@@ -1203,12 +1337,12 @@ public class AMEventHandler {
                             int toSubtractD = toTransferD;
                             for (Map.Entry<String, String> entry : spatialVortices.entrySet()) {
                                 if (localIndex == maxD[0]) {
-                                    String[] entryvalues = entry.getKey()
-                                        .split("_");
-                                    int x = Integer.parseInt(entryvalues[1]);
-                                    int y = Integer.parseInt(entryvalues[2]);
-                                    int z = Integer.parseInt(entryvalues[3]);
-                                    World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
+                                    SpatialVortexKey key = spatialVortexKey(entry.getKey());
+                                    if (key == null) continue;
+                                    int x = key.x;
+                                    int y = key.y;
+                                    int z = key.z;
+                                    World thisdim = DimensionManager.getWorld(key.dimension);
                                     for (int xadd = -1; xadd <= 1; xadd += 2) {
                                         for (int zadd = -1; zadd <= 1; zadd += 2) {
                                             TileEntity te = getTileEntitySafe(thisdim, x + xadd, y, z + zadd);
@@ -1230,12 +1364,12 @@ public class AMEventHandler {
                             int toSubtractL = toTransferL;
                             for (Map.Entry<String, String> entry : spatialVortices.entrySet()) {
                                 if (localIndex == maxL[0]) {
-                                    String[] entryvalues = entry.getKey()
-                                        .split("_");
-                                    int x = Integer.parseInt(entryvalues[1]);
-                                    int y = Integer.parseInt(entryvalues[2]);
-                                    int z = Integer.parseInt(entryvalues[3]);
-                                    World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
+                                    SpatialVortexKey key = spatialVortexKey(entry.getKey());
+                                    if (key == null) continue;
+                                    int x = key.x;
+                                    int y = key.y;
+                                    int z = key.z;
+                                    World thisdim = DimensionManager.getWorld(key.dimension);
                                     for (int xadd = -1; xadd <= 1; xadd += 2) {
                                         for (int zadd = -1; zadd <= 1; zadd += 2) {
                                             TileEntity te = getTileEntitySafe(thisdim, x + xadd, y, z + zadd);
@@ -1259,12 +1393,12 @@ public class AMEventHandler {
                             int fIndex = 0;
                             for (Map.Entry<String, String> entry : spatialVortices.entrySet()) {
                                 if (fIndex == minE[0] && ELeft) {
-                                    String[] entryvalues = entry.getKey()
-                                        .split("_");
-                                    int x = Integer.parseInt(entryvalues[1]);
-                                    int y = Integer.parseInt(entryvalues[2]);
-                                    int z = Integer.parseInt(entryvalues[3]);
-                                    World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
+                                    SpatialVortexKey key = spatialVortexKey(entry.getKey());
+                                    if (key == null) continue;
+                                    int x = key.x;
+                                    int y = key.y;
+                                    int z = key.z;
+                                    World thisdim = DimensionManager.getWorld(key.dimension);
                                     for (int xadd = -1; xadd <= 1; xadd += 2) {
                                         for (int zadd = -1; zadd <= 1; zadd += 2) {
                                             TileEntity te = getTileEntitySafe(thisdim, x + xadd, y, z + zadd);
@@ -1285,12 +1419,12 @@ public class AMEventHandler {
                                     if (AMCore.config.getDebugVortex()) {
                                         System.out.println(fIndex + " fIndex when minD");
                                     }
-                                    String[] entryvalues = entry.getKey()
-                                        .split("_");
-                                    int x = Integer.parseInt(entryvalues[1]);
-                                    int y = Integer.parseInt(entryvalues[2]);
-                                    int z = Integer.parseInt(entryvalues[3]);
-                                    World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
+                                    SpatialVortexKey key = spatialVortexKey(entry.getKey());
+                                    if (key == null) continue;
+                                    int x = key.x;
+                                    int y = key.y;
+                                    int z = key.z;
+                                    World thisdim = DimensionManager.getWorld(key.dimension);
                                     for (int xadd = -1; xadd <= 1; xadd += 2) {
                                         for (int zadd = -1; zadd <= 1; zadd += 2) {
                                             TileEntity te = getTileEntitySafe(thisdim, x + xadd, y, z + zadd);
@@ -1309,12 +1443,12 @@ public class AMEventHandler {
                                     if (AMCore.config.getDebugVortex()) {
                                         System.out.println(fIndex + " fIndex when minL");
                                     }
-                                    String[] entryvalues = entry.getKey()
-                                        .split("_");
-                                    int x = Integer.parseInt(entryvalues[1]);
-                                    int y = Integer.parseInt(entryvalues[2]);
-                                    int z = Integer.parseInt(entryvalues[3]);
-                                    World thisdim = DimensionManager.getWorld(Integer.parseInt(entryvalues[4]));
+                                    SpatialVortexKey key = spatialVortexKey(entry.getKey());
+                                    if (key == null) continue;
+                                    int x = key.x;
+                                    int y = key.y;
+                                    int z = key.z;
+                                    World thisdim = DimensionManager.getWorld(key.dimension);
                                     for (int xadd = -1; xadd <= 1; xadd += 2) {
                                         for (int zadd = -1; zadd <= 1; zadd += 2) {
                                             TileEntity te = getTileEntitySafe(thisdim, x + xadd, y, z + zadd);
@@ -1340,21 +1474,21 @@ public class AMEventHandler {
                         .getExtraVariablesContains("timefortified_tile_");
 
                     for (Map.Entry<String, String> entry : loadedBlocks.entrySet()) {
-                        if (Integer.parseInt(entry.getValue()) < 3) {
+                        int remaining = Integer.parseInt(entry.getValue());
+                        if (remaining < 3) {
                             extendedProperties.removeFromExtraVariables(entry.getKey());
                             if (!world.isRemote) {
-                                String[] entryvalues = entry.getKey()
-                                    .split("_");
-                                int x = Integer.parseInt(entryvalues[2]);
-                                int y = Integer.parseInt(entryvalues[3]);
-                                int z = Integer.parseInt(entryvalues[4]);
-                                int dim = Integer.parseInt(entryvalues[5]);
-                                releaseFortifiedChunk(DimensionManager.getWorld(dim), x, y, z);
+                                TimedBlockKey key = timedBlockKey(entry.getKey());
+                                if (key != null) {
+                                    releaseFortifiedChunk(
+                                        DimensionManager.getWorld(key.dimension),
+                                        key.x,
+                                        key.y,
+                                        key.z);
+                                }
                             }
                         } else {
-                            extendedProperties.addToExtraVariables(
-                                entry.getKey(),
-                                String.valueOf(Integer.parseInt(entry.getValue()) - 5));
+                            extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(remaining - 5));
                         }
                     }
                 }
@@ -1362,30 +1496,22 @@ public class AMEventHandler {
                     Map<String, String> shieldedBlocks = extendedProperties.getExtraVariablesContains("shielded_tile_");
 
                     for (Map.Entry<String, String> entry : shieldedBlocks.entrySet()) {
-                        if (Integer.parseInt(entry.getValue()) < 3) {
+                        TimedBlockKey key = timedBlockKey(entry.getKey());
+                        if (key == null) {
+                            // Do not leave malformed legacy data in a live extra-property map.
+                            extendedProperties.removeFromExtraVariables(entry.getKey());
+                            continue;
+                        }
+                        int remaining = Integer.parseInt(entry.getValue());
+                        if (remaining < 3) {
                             extendedProperties.removeFromExtraVariables(entry.getKey());
                             if (!world.isRemote) {
-                                String[] entryvalues = entry.getKey()
-                                    .split("_");
-                                int x = Integer.parseInt(entryvalues[2]);
-                                int y = Integer.parseInt(entryvalues[3]);
-                                int z = Integer.parseInt(entryvalues[4]);
-                                int dim = Integer.parseInt(entryvalues[5]);
-                                forceShielded.remove(x + "_" + y + "_" + z + "_" + dim);
+                                forceShielded.remove(key.representation());
                             }
                         } else {
-                            String[] entryvalues = entry.getKey()
-                                .split("_");
-                            String represent = Integer.valueOf(entryvalues[2]) + "_"
-                                + Integer.valueOf(entryvalues[3])
-                                + "_"
-                                + Integer.valueOf(entryvalues[4])
-                                + "_"
-                                + Integer.valueOf(entryvalues[5]);
+                            String represent = key.representation();
                             if (!(forceShielded.contains(represent))) forceShielded.add(represent);
-                            extendedProperties.addToExtraVariables(
-                                entry.getKey(),
-                                String.valueOf(Integer.parseInt(entry.getValue()) - 5));
+                            extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(remaining - 5));
                         }
                     }
                 }
