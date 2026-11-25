@@ -952,7 +952,7 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 
 ### Current state
 
-- 399 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
+- 410 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
 - The server game test has 142 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
 - The client game test has 23 assertions at the main menu (proxy, key bindings, creative tabs, localisation).
 - Coverage is 177/69,939 lines (0.25%), with a 0.2% floor. The game-test coverage report is generated but not enforced.
@@ -968,6 +968,10 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 > needs the Minecraft item registry.
 3. **Packet authority tests** — unit-test `SkillData.handlePacketData` with a `CLIENT_SYNC` payload and assert the server rejects/ignores it; test `TileEntityInscriptionTable.HandleUpdatePacket` with a non-player entity ID and with an invalid recipe; test `AMPacketProcessorServer.handleDecoBlockUpdate` with a far-away TE.
 4. **NBT round-trip tests** — `ExtendedProperties` with non-empty `extra_properties` + compendium entries + all five contingencies; `SkillData` with corrupt `SpellPoints`/`PrimarySkillTree`; `AffinityData` with an out-of-range ordinal; `RiftStorage` with duplicate/invalid slot indices.
+
+> **Status: Partially fixed.** `SkillDataNbtTest` covers spell-point/tree round trips and corrupt defaults;
+> `AffinityDataNbtTest` covers affinity depth/lock round trips and unknown names; `RiftStorageNbtTest` covers invalid,
+> duplicate and missing slot indices. The full `ExtendedProperties` round trip remains open.
 5. **Power system tests** — comparator ordering with multiple insertion orders; `PowerNodeEntry` path save/load; `PowerNodeCache` save → chunk unload → world save → reload; two dimensions with the same region coordinates; two different worlds with the same dimension ID.
 6. **Spell tests** — `constructSpellStack` with duplicate modifiers, multiple shape groups, a Summon in a later stage; `parseSpellRequirements` with malformed arrays; `changeEnchantmentsForShapeGroup` with fortune/silk/looting combinations; `SpellValidator` stage rules; `createSpellStack` with an empty recipe.
 7. **Item tests** — `ItemSpellBook` active slot with `-1`, `8`, `39`, `100`; a non-spell item in the active slot; `ItemSpellBook.SetNextSlot` return value; `ItemManaStone`/`ItemSoulspike` negative NBT values.
