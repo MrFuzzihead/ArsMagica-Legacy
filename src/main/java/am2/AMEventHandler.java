@@ -1018,50 +1018,7 @@ public class AMEventHandler {
         }
     }
 
-    @SubscribeEvent
-    public void onEntityLiving(LivingUpdateEvent event) {
-
-        EntityLivingBase ent = event.entityLiving;
-
-        if (!slowedEntitiesUUIDs.isEmpty()) {
-            Integer updateInterval = slowedEntitiesUUIDs.get(ent.getUniqueID());
-            if (updateInterval != null
-                && !SkillTreeManager.instance.isSkillDisabled(SkillManager.instance.getSkill("DiluteTime"))
-                && updateInterval > 0
-                && ent.ticksExisted % updateInterval != 0) {
-                event.setCanceled(true);
-                return;
-            }
-        }
-
-        World world = ent.worldObj;
-
-        BuffStatModifiers.instance.applyStatModifiersBasedOnBuffs(ent);
-
-        ExtendedProperties extendedProperties;
-        extendedProperties = ExtendedProperties.For(ent);
-        extendedProperties.handleSpecialSyncData();
-        extendedProperties.manaBurnoutTick();
-
-        if (ent instanceof EntityPlayer && extendedProperties.hasExtraVariable("ethereal")) { // ethereal form handling
-            int durationLeft = Integer.parseInt(extendedProperties.getExtraVariable("ethereal"));
-            EntityPlayer player = (EntityPlayer) ent;
-            if (durationLeft < 3) {
-                // deactivate form
-                ItemSoulspike.removeTagFromBoots(player.inventory.armorInventory[0]);
-                player.capabilities.disableDamage = false;
-                player.capabilities.allowEdit = true;
-                player.capabilities.isFlying = false;
-                player.noClip = false;
-                player.setInvisible(false);
-                extendedProperties.removeFromExtraVariables("ethereal");
-            } else {
-                // tick ethereal form
-                // decrease duration
-                extendedProperties.addToExtraVariables("ethereal", String.valueOf(durationLeft - 1));
-            }
-        }
-
+    void tickTimedEffects(EntityLivingBase ent, ExtendedProperties extendedProperties, World world) {
         Map<String, String> acceleratedBlocks = null;
         if (extendedProperties.hasTimedEffects() && shouldTickAcceleratedBlocks(world)) {
             // accelerated blocks and entities are done outside the 5-tick performance optimisation to make them smooth
@@ -1517,6 +1474,54 @@ public class AMEventHandler {
                 }
             }
         }
+
+    }
+
+    @SubscribeEvent
+    public void onEntityLiving(LivingUpdateEvent event) {
+
+        EntityLivingBase ent = event.entityLiving;
+
+        if (!slowedEntitiesUUIDs.isEmpty()) {
+            Integer updateInterval = slowedEntitiesUUIDs.get(ent.getUniqueID());
+            if (updateInterval != null
+                && !SkillTreeManager.instance.isSkillDisabled(SkillManager.instance.getSkill("DiluteTime"))
+                && updateInterval > 0
+                && ent.ticksExisted % updateInterval != 0) {
+                event.setCanceled(true);
+                return;
+            }
+        }
+
+        World world = ent.worldObj;
+
+        BuffStatModifiers.instance.applyStatModifiersBasedOnBuffs(ent);
+
+        ExtendedProperties extendedProperties;
+        extendedProperties = ExtendedProperties.For(ent);
+        extendedProperties.handleSpecialSyncData();
+        extendedProperties.manaBurnoutTick();
+
+        if (ent instanceof EntityPlayer && extendedProperties.hasExtraVariable("ethereal")) { // ethereal form handling
+            int durationLeft = Integer.parseInt(extendedProperties.getExtraVariable("ethereal"));
+            EntityPlayer player = (EntityPlayer) ent;
+            if (durationLeft < 3) {
+                // deactivate form
+                ItemSoulspike.removeTagFromBoots(player.inventory.armorInventory[0]);
+                player.capabilities.disableDamage = false;
+                player.capabilities.allowEdit = true;
+                player.capabilities.isFlying = false;
+                player.noClip = false;
+                player.setInvisible(false);
+                extendedProperties.removeFromExtraVariables("ethereal");
+            } else {
+                // tick ethereal form
+                // decrease duration
+                extendedProperties.addToExtraVariables("ethereal", String.valueOf(durationLeft - 1));
+            }
+        }
+
+        tickTimedEffects(ent, extendedProperties, world);
 
         // ================================================================================
 

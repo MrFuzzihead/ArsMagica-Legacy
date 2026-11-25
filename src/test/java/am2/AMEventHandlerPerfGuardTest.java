@@ -3,12 +3,16 @@ package am2;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.world.World;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import am2.playerextensions.ExtendedProperties;
 
 /**
  * The timed-effect bookkeeping in {@code onEntityLiving} mutates server worlds and reads server dimensions. These
@@ -56,6 +60,33 @@ public class AMEventHandlerPerfGuardTest {
 
         assertFalse(AMEventHandler.shouldTickAcceleratedBlocks(null));
         assertFalse(AMEventHandler.shouldTickTimedEffects(null));
+    }
+
+    @Test
+    public void timedEffectsMethodNoOpsWithoutTimedKeys() {
+        AMEventHandler handler = new AMEventHandler();
+        ExtendedProperties properties = new ExtendedProperties();
+        World serverWorld = mock(World.class);
+        serverWorld.isRemote = false;
+        EntityLivingBase entity = mock(EntityLivingBase.class);
+
+        handler.tickTimedEffects(entity, properties, serverWorld);
+
+        verifyNoInteractions(serverWorld, entity);
+    }
+
+    @Test
+    public void timedEffectsMethodNoOpsOnTheClient() {
+        AMEventHandler handler = new AMEventHandler();
+        ExtendedProperties properties = new ExtendedProperties();
+        properties.addToExtraVariables("shielded_tile_1_2_3_4", "10");
+        World clientWorld = mock(World.class);
+        clientWorld.isRemote = true;
+        EntityLivingBase entity = mock(EntityLivingBase.class);
+
+        handler.tickTimedEffects(entity, properties, clientWorld);
+
+        verifyNoInteractions(clientWorld, entity);
     }
 
     @Test
