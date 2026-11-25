@@ -789,6 +789,19 @@ public class AMEventHandler {
         return new int[] { indexForMax, max };
     }
 
+    /**
+     * Timed block/entity bookkeeping mutates server worlds and reads server-side dimensions. Clients only render the
+     * synced result, so skip the parsing and world lookups entirely there.
+     */
+    static boolean shouldTickAcceleratedBlocks(World world) {
+        return world != null && !world.isRemote && enabled_accelerate;
+    }
+
+    static boolean shouldTickTimedEffects(World world) {
+        return world != null && !world.isRemote
+            && (enabled_accelerate || enabled_slow || enable_spatialVortex || enabled_timeFortified || enabled_shield);
+    }
+
     @SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event) {
 
@@ -834,7 +847,7 @@ public class AMEventHandler {
         }
 
         Map<String, String> acceleratedBlocks = null;
-        if (enabled_accelerate) {
+        if (shouldTickAcceleratedBlocks(world)) {
             // accelerated blocks and entities are done outside the 5-tick performance optimisation to make them smooth
             acceleratedBlocks = extendedProperties.getExtraVariablesContains("accelerated_fast_tile_");
             for (Map.Entry<String, String> entry : acceleratedBlocks.entrySet()) {
@@ -871,7 +884,7 @@ public class AMEventHandler {
             // LivingUpdateEvent. Keeping the entity-list scan out of this hot path avoids the old L^2 behavior.
         }
 
-        if (enabled_accelerate || enabled_slow || enable_spatialVortex || enabled_timeFortified || enabled_shield) {
+        if (shouldTickTimedEffects(world)) {
             tick++;
             if (tick > 100000) tick = 0;
             if ((tick % ((ent.worldObj.playerEntities.size() + 1) * 5)) == 0) { // only does behavior every 5 player
