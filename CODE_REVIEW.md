@@ -91,6 +91,7 @@ and the automated tests that now cover the fix.
 | 6.1 Soulspike attacks | **Partially fixed** — soulspike on-hit logic extracted | `898455b` | `SoulspikeAttackHandlerTest` |
 | 6.1 Connection tickrate | **Partially fixed** — client connect/disconnect/login tickrate handling extracted | `e6266d5` | FML-runtime game tests only |
 | 6.1 Force-shield block protection | **Partially fixed** — protected block-break handling extracted | `fd3513b` | FML-runtime game tests only |
+| 6.1 Accelerated entity tick | **Partially fixed** — server-tick extra entity updates extracted | `1fce9b3` | `AcceleratedEntityTickHandlerTest` |
 | 6.1 Handler section extraction | **Partially fixed** — `onEntityLiving` fully decomposed into named sections; other event families remain | `c8e815f`, `3cb040e`, `6bb2836`, `01e293e`, `6817ebc`, `a9c056a`, `5e101ac`, `b1c6314`, `3f47f30`, `3689056`, `9b76b22`, `aaeaf3b`, `388e527`, `6227d51` | `AMEventHandlerPerfGuardTest` |
 | 6.4 Packet payload validation | **Partially fixed** — 1 MiB cap before payload allocation on both processors | `092f9ea` | `PacketValidationTest` |
 | 6.4 Strict packet reads | **Fixed for both processors** — failure guards across server and client packet handlers | `74fc17f`, `e10b97c`, `eadef7a` | `AMDataReaderTest`, `AMPacketProcessorServerStrictReadTest`, `AMPacketProcessorClientStrictReadTest` |
@@ -865,9 +866,9 @@ See 3.4. Every tick, per block. This is likely the single largest source of pack
 
 > **Status: Partially fixed.** `onEntityLiving` is fully decomposed into named sections, and bucket filling, potion
 > brewing, temporal-anchor cleanup, fury break-speed, mana cost, client overlays, item watching, entity construction,
-> summon drops, compendium pickup, soulspike attacks, connection tickrate and force-shield block protection now live in
-> focused handler classes. `AMEventHandler` still contains 13 event handlers and 1,976 lines, so the class split is not
-> complete.
+> summon drops, compendium pickup, soulspike attacks, connection tickrate, force-shield block protection and accelerated
+> entity ticking now live in focused handler classes. `AMEventHandler` still contains 12 event handlers and 1,950 lines,
+> so the class split is not complete.
 
 ### 6.2 Introduce a world-scoped manager for AM2 state
 
