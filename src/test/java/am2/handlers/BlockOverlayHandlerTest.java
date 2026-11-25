@@ -1,12 +1,15 @@
 package am2.handlers;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.event.RenderBlockOverlayEvent;
 import net.minecraftforge.client.event.RenderBlockOverlayEvent.OverlayType;
 
@@ -33,18 +36,40 @@ public class BlockOverlayHandlerTest {
     }
 
     @Test
+    public void waterOverlayIsSuppressedForWaterWalkingPlayers() {
+        EntityPlayer player = mock(EntityPlayer.class);
+        AffinityHelper.isNotInWaterActually.add(player);
+        try {
+            RenderBlockOverlayEvent event = cancelable(player, OverlayType.WATER);
+
+            new BlockOverlayHandler().onBlockOverlay(event);
+
+            assertTrue(event.isCanceled());
+        } finally {
+            AffinityHelper.isNotInWaterActually.remove(player);
+        }
+    }
+
+    @Test
+    public void fireOverlayIsSuppressedByTheArchmageHood() {
+        EntityPlayer player = mock(EntityPlayer.class);
+        player.inventory = new InventoryPlayer(player);
+        ItemStack hood = mock(ItemStack.class);
+        when(hood.getItem()).thenReturn(ItemsCommonProxy.archmageHood);
+        player.inventory.armorInventory[3] = hood;
+        RenderBlockOverlayEvent event = cancelable(player, OverlayType.FIRE);
+
+        new BlockOverlayHandler().onBlockOverlay(event);
+
+        assertTrue(event.isCanceled());
+    }
+
+    @Test
     public void normalWaterOverlayIsLeftAlone() {
         EntityPlayer player = mock(EntityPlayer.class);
-        RenderBlockOverlayEvent event = new RenderBlockOverlayEvent(
-            player,
-            0.0F,
-            OverlayType.WATER,
-            mock(Block.class),
-            0,
-            0,
-            0);
         AffinityHelper.isNotInWaterActually.remove(player);
 
+        RenderBlockOverlayEvent event = cancelable(player, OverlayType.WATER);
         new BlockOverlayHandler().onBlockOverlay(event);
 
         assertFalse(event.isCanceled());
@@ -54,17 +79,20 @@ public class BlockOverlayHandlerTest {
     public void fireOverlayRemainsWithoutTheHood() {
         EntityPlayer player = mock(EntityPlayer.class);
         player.inventory = new InventoryPlayer(player);
-        RenderBlockOverlayEvent event = new RenderBlockOverlayEvent(
-            player,
-            0.0F,
-            OverlayType.FIRE,
-            mock(Block.class),
-            0,
-            0,
-            0);
 
+        RenderBlockOverlayEvent event = cancelable(player, OverlayType.FIRE);
         new BlockOverlayHandler().onBlockOverlay(event);
 
         assertFalse(event.isCanceled());
+    }
+
+    private static RenderBlockOverlayEvent cancelable(EntityPlayer player, OverlayType type) {
+        return new RenderBlockOverlayEvent(player, 0.0F, type, mock(Block.class), 0, 0, 0) {
+
+            @Override
+            public boolean isCancelable() {
+                return true;
+            }
+        };
     }
 }
