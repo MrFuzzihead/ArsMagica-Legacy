@@ -1740,6 +1740,15 @@ public class AMEventHandler {
         }
     }
 
+    ExtendedProperties prepareEntityProperties(EntityLivingBase ent) {
+        BuffStatModifiers.instance.applyStatModifiersBasedOnBuffs(ent);
+
+        ExtendedProperties extendedProperties = ExtendedProperties.For(ent);
+        extendedProperties.handleSpecialSyncData();
+        extendedProperties.manaBurnoutTick();
+        return extendedProperties;
+    }
+
     @SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event) {
 
@@ -1752,12 +1761,7 @@ public class AMEventHandler {
 
         World world = ent.worldObj;
 
-        BuffStatModifiers.instance.applyStatModifiersBasedOnBuffs(ent);
-
-        ExtendedProperties extendedProperties;
-        extendedProperties = ExtendedProperties.For(ent);
-        extendedProperties.handleSpecialSyncData();
-        extendedProperties.manaBurnoutTick();
+        ExtendedProperties extendedProperties = prepareEntityProperties(ent);
 
         if (ent instanceof EntityPlayer && extendedProperties.hasExtraVariable("ethereal")) {
             tickEtherealForm((EntityPlayer) ent, extendedProperties);

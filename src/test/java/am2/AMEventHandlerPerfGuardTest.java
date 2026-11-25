@@ -2,6 +2,7 @@ package am2;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -43,19 +44,35 @@ public class AMEventHandlerPerfGuardTest {
     private boolean shield;
     private ArsMagicaPotion previousFlight;
     private ArsMagicaPotion previousLevitation;
+    private ArsMagicaPotion previousEntangled;
+    private ArsMagicaPotion previousFrostSlowed;
+    private ArsMagicaPotion previousFury;
+    private ArsMagicaPotion previousHaste;
 
     @Before
     public void stubPotionStatics() throws Exception {
         previousFlight = BuffList.flight;
         previousLevitation = BuffList.levitation;
+        previousEntangled = BuffList.entangled;
+        previousFrostSlowed = BuffList.frostSlowed;
+        previousFury = BuffList.fury;
+        previousHaste = BuffList.haste;
         setPotion("flight", mock(ArsMagicaPotion.class));
         setPotion("levitation", mock(ArsMagicaPotion.class));
+        setPotion("entangled", mock(ArsMagicaPotion.class));
+        setPotion("frostSlowed", mock(ArsMagicaPotion.class));
+        setPotion("fury", mock(ArsMagicaPotion.class));
+        setPotion("haste", mock(ArsMagicaPotion.class));
     }
 
     @After
     public void restorePotionStatics() throws Exception {
         setPotion("flight", previousFlight);
         setPotion("levitation", previousLevitation);
+        setPotion("entangled", previousEntangled);
+        setPotion("frostSlowed", previousFrostSlowed);
+        setPotion("fury", previousFury);
+        setPotion("haste", previousHaste);
     }
 
     private static void setPotion(String fieldName, ArsMagicaPotion value) throws Exception {
@@ -104,6 +121,20 @@ public class AMEventHandlerPerfGuardTest {
 
         assertFalse(AMEventHandler.shouldTickAcceleratedBlocks(null));
         assertFalse(AMEventHandler.shouldTickTimedEffects(null));
+    }
+
+    @Test
+    public void prepareEntityPropertiesRunsTheBootstrapAndReturnsTheStore() {
+        AMEventHandler handler = new AMEventHandler();
+        ExtendedProperties properties = mock(ExtendedProperties.class);
+        EntityLivingBase entity = mock(EntityLivingBase.class);
+        when(entity.getExtendedProperties(ExtendedProperties.identifier)).thenReturn(properties);
+
+        ExtendedProperties result = handler.prepareEntityProperties(entity);
+
+        assertSame(properties, result);
+        verify(properties).handleSpecialSyncData();
+        verify(properties).manaBurnoutTick();
     }
 
     @Test
