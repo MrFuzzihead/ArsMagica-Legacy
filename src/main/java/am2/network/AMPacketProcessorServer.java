@@ -313,10 +313,12 @@ public class AMPacketProcessorServer {
 
     private void handleSetMagiciansWorkbenchRecipe(byte[] data, EntityPlayerMP player) {
         if (player.openContainer instanceof ContainerMagiciansWorkbench) {
+            ContainerMagiciansWorkbench container = (ContainerMagiciansWorkbench) player.openContainer;
+            if (!PacketAuthority.isWithinReach(player, container.getWorkbench())) return;
             AMDataReader rdr = new AMDataReader(data, false);
             int index = rdr.getInt();
             if (rdr.hasFailed()) return;
-            ((ContainerMagiciansWorkbench) player.openContainer).moveRecipeToCraftingGrid(index);
+            container.moveRecipeToCraftingGrid(index);
         }
     }
 
@@ -403,12 +405,7 @@ public class AMPacketProcessorServer {
     private void handleSpellCustomize(byte[] data, EntityPlayerMP player) {
         AMDataReader rdr = new AMDataReader(data, false);
         int entityID = rdr.getInt();
-
-        EntityLivingBase ent = getEntityByID(entityID);
-
-        if (player == null) {
-            return;
-        }
+        if (!PacketAuthority.isSelf(player, entityID)) return;
 
         int IIconIndex = rdr.getInt();
         String name = rdr.getString();
