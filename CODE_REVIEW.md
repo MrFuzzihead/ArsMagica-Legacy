@@ -102,6 +102,7 @@ and the automated tests that now cover the fix.
 | 6.1 Enderman teleport | **Partially fixed** — astral barrier/flicker teleport behavior extracted | `ab5f3a1` | `EndermanTeleportHandlerTest` |
 | 6.1 Living hurt handling | **Partially fixed** — armor/shield/contingency damage modifiers extracted | `47234c4` | `LivingHurtHandlerTest` |
 | 6.1 Handler split complete | **Fixed** — all event handlers moved; `AMEventHandler` is shared state/helpers only | `12e0951`, `24b1d02` | unit + game suites |
+| 6.2 World-scoped force shields | **Partially fixed** — force-shield state moved to `WorldStateManager` | `d8f9b33e` | `WorldStateManagerTest`, `AMEventHandlerStateTest` |
 | 6.1 Handler section extraction | **Partially fixed** — `onEntityLiving` fully decomposed into named sections; other event families remain | `c8e815f`, `3cb040e`, `6bb2836`, `01e293e`, `6817ebc`, `a9c056a`, `5e101ac`, `b1c6314`, `3f47f30`, `3689056`, `9b76b22`, `aaeaf3b`, `388e527`, `6227d51` | `AMEventHandlerPerfGuardTest` |
 | 6.4 Packet payload validation | **Partially fixed** — 1 MiB cap before payload allocation on both processors | `092f9ea` | `PacketValidationTest` |
 | 6.4 Strict packet reads | **Fixed for both processors** — failure guards across server and client packet handlers | `74fc17f`, `e10b97c`, `eadef7a` | `AMDataReaderTest`, `AMPacketProcessorServerStrictReadTest`, `AMPacketProcessorClientStrictReadTest` |
@@ -881,6 +882,10 @@ See 3.4. Every tick, per block. This is likely the single largest source of pack
 ### 6.2 Introduce a world-scoped manager for AM2 state
 
 The power registry, `CustomWorldData`, `ItemFrameWatcher`, `RetroactiveWorldgenerator`, `FlickerOperatorMoonstoneAttractor`, `AMEventHandler` statics, and `PowerNodeCache` all use static maps keyed by dimension (or not keyed at all). A single `WorldState`/`WorldStateManager` registered on `WorldEvent.Load`/`Unload` and cleared on server stop would eliminate the cross-world leaks and the `DIM0`/`DIM-1` collisions. It also gives you a natural place to clear `hallucinationMap`, `tempFlicker`, `forceShielded`, `slowedTiles`, `attractors`, and the frame watcher.
+
+> **Status: Partially fixed.** `WorldStateManager` is in place and owns force-shielded block state, keyed by live `World`
+> identity. Remaining: migrate hallucination/dust/curse state, accelerated/slowed UUID maps, retro-gen queues, frame
+> watcher, and power caches. Covered by `WorldStateManagerTest` and `AMEventHandlerStateTest` (`d8f9b33e`).
 
 ### 6.3 Replace stringly-typed extra properties with typed data
 
