@@ -1679,6 +1679,34 @@ public class AMEventHandler {
             && ent.ticksExisted % updateInterval != 0;
     }
 
+    void tickPlayerArmor(EntityPlayer player, ExtendedProperties extendedProperties, World world) {
+        if (player.worldObj.isRemote) {
+            int divisor = extendedProperties.getAuraDelay() > 0 ? extendedProperties.getAuraDelay() : 1;
+            if (player.ticksExisted % divisor == 0) AMCore.proxy.particleManager.spawnAuraParticles(player);
+            AMCore.proxy.setViewSettings();
+        }
+
+        ArmorHelper.HandleArmorInfusion(player);
+        ArmorHelper.HandleArmorEffects(player, world);
+
+        if (ArmorHelper.isInfusionPreset(player.getCurrentArmor(1), GenericImbuement.stepAssist)) {
+            player.stepHeight = 1.0111f;
+        } else if (player.stepHeight == 1.0111f) {
+            player.stepHeight = 0.5f;
+        }
+
+        IAttributeInstance attr = player.getEntityAttribute(SharedMonsterAttributes.movementSpeed);
+        if (ArmorHelper.isInfusionPreset(player.getCurrentArmor(0), GenericImbuement.runSpeed)) {
+            if (attr.getModifier(GenericImbuement.imbuedHasteID) == null) {
+                attr.applyModifier(GenericImbuement.imbuedHaste);
+            }
+        } else {
+            if (attr.getModifier(GenericImbuement.imbuedHasteID) != null) {
+                attr.removeModifier(GenericImbuement.imbuedHaste);
+            }
+        }
+    }
+
     @SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event) {
 
@@ -1708,34 +1736,8 @@ public class AMEventHandler {
 
         tickFlippedState(ent, extendedProperties, world);
 
-        // armor effects & infusion
         if (ent instanceof EntityPlayer) {
-
-            if (ent.worldObj.isRemote) {
-                int divisor = extendedProperties.getAuraDelay() > 0 ? extendedProperties.getAuraDelay() : 1;
-                if (ent.ticksExisted % divisor == 0) AMCore.proxy.particleManager.spawnAuraParticles(ent);
-                AMCore.proxy.setViewSettings();
-            }
-
-            ArmorHelper.HandleArmorInfusion((EntityPlayer) ent);
-            ArmorHelper.HandleArmorEffects((EntityPlayer) ent, world);
-
-            if (ArmorHelper.isInfusionPreset(((EntityPlayer) ent).getCurrentArmor(1), GenericImbuement.stepAssist)) {
-                ent.stepHeight = 1.0111f;
-            } else if (ent.stepHeight == 1.0111f) {
-                ent.stepHeight = 0.5f;
-            }
-
-            IAttributeInstance attr = ent.getEntityAttribute(SharedMonsterAttributes.movementSpeed);
-            if (ArmorHelper.isInfusionPreset(((EntityPlayer) ent).getCurrentArmor(0), GenericImbuement.runSpeed)) {
-                if (attr.getModifier(GenericImbuement.imbuedHasteID) == null) {
-                    attr.applyModifier(GenericImbuement.imbuedHaste);
-                }
-            } else {
-                if (attr.getModifier(GenericImbuement.imbuedHasteID) != null) {
-                    attr.removeModifier(GenericImbuement.imbuedHaste);
-                }
-            }
+            tickPlayerArmor((EntityPlayer) ent, extendedProperties, world);
         }
 
         tickContingenciesAndAura(ent, extendedProperties, world);

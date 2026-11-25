@@ -11,6 +11,8 @@ import java.lang.reflect.Field;
 import java.util.UUID;
 
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.player.PlayerCapabilities;
@@ -98,6 +100,26 @@ public class AMEventHandlerPerfGuardTest {
 
         assertFalse(AMEventHandler.shouldTickAcceleratedBlocks(null));
         assertFalse(AMEventHandler.shouldTickTimedEffects(null));
+    }
+
+    @Test
+    public void emptyArmorAndNoInfusionIsSafe() {
+        AMEventHandler handler = new AMEventHandler();
+        ExtendedProperties properties = new ExtendedProperties();
+        EntityPlayer player = mock(EntityPlayer.class);
+        World world = mock(World.class);
+        player.worldObj = world;
+        player.inventory = new InventoryPlayer(player);
+        player.capabilities = new PlayerCapabilities();
+        when(player.getExtendedProperties(ExtendedProperties.identifier)).thenReturn(properties);
+        when(player.getCurrentArmor(0)).thenReturn(null);
+        when(player.getCurrentArmor(1)).thenReturn(null);
+        IAttributeInstance movement = mock(IAttributeInstance.class);
+        when(player.getEntityAttribute(SharedMonsterAttributes.movementSpeed)).thenReturn(movement);
+
+        handler.tickPlayerArmor(player, properties, world);
+
+        assertEquals(0.0F, player.stepHeight, 0.001F);
     }
 
     @Test
