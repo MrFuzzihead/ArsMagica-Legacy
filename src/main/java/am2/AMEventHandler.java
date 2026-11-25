@@ -50,7 +50,6 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.EnderTeleportEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
@@ -64,7 +63,6 @@ import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.EntityInteractEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.world.BlockEvent;
 
 import am2.affinity.AffinityHelper;
@@ -2157,20 +2155,6 @@ public class AMEventHandler {
                 event.setCanceled(true);
             }
         }
-    }
-
-    @SubscribeEvent
-    public void onEntityJoinWorld(EntityJoinWorldEvent event) {
-        if (event.entity instanceof EntityLivingBase
-            && ((EntityLivingBase) event.entity).isPotionActive(BuffList.temporalAnchor.id)) {
-            ((EntityLivingBase) event.entity).removePotionEffect(BuffList.temporalAnchor.id);
-        }
-    }
-
-    @SubscribeEvent
-    public void onBreakSpeed(BreakSpeed event) {
-        EntityPlayer player = event.entityPlayer;
-        if (player.isPotionActive(BuffList.fury.id)) event.newSpeed = event.originalSpeed * 5;
     }
 
     @SubscribeEvent
