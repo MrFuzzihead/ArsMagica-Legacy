@@ -4,7 +4,7 @@ import java.util.Random;
 
 import net.minecraftforge.event.world.BlockEvent;
 
-import am2.AMEventHandler;
+import am2.world.WorldStateManager;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 /** Blocks breaking protected force-shielded positions. */
@@ -14,7 +14,7 @@ public class BlockBreakHandler {
 
     @SubscribeEvent
     public void onBlockBreak(BlockEvent.BreakEvent event) {
-        if (AMEventHandler.forceShielded
+        if (WorldStateManager.forceShielded(event.world)
             .contains(event.x + "_" + event.y + "_" + event.z + "_" + event.world.provider.dimensionId)) {
             event.setCanceled(true);
             event.world

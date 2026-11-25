@@ -16,6 +16,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import am2.world.WorldStateManager;
+
 /**
  * Pins the transient-state cleanup: world-bound player/entity references are released on unload, and all state is
  * cleared on server stop or disconnect.
@@ -43,8 +45,10 @@ public class AMEventHandlerStateTest {
         AMEventHandler.dustMap.put(playerB, new ArrayList<net.minecraft.entity.item.EntityItem>());
         AMEventHandler.tempCurseMap.put(creatureA, 10);
         AMEventHandler.tempCurseMap.put(creatureB, 10);
-        AMEventHandler.forceShielded.add("1_2_3_0");
-        AMEventHandler.forceShielded.add("1_2_3_-1");
+        WorldStateManager.forceShielded(worldA)
+            .add("1_2_3_0");
+        WorldStateManager.forceShielded(worldB)
+            .add("1_2_3_-1");
 
         AMEventHandler.clearWorldState(worldA);
 
@@ -54,17 +58,23 @@ public class AMEventHandlerStateTest {
         assertTrue(AMEventHandler.dustMap.containsKey(playerB));
         assertFalse(AMEventHandler.tempCurseMap.containsKey(creatureA));
         assertTrue(AMEventHandler.tempCurseMap.containsKey(creatureB));
-        assertFalse(AMEventHandler.forceShielded.contains("1_2_3_0"));
-        assertTrue(AMEventHandler.forceShielded.contains("1_2_3_-1"));
+        assertFalse(
+            WorldStateManager.forceShielded(worldA)
+                .contains("1_2_3_0"));
+        assertTrue(
+            WorldStateManager.forceShielded(worldB)
+                .contains("1_2_3_-1"));
     }
 
     @Test
     public void clearAllTransientStateEmptiesEverything() throws Exception {
-        EntityPlayer player = playerIn(world(0));
+        World world = world(0);
+        EntityPlayer player = playerIn(world);
         AMEventHandler.hallucinationMap.put(player, new ArrayList<EntityCreature>());
         AMEventHandler.dustMap.put(player, new ArrayList<net.minecraft.entity.item.EntityItem>());
         AMEventHandler.tempCurseMap.put(creatureIn(world(0)), 10);
-        AMEventHandler.forceShielded.add("1_2_3_0");
+        WorldStateManager.forceShielded(world)
+            .add("1_2_3_0");
         AMEventHandler.acceleratedEntitiesUUIDs.put(java.util.UUID.randomUUID(), 1);
         AMEventHandler.slowedEntitiesUUIDs.put(java.util.UUID.randomUUID(), 1);
 
@@ -73,7 +83,7 @@ public class AMEventHandlerStateTest {
         assertTrue(AMEventHandler.hallucinationMap.isEmpty());
         assertTrue(AMEventHandler.dustMap.isEmpty());
         assertTrue(AMEventHandler.tempCurseMap.isEmpty());
-        assertTrue(AMEventHandler.forceShielded.isEmpty());
+        assertTrue(WorldStateManager.isEmpty());
         assertTrue(AMEventHandler.acceleratedEntitiesUUIDs.isEmpty());
         assertTrue(AMEventHandler.slowedEntitiesUUIDs.isEmpty());
     }

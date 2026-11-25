@@ -50,7 +50,6 @@ public class AMEventHandler {
         tempFlipped.put(properties, ticks);
     }
 
-    public static java.util.Set<String> forceShielded = new java.util.HashSet<>();
     public static Map<UUID, Integer> acceleratedEntitiesUUIDs = new HashMap<>();
     public static Map<UUID, Integer> slowedEntitiesUUIDs = new HashMap<>();
 
@@ -242,7 +241,7 @@ public class AMEventHandler {
             .removeIf(entry -> entry.getKey() == null || entry.getKey().worldObj == world);
         tempCurseMap.entrySet()
             .removeIf(entry -> entry.getKey() == null || entry.getKey().worldObj == world);
-        forceShielded.removeIf(key -> key.endsWith("_" + world.provider.dimensionId));
+        am2.world.WorldStateManager.unload(world);
     }
 
     /** Clears all transient state on server stop or client disconnect. */
@@ -250,7 +249,7 @@ public class AMEventHandler {
         hallucinationMap.clear();
         dustMap.clear();
         tempCurseMap.clear();
-        forceShielded.clear();
+        am2.world.WorldStateManager.clearAll();
         acceleratedEntitiesUUIDs.clear();
         slowedEntitiesUUIDs.clear();
         tempFlipped.clear();

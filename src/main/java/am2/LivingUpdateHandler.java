@@ -461,11 +461,15 @@ public class LivingUpdateHandler extends AMEventHandler {
                         if (remaining < 3) {
                             extendedProperties.removeShieldedTile(key);
                             if (!world.isRemote) {
-                                forceShielded.remove(key.representation());
+                                java.util.Set<String> shielded = am2.world.WorldStateManager
+                                    .forceShielded(DimensionManager.getWorld(key.dimension));
+                                shielded.remove(key.representation());
                             }
                         } else {
                             String represent = key.representation();
-                            if (!(forceShielded.contains(represent))) forceShielded.add(represent);
+                            java.util.Set<String> shielded = am2.world.WorldStateManager
+                                .forceShielded(DimensionManager.getWorld(key.dimension));
+                            if (!(shielded.contains(represent))) shielded.add(represent);
                             extendedProperties.setShieldedTileDuration(key, remaining - 5);
                         }
                     }
