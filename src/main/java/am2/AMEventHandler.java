@@ -50,51 +50,6 @@ public class AMEventHandler {
         tempFlipped.put(properties, ticks);
     }
 
-    // @SubscribeEvent(priority = EventPriority.HIGHEST)
-    // public void onEntityDeathHighPriority(LivingDeathEvent event){
-    //
-    // EntityLivingBase soonToBeDead = event.entityLiving;
-    //
-    // if (soonToBeDead instanceof EntityPlayer) {
-    // // soul fragments: die with at least 5 rare items
-    // if (soonToBeDead.isPotionActive(BuffList.psychedelic)){
-    // if (soonToBeDead.worldObj.provider.dimensionId == 1 &&
-    // soonToBeDead.getActivePotionEffect(BuffList.psychedelic).getAmplifier() == 1) {
-    // EntityPlayer player = (EntityPlayer)soonToBeDead;
-    // int slotCount = 0;
-    // int rareCount = 0;
-    // for (ItemStack stack : player.inventory.mainInventory){
-    // if (stack != null) {
-    // if (stack.getRarity() != EnumRarity.common) {
-    // player.inventory.setInventorySlotContents(slotCount, null);
-    // rareCount++;
-    // }
-    // }
-    // slotCount++;
-    // }
-    // slotCount = 0;
-    // for (ItemStack stack : player.inventory.armorInventory){
-    // if (stack != null) {
-    // if (stack.getRarity() != EnumRarity.common) {
-    // player.inventory.setInventorySlotContents(slotCount + player.inventory.mainInventory.length, null);
-    // rareCount++;
-    // }
-    // }
-    // slotCount++;
-    // }
-    // if (rareCount >= 5) {
-    // EntityItem fragment = new EntityItem(player.worldObj);
-    // ItemStack stack = new ItemStack(ItemsCommonProxy.itemOre, 1, ItemOre.META_SOULFRAGMENT);
-    // fragment.setPosition(player.posX+rand.nextInt(5)-2, player.posY + 10, player.posZ+rand.nextInt(5)-2);
-    // fragment.setEntityItemStack(stack);
-    // player.worldObj.spawnEntityInWorld(fragment);
-    // player.worldObj.playSoundAtEntity(player, "ambient.weather.thunder",2F, 2F);
-    // }
-    // }
-    // }
-    // }
-    // }
-
     public static java.util.Set<String> forceShielded = new java.util.HashSet<>();
     public static Map<UUID, Integer> acceleratedEntitiesUUIDs = new HashMap<>();
     public static Map<UUID, Integer> slowedEntitiesUUIDs = new HashMap<>();
