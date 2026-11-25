@@ -48,9 +48,8 @@ public class AffinityData implements IExtendedEntityProperties, IAffinityData {
 
     private boolean hasUpdate = false;
 
-    private boolean forcingSync = false;
-    private int ticksToSync = 0;
     private final int syncTickDelay = 100;
+    private final SyncWindow syncWindow = new SyncWindow(syncTickDelay);
 
     private boolean isLocked = false;
 
@@ -210,29 +209,22 @@ public class AffinityData implements IExtendedEntityProperties, IAffinityData {
     }
 
     public void setFullSync() {
-        this.ticksToSync = 0;
         this.hasUpdate = true;
         this.hasDoneFullSync = true;
-        this.forcingSync = true;
+        this.syncWindow.fullSync();
     }
 
     public void setDelayedSync(int delay) {
         setFullSync();
-        this.ticksToSync = delay;
+        this.syncWindow.setTicks(delay);
     }
 
     public void forceSync() {
-        this.forcingSync = true;
-        this.ticksToSync = 0;
+        this.syncWindow.force();
     }
 
     public boolean hasUpdate() {
-        if (!(this.entity instanceof EntityPlayer) && !forcingSync) {
-            return false;
-        }
-        this.ticksToSync--;
-        if (this.ticksToSync <= 0) this.ticksToSync = this.syncTickDelay;
-        return this.hasUpdate && this.ticksToSync == this.syncTickDelay;
+        return this.syncWindow.shouldSend(this.entity instanceof EntityPlayer, this.hasUpdate);
     }
 
     private byte[] getUpdateData() {
@@ -253,7 +245,7 @@ public class AffinityData implements IExtendedEntityProperties, IAffinityData {
         writer.add(isLocked);
 
         this.hasUpdate = false;
-        this.forcingSync = false;
+        this.syncWindow.clearForcing();
 
         return writer.generate();
     }

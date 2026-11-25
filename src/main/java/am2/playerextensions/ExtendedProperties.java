@@ -166,7 +166,6 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
     private boolean hasInitialized = false;
     public boolean astralBarrierBlocked = false;
-    private boolean forcingSync = false;
     private boolean isCritical;
     public boolean isRecoveringKeystone = false;
     public boolean hadFlight = false;
@@ -202,7 +201,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
     private int updateFlags;
     private static final int syncTickDelay = 50; // 2.5 seconds
-    private int ticksToSync;
+    private final SyncWindow syncWindow = new SyncWindow(syncTickDelay);
     public int redGlint = 0;
     private int lightningsLeft = 0;
     private int ticksLeft = 0;
@@ -496,7 +495,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         writer.add(extra_data);
 
         this.updateFlags = 0;
-        this.forcingSync = false;
+        this.syncWindow.clearForcing();
         return writer.generate();
     }
 
@@ -518,12 +517,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     }
 
     public boolean getHasUpdate() {
-        if (!(this.entity instanceof EntityPlayer) && !forcingSync) {
-            return false;
-        }
-        this.ticksToSync--;
-        if (this.ticksToSync <= 0) this.ticksToSync = syncTickDelay;
-        return this.updateFlags != 0 && this.ticksToSync == syncTickDelay;
+        return this.syncWindow.shouldSend(this.entity instanceof EntityPlayer, this.updateFlags != 0);
     }
 
     public boolean getCanHaveMoreSummons() {
@@ -814,7 +808,6 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     }
 
     public void setFullSync() {
-        this.ticksToSync = 0;
         this.setUpdateFlag(UPD_CONTINGENCY);
         this.setUpdateFlag(UPD_BITFLAG);
         this.setUpdateFlag(UPD_CURRENT_MANA_FATIGUE);
@@ -824,7 +817,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         this.setUpdateFlag(UPD_NUM_SUMMONS);
         this.setUpdateFlag(UPD_BETA_PARTICLES);
         this.hasDoneFullSync = true;
-        this.forcingSync = true;
+        this.syncWindow.fullSync();
     }
 
     public void updateManaLink(EntityLivingBase entity) {
@@ -1110,12 +1103,11 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
     public void setDelayedSync(int delay) {
         setFullSync();
-        this.ticksToSync = delay;
+        this.syncWindow.setTicks(delay);
     }
 
     public void forceSync() {
-        this.ticksToSync = 0;
-        this.forcingSync = true;
+        this.syncWindow.force();
     }
 
     public void updateAuraData(int index, int behaviour, float scale, float alpha, boolean colorRandom,
@@ -1497,7 +1489,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
         updateFlags = 0;
 
-        ticksToSync = world.rand.nextInt(syncTickDelay);
+        syncWindow.setTicks(world.rand.nextInt(syncTickDelay));
 
         hasInitialized = true;
 

@@ -46,9 +46,8 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
 
     private int updateFlags = 0;
 
-    private boolean forcingSync = false;
-    private int ticksToSync = 0;
     private final int syncTickDelay = 2400;
+    private final SyncWindow syncWindow = new SyncWindow(syncTickDelay);
 
     private ArrayList<Integer> shapesKnown;
     private ArrayList<Integer> componentsKnown;
@@ -407,34 +406,28 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
     }
 
     public void setFullSync() {
-        this.ticksToSync = 0;
         this.updateFlags = this.updateFlags | KNOWN_SHAPE_UPDATE
             | KNOWN_COMPONENT_UPDATE
             | KNOWN_MODIFIER_UPDATE
             | KNOWN_TALENTS_UPDATE
             | NUM_SPELL_POINTS;
         this.hasDoneFullSync = true;
-        this.forcingSync = true;
+        this.syncWindow.fullSync();
     }
 
     public void setDelayedSync(int delay) {
         setFullSync();
-        this.ticksToSync = delay;
+        this.syncWindow.setTicks(delay);
     }
 
     @Override
     public void forceSync() {
-        this.forcingSync = true;
-        this.ticksToSync = 0;
+        this.syncWindow.force();
     }
 
     public boolean hasUpdate() {
-        if (!(this.entity instanceof EntityPlayer) && !forcingSync) {
-            return false;
-        }
-        this.ticksToSync--;
-        if (this.ticksToSync <= 0) this.ticksToSync = this.syncTickDelay;
-        return (this.updateFlags != 0 || this.forcingSync) && this.ticksToSync == this.syncTickDelay;
+        return this.syncWindow
+            .shouldSend(this.entity instanceof EntityPlayer, this.updateFlags != 0 || this.syncWindow.isForcing());
     }
 
     private byte[] getUpdateData() {
@@ -483,7 +476,7 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
         }
 
         this.updateFlags = 0;
-        this.forcingSync = false;
+        this.syncWindow.clearForcing();
 
         return writer.generate();
     }
