@@ -91,6 +91,7 @@ and the automated tests that now cover the fix.
 | 6.4 Validated packet envelope | **Partially fixed** — direction/size/id/payload centralized in `PacketEnvelope` | `f8a478b` | `PacketEnvelopeTest` |
 | 6.4 Typed handler registries | **Fixed** — packet switches replaced by typed per-side handler tables | `65de89d` | `PacketRegistryTest` |
 | 6.3 Typed timed-effect keys | **Partially fixed** — typed block/entity/vortex keys and codec extracted from `AMEventHandler` | `9e22120` | `TimedEffectCodecTest` |
+| 6.3 Accelerated-tile storage | **Partially fixed** — typed duration map is the hot-path source; string key retained for sync/NBT | `f550670` | `ExtendedPropertiesAcceleratedTileTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -860,9 +861,11 @@ The power registry, `CustomWorldData`, `ItemFrameWatcher`, `RetroactiveWorldgene
 
 `extra_properties` is a `Map<String,String>` with keys such as `"accelerated_fast_tile_x_y_z_dim"` and values parsed as ints every tick. This is both a performance and a robustness problem (malformed strings throw `NumberFormatException`). Define small data classes (`TimedBlockEffect`, `TimedEntityEffect`, `SpatialVortex`) and store them in maps keyed by dimension/position/UUID. Serialization becomes straightforward and the hot path stops parsing.
 
-> **Status: Partially fixed.** The typed key model and codec now live in `am2.playerextensions.effects`, and `AMEventHandler`'s
-> parsed-key caches use them. The serialized source of truth is still `extra_properties`; migrating the spell components,
-> sync payload and NBT storage to the typed maps remains open. Covered by `TimedEffectCodecTest` (latest commit `9e22120`).
+> **Status: Partially fixed.** The typed key model and codec live in `am2.playerextensions.effects`. Accelerated tiles
+> now use a typed duration map in `ExtendedProperties` while retaining the legacy string key for sync/NBT, and
+> `AMEventHandler` ticks that map directly. Migrating the remaining effect families and removing the encoded source of
+> truth remain open. Covered by `TimedEffectCodecTest` (`9e22120`) and `ExtendedPropertiesAcceleratedTileTest`
+> (`f550670`).
 
 ### 6.4 Add a proper packet layer
 
