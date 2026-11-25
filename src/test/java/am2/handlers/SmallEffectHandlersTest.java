@@ -12,8 +12,10 @@ import java.lang.reflect.Field;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 
 import org.junit.After;
@@ -74,6 +76,16 @@ public class SmallEffectHandlersTest {
         new TemporalAnchorHandler().onEntityJoinWorld(event);
 
         verify(entity).removePotionEffect(BuffList.temporalAnchor.id);
+    }
+
+    @Test
+    public void absentTemporalAnchorDoesNotCancelDeath() {
+        EntityLivingBase entity = mock(EntityLivingBase.class);
+        LivingDeathEvent event = new LivingDeathEvent(entity, mock(DamageSource.class));
+
+        new TemporalAnchorHandler().onEntityDeathChrono(event);
+
+        org.junit.Assert.assertFalse(event.isCanceled());
     }
 
     @Test

@@ -46,7 +46,6 @@ import am2.blocks.tileentities.TileEntityAstralBarrier;
 import am2.blocks.tileentities.TileEntityInfusedStem;
 import am2.bosses.BossSpawnHelper;
 import am2.buffs.BuffEffectScrambleSynapses;
-import am2.buffs.BuffEffectTemporalAnchor;
 import am2.buffs.BuffList;
 import am2.buffs.BuffStatModifiers;
 import am2.damage.DamageSourceFire;
@@ -113,20 +112,6 @@ public class AMEventHandler {
             flicker.setPosition(ent.posX, ent.posY, ent.posZ);
             flicker.setFlickerType(Affinity.ENDER);
             ent.worldObj.spawnEntityInWorld(flicker);
-        }
-    }
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public void onEntityDeathChrono(LivingDeathEvent event) {
-        EntityLivingBase soonToBeDead = event.entityLiving;
-        if (soonToBeDead.isPotionActive(BuffList.temporalAnchor.id)) {
-            event.setCanceled(true);
-            PotionEffect pe = soonToBeDead.getActivePotionEffect(BuffList.temporalAnchor);
-            if (pe instanceof BuffEffectTemporalAnchor) {
-                BuffEffectTemporalAnchor buff = (BuffEffectTemporalAnchor) pe;
-                buff.stopEffect(soonToBeDead);
-            }
-            soonToBeDead.removePotionEffect(BuffList.temporalAnchor.id);
         }
     }
 
