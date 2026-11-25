@@ -485,6 +485,7 @@ public class LivingUpdateHandler extends AMEventHandler {
 
     void tickFlippedState(EntityLivingBase ent, ExtendedProperties extendedProperties, World world) {
         // unflip flipped players
+        Map<ExtendedProperties, Integer> tempFlipped = WorldStateManager.tempFlipped(world);
         if (tempFlipped.containsKey(extendedProperties)) {
             tempFlipped.put(extendedProperties, tempFlipped.get(extendedProperties) - 1);
             if (tempFlipped.get(extendedProperties) <= 0) {

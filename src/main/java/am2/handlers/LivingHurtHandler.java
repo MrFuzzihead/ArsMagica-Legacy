@@ -9,12 +9,12 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 
 import am2.AMCore;
-import am2.AMEventHandler;
 import am2.buffs.BuffList;
 import am2.damage.DamageSourceFire;
 import am2.items.ItemsCommonProxy;
 import am2.network.AMNetHandler;
 import am2.playerextensions.ExtendedProperties;
+import am2.world.WorldStateManager;
 
 /** Incoming damage modifiers from armor, shields, contingencies and buffs. */
 public class LivingHurtHandler {
@@ -203,7 +203,8 @@ public class LivingHurtHandler {
                 == ItemsCommonProxy.archmageBoots) {
             if (entityAttacker.isSneaking()) {
                 extendedProperties.toggleFlipped();
-                AMEventHandler.setTempFlipped(extendedProperties, 50);
+                WorldStateManager.tempFlipped(entityAttacked.worldObj)
+                    .put(extendedProperties, 50);
             }
         }
 

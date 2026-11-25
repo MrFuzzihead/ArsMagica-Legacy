@@ -16,6 +16,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 
+import am2.playerextensions.ExtendedProperties;
+
 /**
  * World-scoped transient state. Entries are keyed by the live {@link World} instance, not just its dimension id, so
  * client/server worlds that share a dimension cannot collide.
@@ -54,6 +56,11 @@ public final class WorldStateManager {
     public static Map<EntityCreature, Integer> tempCurseMap(World world) {
         WorldState state = state(world);
         return state == null ? Collections.emptyMap() : state.tempCurseMap;
+    }
+
+    public static Map<ExtendedProperties, Integer> tempFlipped(World world) {
+        WorldState state = state(world);
+        return state == null ? Collections.emptyMap() : state.tempFlipped;
     }
 
     public static Map<UUID, Integer> acceleratedEntities(World world) {
@@ -110,6 +117,7 @@ public final class WorldStateManager {
         final Map<EntityCreature, Integer> tempCurseMap = new HashMap<EntityCreature, Integer>();
         final Map<UUID, Integer> acceleratedEntities = new HashMap<UUID, Integer>();
         final Map<UUID, Integer> slowedEntities = new HashMap<UUID, Integer>();
+        final Map<ExtendedProperties, Integer> tempFlipped = new HashMap<ExtendedProperties, Integer>();
         final Deque<ChunkCoordIntPair> retroGenChunks = new java.util.ArrayDeque<ChunkCoordIntPair>();
         final Map<Object, Object> attachments = new HashMap<Object, Object>();
     }

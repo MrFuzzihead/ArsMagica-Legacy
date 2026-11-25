@@ -1,7 +1,6 @@
 package am2;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
@@ -28,7 +27,6 @@ import am2.entities.EntityHallucination;
 import am2.entities.EntitySpecificHallucinations;
 import am2.items.ItemOre;
 import am2.items.ItemsCommonProxy;
-import am2.playerextensions.ExtendedProperties;
 import am2.playerextensions.effects.SpatialVortexEffect;
 import am2.playerextensions.effects.TimedBlockEffect;
 import am2.playerextensions.effects.TimedEffectCodec;
@@ -45,11 +43,6 @@ public class AMEventHandler {
     static boolean enable_spatialVortex = true;
 
     private static final Random rand = new Random();
-    static final Map<ExtendedProperties, Integer> tempFlipped = new HashMap<ExtendedProperties, Integer>();
-
-    public static void setTempFlipped(ExtendedProperties properties, int ticks) {
-        tempFlipped.put(properties, ticks);
-    }
 
     /** Null-safe tile lookup for the spatial-vortex bookkeeping; an unloaded dimension yields a null world. */
     static TileEntity getTileEntitySafe(World world, int x, int y, int z) {
@@ -235,7 +228,6 @@ public class AMEventHandler {
     /** Clears all transient state on server stop or client disconnect. */
     public static void clearAllTransientState() {
         am2.world.WorldStateManager.clearAll();
-        tempFlipped.clear();
     }
 
     void cleanupLowerHallucination(EntityPlayer player) {

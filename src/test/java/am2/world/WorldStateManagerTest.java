@@ -17,6 +17,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import am2.playerextensions.ExtendedProperties;
+
 public class WorldStateManagerTest {
 
     @Before
@@ -99,6 +101,24 @@ public class WorldStateManagerTest {
         WorldStateManager.unload(first);
         assertTrue(
             WorldStateManager.retroGenChunks(first)
+                .isEmpty());
+    }
+
+    @Test
+    public void flippedStateIsWorldScoped() throws Exception {
+        World first = world(0);
+        World second = world(0);
+        ExtendedProperties properties = new ExtendedProperties();
+
+        WorldStateManager.tempFlipped(first)
+            .put(properties, 50);
+
+        assertFalse(
+            WorldStateManager.tempFlipped(second)
+                .containsKey(properties));
+        WorldStateManager.clearAll();
+        assertTrue(
+            WorldStateManager.tempFlipped(first)
                 .isEmpty());
     }
 
