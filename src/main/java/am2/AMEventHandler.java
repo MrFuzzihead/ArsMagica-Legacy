@@ -931,30 +931,28 @@ public class AMEventHandler {
                 // eases load further (but causes double the duration - not a big deal for these spells).
 
                 if (enabled_accelerate) {
-                    Map<String, String> acceleratedEntities = extendedProperties
-                        .getExtraVariablesContains("accelerated_fast_entity_");
-
                     if (SkillTreeManager.instance.isSkillDisabled(SkillManager.instance.getSkill("ConcentrateTime"))) {
-                        acceleratedEntities.clear();
                         for (TimedBlockEffect effect : new ArrayList<TimedBlockEffect>(
                             extendedProperties.getAcceleratedTiles()
                                 .keySet())) {
                             extendedProperties.removeAcceleratedTile(effect);
                         }
-                    }
-                    for (Map.Entry<String, String> entry : acceleratedEntities.entrySet()) {
-                        TimedEntityEffect key = acceleratedEntityKey(entry.getKey());
-                        if (key == null) {
-                            // Do not leave malformed legacy data in a live extra-property map.
-                            extendedProperties.removeFromExtraVariables(entry.getKey());
-                            continue;
+                        for (TimedEntityEffect effect : new ArrayList<TimedEntityEffect>(
+                            extendedProperties.getAcceleratedEntities()
+                                .keySet())) {
+                            extendedProperties.removeAcceleratedEntity(effect);
                         }
-                        int remaining = Integer.parseInt(entry.getValue());
+                    }
+                    for (Map.Entry<TimedEntityEffect, Integer> entry : new ArrayList<Map.Entry<TimedEntityEffect, Integer>>(
+                        extendedProperties.getAcceleratedEntities()
+                            .entrySet())) {
+                        TimedEntityEffect key = entry.getKey();
+                        int remaining = entry.getValue();
                         if (remaining < 3) {
-                            extendedProperties.removeFromExtraVariables(entry.getKey());
+                            extendedProperties.removeAcceleratedEntity(key);
                             acceleratedEntitiesUUIDs.remove(key.entityUUID);
                         } else {
-                            extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(remaining - 5));
+                            extendedProperties.setAcceleratedEntityDuration(key, remaining - 5);
                             if (acceleratedEntitiesUUIDs.get(key.entityUUID) == null) {
                                 acceleratedEntitiesUUIDs.put(key.entityUUID, Integer.valueOf(key.power));
                             }
@@ -973,19 +971,16 @@ public class AMEventHandler {
                         slowedEntities.clear();
                         slowedBlocks.clear();
                     }
-                    for (Map.Entry<String, String> entry : slowedEntities.entrySet()) {
-                        TimedEntityEffect key = acceleratedEntityKey(entry.getKey());
-                        if (key == null) {
-                            // Do not leave malformed legacy data in a live extra-property map.
-                            extendedProperties.removeFromExtraVariables(entry.getKey());
-                            continue;
-                        }
-                        int remaining = Integer.parseInt(entry.getValue());
+                    for (Map.Entry<TimedEntityEffect, Integer> entry : new ArrayList<Map.Entry<TimedEntityEffect, Integer>>(
+                        extendedProperties.getSlowedEntities()
+                            .entrySet())) {
+                        TimedEntityEffect key = entry.getKey();
+                        int remaining = entry.getValue();
                         if (remaining < 3) {
-                            extendedProperties.removeFromExtraVariables(entry.getKey());
+                            extendedProperties.removeSlowedEntity(key);
                             slowedEntitiesUUIDs.remove(key.entityUUID);
                         } else {
-                            extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(remaining - 5));
+                            extendedProperties.setSlowedEntityDuration(key, remaining - 5);
                             if (slowedEntitiesUUIDs.get(key.entityUUID) == null) {
                                 slowedEntitiesUUIDs.put(key.entityUUID, Integer.valueOf(key.power));
                             }

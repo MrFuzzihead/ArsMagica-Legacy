@@ -36,6 +36,14 @@ public final class TimedEffectCodec {
             + effect.power;
     }
 
+    public static String encodeAcceleratedEntity(TimedEntityEffect effect) {
+        return "accelerated_fast_entity_" + effect.power + "_" + effect.entityUUID;
+    }
+
+    public static String encodeSlowedEntity(TimedEntityEffect effect) {
+        return "accelerated_slow_entity_" + effect.power + "_" + effect.entityUUID;
+    }
+
     public static TimedBlockEffect parseTimedBlock(String raw) {
         if (raw == null) return null;
         String[] parts = raw.split("_");

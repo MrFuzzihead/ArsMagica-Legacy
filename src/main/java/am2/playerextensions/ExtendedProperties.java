@@ -57,6 +57,7 @@ import am2.network.AMPacketIDs;
 import am2.particles.AMLineArc;
 import am2.playerextensions.effects.TimedBlockEffect;
 import am2.playerextensions.effects.TimedEffectCodec;
+import am2.playerextensions.effects.TimedEntityEffect;
 import am2.spell.SkillManager;
 import am2.spell.SkillTreeManager;
 import am2.spell.SpellHelper;
@@ -95,6 +96,8 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
      */
     private final transient Set<String> timedEffectKeys = new HashSet<String>();
     private final transient Map<TimedBlockEffect, Integer> acceleratedTiles = new HashMap<TimedBlockEffect, Integer>();
+    private final transient Map<TimedEntityEffect, Integer> acceleratedEntities = new HashMap<TimedEntityEffect, Integer>();
+    private final transient Map<TimedEntityEffect, Integer> slowedEntities = new HashMap<TimedEntityEffect, Integer>();
 
     private final Map<String, String> compendium_entries = new HashMap<String, String>();
 
@@ -1383,6 +1386,8 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         extra_properties.clear();
         timedEffectKeys.clear();
         acceleratedTiles.clear();
+        acceleratedEntities.clear();
+        slowedEntities.clear();
         setFullSync();
     }
 
@@ -1394,6 +1399,14 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         acceleratedTiles.keySet()
             .removeIf(
                 effect -> TimedEffectCodec.encodeAcceleratedTile(effect)
+                    .contains(contains));
+        acceleratedEntities.keySet()
+            .removeIf(
+                effect -> TimedEffectCodec.encodeAcceleratedEntity(effect)
+                    .contains(contains));
+        slowedEntities.keySet()
+            .removeIf(
+                effect -> TimedEffectCodec.encodeSlowedEntity(effect)
                     .contains(contains));
         setFullSync();
     }
@@ -1422,6 +1435,24 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
                     // Keep the legacy string; malformed durations must not break loading.
                 }
             }
+        } else if (name.startsWith("accelerated_fast_entity_")) {
+            TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
+            if (effect != null) {
+                try {
+                    acceleratedEntities.put(effect, Integer.parseInt(value));
+                } catch (NumberFormatException ignored) {
+                    // Keep the legacy string; malformed durations must not break loading.
+                }
+            }
+        } else if (name.startsWith("accelerated_slow_entity_")) {
+            TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
+            if (effect != null) {
+                try {
+                    slowedEntities.put(effect, Integer.parseInt(value));
+                } catch (NumberFormatException ignored) {
+                    // Keep the legacy string; malformed durations must not break loading.
+                }
+            }
         }
     }
 
@@ -1431,12 +1462,20 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         if (name.startsWith("accelerated_fast_tile_")) {
             TimedBlockEffect effect = TimedEffectCodec.parseAcceleratedTile(name);
             if (effect != null) acceleratedTiles.remove(effect);
+        } else if (name.startsWith("accelerated_fast_entity_")) {
+            TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
+            if (effect != null) acceleratedEntities.remove(effect);
+        } else if (name.startsWith("accelerated_slow_entity_")) {
+            TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
+            if (effect != null) slowedEntities.remove(effect);
         }
     }
 
     private void rebuildTimedEffectKeys() {
         timedEffectKeys.clear();
         acceleratedTiles.clear();
+        acceleratedEntities.clear();
+        slowedEntities.clear();
         for (Map.Entry<String, String> entry : extra_properties.entrySet()) {
             trackTimedEffectKey(entry.getKey(), entry.getValue());
         }
@@ -1444,6 +1483,42 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
     public Map<TimedBlockEffect, Integer> getAcceleratedTiles() {
         return acceleratedTiles;
+    }
+
+    public Map<TimedEntityEffect, Integer> getAcceleratedEntities() {
+        return acceleratedEntities;
+    }
+
+    public Map<TimedEntityEffect, Integer> getSlowedEntities() {
+        return slowedEntities;
+    }
+
+    public void setAcceleratedEntityDuration(TimedEntityEffect effect, int duration) {
+        acceleratedEntities.put(effect, duration);
+        extra_properties.put(TimedEffectCodec.encodeAcceleratedEntity(effect), String.valueOf(duration));
+        setFullSync();
+    }
+
+    public void setSlowedEntityDuration(TimedEntityEffect effect, int duration) {
+        slowedEntities.put(effect, duration);
+        extra_properties.put(TimedEffectCodec.encodeSlowedEntity(effect), String.valueOf(duration));
+        setFullSync();
+    }
+
+    public void removeAcceleratedEntity(TimedEntityEffect effect) {
+        acceleratedEntities.remove(effect);
+        String key = TimedEffectCodec.encodeAcceleratedEntity(effect);
+        extra_properties.remove(key);
+        timedEffectKeys.remove(key);
+        setFullSync();
+    }
+
+    public void removeSlowedEntity(TimedEntityEffect effect) {
+        slowedEntities.remove(effect);
+        String key = TimedEffectCodec.encodeSlowedEntity(effect);
+        extra_properties.remove(key);
+        timedEffectKeys.remove(key);
+        setFullSync();
     }
 
     public void setAcceleratedTileDuration(TimedBlockEffect effect, int duration) {
