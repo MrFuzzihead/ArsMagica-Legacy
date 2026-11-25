@@ -18,6 +18,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
@@ -35,6 +37,7 @@ import am2.blocks.tileentities.TileEntityOcculus;
 import am2.buffs.BuffList;
 import am2.enchantments.AMEnchantments;
 import am2.entities.EntityManaCreeper;
+import am2.handlers.BucketHandler;
 import am2.items.AMSpawnEgg;
 import am2.items.ItemOre;
 import am2.items.ItemsCommonProxy;
@@ -102,6 +105,7 @@ final class ArsMagicaGameTests {
         checksItems();
         checksTileEntities(pWorld);
         checksWorldPlacement(pWorld);
+        checksBucketFill(pWorld);
         checksOreDictionary();
         checksRecipes();
         checksSpellCraftingRecipe(pWorld);
@@ -334,6 +338,32 @@ final class ArsMagicaGameTests {
         }
 
         check(pWorld.getTileEntity(x, y, z) == null, "removing the block must remove its tile entity");
+    }
+
+    private static void checksBucketFill(WorldServer pWorld) {
+        int x = 2;
+        int y = TEST_HEIGHT;
+        int z = 2;
+        try {
+            check(
+                pWorld.setBlock(x, y, z, BlocksCommonProxy.liquidEssence),
+                "a liquid essence source must be placeable");
+            MovingObjectPosition target = new MovingObjectPosition(
+                x,
+                y,
+                z,
+                1,
+                Vec3.createVectorHelper(x + 0.5D, y + 0.5D, z + 0.5D));
+
+            check(
+                BucketHandler.attemptFill(pWorld, target) != null,
+                "filling a bucket from a source block must produce the AM2 bucket");
+            check(
+                pWorld.getBlock(x, y, z) != BlocksCommonProxy.liquidEssence,
+                "filling a bucket must consume the source block");
+        } finally {
+            pWorld.setBlockToAir(x, y, z);
+        }
     }
 
     private static void checksOreDictionary() {

@@ -30,7 +30,6 @@ import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
@@ -45,7 +44,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -68,7 +66,6 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.EntityInteractEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
-import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.world.BlockEvent;
@@ -82,7 +79,6 @@ import am2.api.spell.enums.Affinity;
 import am2.api.spell.enums.BuffPowerLevel;
 import am2.armor.ArmorHelper;
 import am2.armor.infusions.GenericImbuement;
-import am2.blocks.BlocksCommonProxy;
 import am2.blocks.tileentities.TileEntityAstralBarrier;
 import am2.blocks.tileentities.TileEntityInfusedStem;
 import am2.bosses.BossSpawnHelper;
@@ -116,7 +112,6 @@ import am2.utility.MathUtilities;
 import am2.utility.TickrateController;
 import cofh.api.energy.IEnergyHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.Event.Result;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
@@ -2065,31 +2060,6 @@ public class AMEventHandler {
                 }
             }
         }
-        return null;
-    }
-
-    @SubscribeEvent
-    public void onBucketFill(FillBucketEvent event) {
-        ItemStack result = attemptFill(event.world, event.target);
-
-        if (result != null) {
-            event.result = result;
-            event.setResult(Result.ALLOW);
-        }
-    }
-
-    private ItemStack attemptFill(World world, MovingObjectPosition p) {
-        Block block = world.getBlock(p.blockX, p.blockY, p.blockZ);
-
-        if (block == BlocksCommonProxy.liquidEssence) {
-            if (world.getBlockMetadata(p.blockX, p.blockY, p.blockZ) == 0) // Check that it is a source block
-            {
-                world.setBlock(p.blockX, p.blockY, p.blockZ, Blocks.air); // Remove the fluid block
-
-                return new ItemStack(ItemsCommonProxy.itemAMBucket);
-            }
-        }
-
         return null;
     }
 
