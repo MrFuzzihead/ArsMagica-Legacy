@@ -81,6 +81,7 @@ and the automated tests that now cover the fix.
 | 6.7 API property getters | **Fixed** — null-safe entities/identifiers and lifecycle docs | `d148bbc` | `ArsMagicaApiPropertiesTest` |
 | 6.7 Legacy second mana API | **Fixed** — live legacy types deprecated, commented-out dead types removed | `9ff50da` | `LegacyManaApiTest` |
 | 6.6 Duplicated sync countdown | **Fixed** — shared `SyncWindow` for all three synced stores | `c268948` | `SyncWindowTest`, `SyncWindowIntegrationTest` |
+| 6.1 Bucket handler extraction | **Partially fixed** — bucket fill moved to `am2.handlers.BucketHandler` | `5d9dc43` | `BucketHandlerTest`, game-test bucket checks |
 | 6.1 Handler section extraction | **Partially fixed** — `onEntityLiving` fully decomposed into named sections; other event families remain | `c8e815f`, `3cb040e`, `6bb2836`, `01e293e`, `6817ebc`, `a9c056a`, `5e101ac`, `b1c6314`, `3f47f30`, `3689056`, `9b76b22`, `aaeaf3b`, `388e527`, `6227d51` | `AMEventHandlerPerfGuardTest` |
 | 6.4 Packet payload validation | **Partially fixed** — 1 MiB cap before payload allocation on both processors | `092f9ea` | `PacketValidationTest` |
 
@@ -840,8 +841,9 @@ See 3.4. Every tick, per block. This is likely the single largest source of pack
 
 `AMEventHandler.java` is 2,161 lines and handles potions, souls, death/clone, combat, buffs, adjacency/spatial mechanics, block protection, world interactions, and dozens of unrelated events. Split it into focused classes (`PlayerLifecycleHandler`, `CombatEventHandler`, `TimeEffectsHandler`, `SpatialVortexHandler`, `ShieldHandler`, `BucketHandler`, etc.). This will make the static-state leaks and side guards reviewable in isolation.
 
-> **Status: Partially fixed.** `onEntityLiving` is now fully decomposed into named sections with no-op/client guard
-> coverage. The remaining event families are still in `AMEventHandler` and need the same extraction treatment.
+> **Status: Partially fixed.** `onEntityLiving` is fully decomposed into named sections, and bucket filling now lives in
+> its own handler class. `AMEventHandler` still contains 22 other event families plus shared helpers, so the class split
+> is not complete.
 
 ### 6.2 Introduce a world-scoped manager for AM2 state
 
