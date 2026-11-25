@@ -90,7 +90,7 @@ and the automated tests that now cover the fix.
 | 6.4 Container authority rechecks | **Fixed** — workbench reach rechecked; customization bound to sender | `9dd5a72` | `PacketAuthorityTest` (reach/self helpers) |
 | 6.4 Validated packet envelope | **Partially fixed** — direction/size/id/payload centralized in `PacketEnvelope` | `f8a478b` | `PacketEnvelopeTest` |
 | 6.4 Typed handler registries | **Fixed** — packet switches replaced by typed per-side handler tables | `65de89d` | `PacketRegistryTest` |
-| 6.3 Typed timed-effect keys | **Partially fixed** — typed block/entity/vortex keys and codec extracted from `AMEventHandler` | `9b76b22`… | `TimedEffectCodecTest` |
+| 6.3 Typed timed-effect keys | **Partially fixed** — typed block/entity/vortex keys and codec extracted from `AMEventHandler` | `9e22120` | `TimedEffectCodecTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -862,7 +862,7 @@ The power registry, `CustomWorldData`, `ItemFrameWatcher`, `RetroactiveWorldgene
 
 > **Status: Partially fixed.** The typed key model and codec now live in `am2.playerextensions.effects`, and `AMEventHandler`'s
 > parsed-key caches use them. The serialized source of truth is still `extra_properties`; migrating the spell components,
-> sync payload and NBT storage to the typed maps remains open. Covered by `TimedEffectCodecTest` (latest commit `9b76b22`…).
+> sync payload and NBT storage to the typed maps remains open. Covered by `TimedEffectCodecTest` (latest commit `9e22120`).
 
 ### 6.4 Add a proper packet layer
 
