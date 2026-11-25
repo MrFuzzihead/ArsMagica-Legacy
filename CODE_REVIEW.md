@@ -95,6 +95,7 @@ and the automated tests that now cover the fix.
 | 6.3 Entity effect storage | **Partially fixed** — accelerated/slowed entities use typed duration maps with legacy string mirroring | `50e3ceb` | `ExtendedPropertiesEntityEffectTest` |
 | 6.3 Slowed-tile storage | **Partially fixed** — slowed tiles use a typed duration map with legacy string mirroring | `2b51cac` | `ExtendedPropertiesSlowedTileTest` |
 | 6.3 Fortified/shielded storage | **Partially fixed** — both block families use typed duration maps with legacy string mirroring | `c009e3a` | `ExtendedPropertiesFortifiedShieldTest` |
+| 6.3 Spatial-vortex storage | **Partially fixed** — typed spatial map drives the vortex loop; legacy strings mirrored | `3f5b88e` | `ExtendedPropertiesSpatialVortexTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
 `ReflectionHelper`/private-access reflection, and no access transformers remain.
@@ -864,12 +865,12 @@ The power registry, `CustomWorldData`, `ItemFrameWatcher`, `RetroactiveWorldgene
 
 `extra_properties` is a `Map<String,String>` with keys such as `"accelerated_fast_tile_x_y_z_dim"` and values parsed as ints every tick. This is both a performance and a robustness problem (malformed strings throw `NumberFormatException`). Define small data classes (`TimedBlockEffect`, `TimedEntityEffect`, `SpatialVortex`) and store them in maps keyed by dimension/position/UUID. Serialization becomes straightforward and the hot path stops parsing.
 
-> **Status: Partially fixed.** The typed key model and codec live in `am2.playerextensions.effects`. Accelerated tiles,
-> accelerated/slowed entities, slowed tiles and fortified/shielded blocks now use typed duration maps while retaining
-> legacy string keys for sync/NBT; `AMEventHandler` ticks the typed maps directly. Migrating spatial vortices remains
-> open. Covered by `TimedEffectCodecTest` (`9e22120`), `ExtendedPropertiesAcceleratedTileTest` (`f550670`),
-> `ExtendedPropertiesEntityEffectTest` (`50e3ceb`), `ExtendedPropertiesSlowedTileTest` (`2b51cac`) and
-> `ExtendedPropertiesFortifiedShieldTest` (`c009e3a`).
+> **Status: Partially fixed.** Every timed-effect family now has typed storage backing its hot-path loop, with legacy
+> string keys still mirrored for sync/NBT: accelerated/slowed tiles and entities, spatial vortices, and
+> fortified/shielded blocks. The remaining work is removing the encoded-string source of truth and making serialization
+> derive from the typed maps. Covered by `TimedEffectCodecTest` (`9e22120`), `ExtendedPropertiesAcceleratedTileTest`
+> (`f550670`), `ExtendedPropertiesEntityEffectTest` (`50e3ceb`), `ExtendedPropertiesSlowedTileTest` (`2b51cac`),
+> `ExtendedPropertiesFortifiedShieldTest` (`c009e3a`) and `ExtendedPropertiesSpatialVortexTest` (`3f5b88e`).
 
 ### 6.4 Add a proper packet layer
 
