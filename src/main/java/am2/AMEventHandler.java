@@ -897,22 +897,17 @@ public class AMEventHandler {
     }
 
     void tickTimedEffects(EntityLivingBase ent, ExtendedProperties extendedProperties, World world) {
-        Map<String, String> acceleratedBlocks = null;
         if (extendedProperties.hasTimedEffects() && shouldTickAcceleratedBlocks(world)) {
             // accelerated blocks and entities are done outside the 5-tick performance optimisation to make them smooth
-            acceleratedBlocks = extendedProperties.getExtraVariablesContains("accelerated_fast_tile_");
-            for (Map.Entry<String, String> entry : acceleratedBlocks.entrySet()) {
-                TimedBlockEffect key = acceleratedTileKey(entry.getKey());
-                if (key == null) {
-                    // Do not leave malformed legacy data in a live extra-property map.
-                    extendedProperties.removeFromExtraVariables(entry.getKey());
-                    continue;
-                }
-                int remaining = Integer.parseInt(entry.getValue());
+            for (Map.Entry<TimedBlockEffect, Integer> entry : new ArrayList<Map.Entry<TimedBlockEffect, Integer>>(
+                extendedProperties.getAcceleratedTiles()
+                    .entrySet())) {
+                TimedBlockEffect key = entry.getKey();
+                int remaining = entry.getValue();
                 if (remaining < 3) {
-                    extendedProperties.removeFromExtraVariables(entry.getKey());
+                    extendedProperties.removeAcceleratedTile(key);
                 } else {
-                    extendedProperties.addToExtraVariables(entry.getKey(), String.valueOf(remaining - 1));
+                    extendedProperties.setAcceleratedTileDuration(key, remaining - 1);
                     World wrld = DimensionManager.getWorld(key.dimension);
                     if (wrld != null) {
                         for (int i = 0; i < key.power; i++) {
@@ -941,7 +936,11 @@ public class AMEventHandler {
 
                     if (SkillTreeManager.instance.isSkillDisabled(SkillManager.instance.getSkill("ConcentrateTime"))) {
                         acceleratedEntities.clear();
-                        acceleratedBlocks.clear();
+                        for (TimedBlockEffect effect : new ArrayList<TimedBlockEffect>(
+                            extendedProperties.getAcceleratedTiles()
+                                .keySet())) {
+                            extendedProperties.removeAcceleratedTile(effect);
+                        }
                     }
                     for (Map.Entry<String, String> entry : acceleratedEntities.entrySet()) {
                         TimedEntityEffect key = acceleratedEntityKey(entry.getKey());

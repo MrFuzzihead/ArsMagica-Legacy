@@ -55,6 +55,8 @@ import am2.network.AMDataWriter;
 import am2.network.AMNetHandler;
 import am2.network.AMPacketIDs;
 import am2.particles.AMLineArc;
+import am2.playerextensions.effects.TimedBlockEffect;
+import am2.playerextensions.effects.TimedEffectCodec;
 import am2.spell.SkillManager;
 import am2.spell.SkillTreeManager;
 import am2.spell.SpellHelper;
@@ -92,6 +94,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
      * entirely for the common case.
      */
     private final transient Set<String> timedEffectKeys = new HashSet<String>();
+    private final transient Map<TimedBlockEffect, Integer> acceleratedTiles = new HashMap<TimedBlockEffect, Integer>();
 
     private final Map<String, String> compendium_entries = new HashMap<String, String>();
 
@@ -1299,7 +1302,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
     public void addToExtraVariables(String name, String value) {
         extra_properties.put(name, value);
-        trackTimedEffectKey(name);
+        trackTimedEffectKey(name, value);
         setFullSync();
     }
 
@@ -1379,6 +1382,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     public void clearExtraVariables() {
         extra_properties.clear();
         timedEffectKeys.clear();
+        acceleratedTiles.clear();
         setFullSync();
     }
 
@@ -1387,6 +1391,10 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         extra_properties.keySet()
             .removeIf(key -> key != null && key.contains(contains));
         timedEffectKeys.removeIf(key -> key.contains(contains));
+        acceleratedTiles.keySet()
+            .removeIf(
+                effect -> TimedEffectCodec.encodeAcceleratedTile(effect)
+                    .contains(contains));
         setFullSync();
     }
 
@@ -1402,19 +1410,54 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         return false;
     }
 
-    private void trackTimedEffectKey(String name) {
-        if (isTimedEffectKey(name)) timedEffectKeys.add(name);
+    private void trackTimedEffectKey(String name, String value) {
+        if (!isTimedEffectKey(name)) return;
+        timedEffectKeys.add(name);
+        if (name.startsWith("accelerated_fast_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseAcceleratedTile(name);
+            if (effect != null) {
+                try {
+                    acceleratedTiles.put(effect, Integer.parseInt(value));
+                } catch (NumberFormatException ignored) {
+                    // Keep the legacy string; malformed durations must not break loading.
+                }
+            }
+        }
     }
 
     private void untrackTimedEffectKey(String name) {
-        if (isTimedEffectKey(name)) timedEffectKeys.remove(name);
+        if (!isTimedEffectKey(name)) return;
+        timedEffectKeys.remove(name);
+        if (name.startsWith("accelerated_fast_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseAcceleratedTile(name);
+            if (effect != null) acceleratedTiles.remove(effect);
+        }
     }
 
     private void rebuildTimedEffectKeys() {
         timedEffectKeys.clear();
-        for (String key : extra_properties.keySet()) {
-            trackTimedEffectKey(key);
+        acceleratedTiles.clear();
+        for (Map.Entry<String, String> entry : extra_properties.entrySet()) {
+            trackTimedEffectKey(entry.getKey(), entry.getValue());
         }
+    }
+
+    public Map<TimedBlockEffect, Integer> getAcceleratedTiles() {
+        return acceleratedTiles;
+    }
+
+    public void setAcceleratedTileDuration(TimedBlockEffect effect, int duration) {
+        acceleratedTiles.put(effect, duration);
+        extra_properties.put(TimedEffectCodec.encodeAcceleratedTile(effect), String.valueOf(duration));
+        setFullSync();
+    }
+
+    public void removeAcceleratedTile(TimedBlockEffect effect) {
+        acceleratedTiles.remove(effect);
+        String key = TimedEffectCodec.encodeAcceleratedTile(effect);
+        extra_properties.remove(key);
+        timedEffectKeys.remove(key);
+        setFullSync();
     }
 
     public Map<String, String> getExtraVariablesContains(String contains) {

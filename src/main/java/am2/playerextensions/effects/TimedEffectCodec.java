@@ -24,6 +24,18 @@ public final class TimedEffectCodec {
     }
 
     /** Parses {@code timefortified_tile_x_y_z_dim} and {@code shielded_tile_x_y_z_dim}. */
+    public static String encodeAcceleratedTile(TimedBlockEffect effect) {
+        return "accelerated_fast_tile_" + effect.x
+            + "_"
+            + effect.y
+            + "_"
+            + effect.z
+            + "_"
+            + effect.dimension
+            + "_"
+            + effect.power;
+    }
+
     public static TimedBlockEffect parseTimedBlock(String raw) {
         if (raw == null) return null;
         String[] parts = raw.split("_");
