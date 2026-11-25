@@ -1749,6 +1749,14 @@ public class AMEventHandler {
         return extendedProperties;
     }
 
+    void tickAgility(EntityLivingBase ent) {
+        if (ent.isPotionActive(BuffList.agility.id)) {
+            ent.stepHeight = 1.01f;
+        } else if (ent.stepHeight == 1.01f) {
+            ent.stepHeight = 0.5f;
+        }
+    }
+
     @SubscribeEvent
     public void onEntityLiving(LivingUpdateEvent event) {
 
@@ -1789,11 +1797,7 @@ public class AMEventHandler {
             tickPlayerFlight((EntityPlayer) ent, extendedProperties);
         }
 
-        if (ent.isPotionActive(BuffList.agility.id)) {
-            ent.stepHeight = 1.01f;
-        } else if (ent.stepHeight == 1.01f) {
-            ent.stepHeight = 0.5f;
-        }
+        tickAgility(ent);
 
         tickSummon(ent);
 

@@ -48,6 +48,7 @@ public class AMEventHandlerPerfGuardTest {
     private ArsMagicaPotion previousFrostSlowed;
     private ArsMagicaPotion previousFury;
     private ArsMagicaPotion previousHaste;
+    private ArsMagicaPotion previousAgility;
 
     @Before
     public void stubPotionStatics() throws Exception {
@@ -57,12 +58,14 @@ public class AMEventHandlerPerfGuardTest {
         previousFrostSlowed = BuffList.frostSlowed;
         previousFury = BuffList.fury;
         previousHaste = BuffList.haste;
+        previousAgility = BuffList.agility;
         setPotion("flight", mock(ArsMagicaPotion.class));
         setPotion("levitation", mock(ArsMagicaPotion.class));
         setPotion("entangled", mock(ArsMagicaPotion.class));
         setPotion("frostSlowed", mock(ArsMagicaPotion.class));
         setPotion("fury", mock(ArsMagicaPotion.class));
         setPotion("haste", mock(ArsMagicaPotion.class));
+        setPotion("agility", mock(ArsMagicaPotion.class));
     }
 
     @After
@@ -73,6 +76,7 @@ public class AMEventHandlerPerfGuardTest {
         setPotion("frostSlowed", previousFrostSlowed);
         setPotion("fury", previousFury);
         setPotion("haste", previousHaste);
+        setPotion("agility", previousAgility);
     }
 
     private static void setPotion(String fieldName, ArsMagicaPotion value) throws Exception {
@@ -121,6 +125,28 @@ public class AMEventHandlerPerfGuardTest {
 
         assertFalse(AMEventHandler.shouldTickAcceleratedBlocks(null));
         assertFalse(AMEventHandler.shouldTickTimedEffects(null));
+    }
+
+    @Test
+    public void agilityPotionRaisesStepHeight() {
+        AMEventHandler handler = new AMEventHandler();
+        EntityLivingBase entity = mock(EntityLivingBase.class);
+        when(entity.isPotionActive(BuffList.agility.id)).thenReturn(true);
+
+        handler.tickAgility(entity);
+
+        assertEquals(1.01F, entity.stepHeight, 0.001F);
+    }
+
+    @Test
+    public void losingAgilityRestoresStepHeight() {
+        AMEventHandler handler = new AMEventHandler();
+        EntityLivingBase entity = mock(EntityLivingBase.class);
+        entity.stepHeight = 1.01F;
+
+        handler.tickAgility(entity);
+
+        assertEquals(0.5F, entity.stepHeight, 0.001F);
     }
 
     @Test
