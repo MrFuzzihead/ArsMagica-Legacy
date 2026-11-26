@@ -1553,7 +1553,7 @@ JaCoCo branch coverage:             1316 / 29755 (4.42%)
 Coverage floor in addon.gradle.kts: 0.002 (0.2%)
 catch (Throwable ...):              0
 printStackTrace():                  0
-TODO/FIXME:                         12
+TODO/FIXME:                         4
 Commented-out lines (`//`):         3064
 Raw List/Map declarations:          0
 Static collections:                 73
