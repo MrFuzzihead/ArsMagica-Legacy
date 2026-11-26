@@ -953,7 +953,7 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 
 ### Current state
 
-- 444 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
+- 446 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
 - The server game test has 232 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
 - The client game test has 23 assertions at the main menu (proxy, key bindings, creative tabs, localisation).
 - Coverage is 177/69,939 lines (0.25%), with a 0.2% floor. The game-test coverage report is generated but not enforced.
@@ -1058,7 +1058,7 @@ These classes/features are unreferenced or incomplete. Some are intentionally re
 - The always-false client-exprop desync path and the unused `MAGIC_LEVEL_UP` request/response packet were removed.
 - `AMGuiHelper.OpenBookGUI` is implemented instead of being an empty TODO; lost journals now open the vanilla book GUI.
 
-**Commented-out code and stale TODOs (14 TODO/FIXME):**
+**Commented-out code and stale TODOs (12 TODO/FIXME):**
 
 - The stale battery damage scheme, “devastating explosion” commentary and dead `allShapeGroupsAdded` field are gone.
 - `AMEventHandler`/`ExtendedProperties` comment cleanup is substantially improved; the profanity block and unused
@@ -1067,10 +1067,11 @@ These classes/features are unreferenced or incomplete. Some are intentionally re
 
 **Error-handling cleanup:**
 
-- 78 `catch (Throwable ...)` blocks and 29 `printStackTrace()` calls remain. Packet handlers now emit one structured
-  error instead of a per-read stack trace, so malformed packets cannot flood the log as easily. Renderers still swallow
-  `Throwable` entirely (for example `EssenceGeneratorRenderer.java:198`, `FlickerHabitatRenderer.java:46,93`), which
-  hides real rendering failures.
+- No `catch (Throwable ...)` blocks or `printStackTrace()` calls remain. Catches were narrowed to `Exception`, or
+  `Exception | LinkageError` where a user-supplied class name can fail to link; logging uses the new
+  `LogHelper.error(Throwable, ...)`/`LogHelper.warn(Throwable, ...)` overloads.
+- 26 intentionally empty renderer-guard catches remain. They still suppress rendering exceptions, but no longer swallow
+  `Error`/linkage failures.
 - 59 raw `List`/`Map`/`Iterator` declarations; generally harmless on Java 8, but they make the packet code harder to audit.
 
 ---
@@ -1536,18 +1537,18 @@ The exact names are illustrative; the point is that each group can be enabled/di
 ## Appendix A — Measurements
 
 ```text
-Java files under src/main/java:      1053
-Lines under src/main/java:          156397
-Java files under src/test/java:     4
+Java files under src/main/java:      1085
+Lines under src/main/java:          152012
+Java files under src/test/java:     110
 Java files under src/gameTest/java: 3
-JUnit tests:                        19
-Game-test assertions:               109 server + 23 client
-JaCoCo line coverage:               177 / 69939 (0.25%)
-JaCoCo branch coverage:             39 / 30318 (0.13%)
+JUnit tests:                        446
+Game-test assertions:               232 server + 23 client
+JaCoCo line coverage:               3389 / 68391 (4.96%)
+JaCoCo branch coverage:             1312 / 29757 (4.41%)
 Coverage floor in addon.gradle.kts: 0.002 (0.2%)
-catch (Throwable ...):              94
-printStackTrace():                  84
-TODO/FIXME:                         21
+catch (Throwable ...):              0
+printStackTrace():                  0
+TODO/FIXME:                         12
 Commented-out lines (`//`):         3064
 Raw List/Map declarations:          59
 Static collections:                 73
