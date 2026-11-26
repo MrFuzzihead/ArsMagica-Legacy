@@ -79,13 +79,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
     private final ArrayList<Integer> summon_ent_ids = new ArrayList<Integer>();
 
-    // I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
-    // I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
-    // I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
-    // I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
-    // I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
-    // I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
-    /** I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!! */
+    /** Legacy encoded prefixes retained for NBT/sync compatibility while typed maps are authoritative. */
     private static final String[] TIMED_EFFECT_PREFIXES = { "accelerated_fast_tile_", "accelerated_fast_entity_",
         "accelerated_slow_tile_", "accelerated_slow_entity_", "spatialvortex_", "timefortified_tile_",
         "shielded_tile_" };
@@ -1821,13 +1815,13 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     }
 
     public boolean isEntryLocked(String name) {
-        return compendium_entries.get(name)
-            .contains("L");
+        String value = compendium_entries.get(name);
+        return value != null && value.contains("L");
     }
 
     public boolean isEntryNew(String name) {
-        return compendium_entries.get(name)
-            .contains("N");
+        String value = compendium_entries.get(name);
+        return value != null && value.contains("N");
     }
 
     public Iterator<Map.Entry<String, String>> getCompendiumIterator() {

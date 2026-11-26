@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import net.minecraft.util.StatCollector;
 
 import am2.api.spell.component.interfaces.ISpellComponent;
-import am2.api.spell.component.interfaces.ISpellModifier;
 import am2.api.spell.component.interfaces.ISpellPart;
 import am2.api.spell.component.interfaces.ISpellShape;
 import am2.spell.components.Summon;
@@ -134,10 +133,6 @@ public class SpellValidator {
                 .add(part);
         }
         return segmented;
-    }
-
-    public boolean modifierCanBeAdded(ISpellModifier modifier) {
-        return false;
     }
 
     public static class ValidationResult {

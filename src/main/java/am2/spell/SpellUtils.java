@@ -714,7 +714,6 @@ public class SpellUtils implements ISpellUtils {
                 stage.shape,
                 stage.definition.getComponents(),
                 stage.definition.getModifiers());
-            ISkillTreeEntry entry = SkillManager.instance.getSkill(stage.shape);
         }
 
         // copy the other stages from the original to the new one

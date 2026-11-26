@@ -79,7 +79,6 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 
     private final ArrayList<KeyValuePair<ISpellPart, byte[]>> spellDef;
     private final ArrayList<ArrayList<KeyValuePair<ISpellPart, byte[]>>> shapeGroups;
-    private final boolean allShapeGroupsAdded = false;
 
     private int currentKey = -1;
     private int checkCounter;

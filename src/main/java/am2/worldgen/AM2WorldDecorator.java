@@ -111,8 +111,6 @@ public class AM2WorldDecorator implements IWorldGenerator {
         tarmaRoot = new AM2FlowerGen(BlocksCommonProxy.tarmaRoot, 0);
 
         pools = new AM2PoolGen();
-
-        WorldGenEssenceLakes lakes = new WorldGenEssenceLakes(BlocksCommonProxy.liquidEssence);
     }
 
     @Override

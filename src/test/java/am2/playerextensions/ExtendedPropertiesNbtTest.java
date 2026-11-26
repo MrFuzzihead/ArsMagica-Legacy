@@ -45,6 +45,25 @@ public class ExtendedPropertiesNbtTest {
     }
 
     @Test
+    public void missingCompendiumEntriesAreNotLockedOrNew() {
+        ExtendedProperties properties = new ExtendedProperties();
+        assertFalse(properties.isEntryLocked("missing"));
+        assertFalse(properties.isEntryNew("missing"));
+    }
+
+    @Test
+    public void compendiumEntryFlagsAreReadFromTheValue() {
+        ExtendedProperties properties = new ExtendedProperties();
+        properties.setCompendiumEntryNoSync("locked_new", "LN");
+        properties.setCompendiumEntryNoSync("plain", "U");
+
+        assertTrue(properties.isEntryLocked("locked_new"));
+        assertTrue(properties.isEntryNew("locked_new"));
+        assertFalse(properties.isEntryLocked("plain"));
+        assertFalse(properties.isEntryNew("plain"));
+    }
+
+    @Test
     public void removeExtraVariablesContainingRemovesMatchingKeys() {
         ExtendedProperties properties = new ExtendedProperties();
         properties.addToExtraVariables("accelerated_slow_entity_1", "5");

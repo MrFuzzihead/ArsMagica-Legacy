@@ -876,10 +876,6 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
         return SpellValidator.instance.spellDefIsValid(shapeGroups, segmented);
     }
 
-    public boolean modifierCanBeAdded(ISpellModifier modifier) {
-        return false;
-    }
-
     static class ValueComparator implements Comparator<Affinity> {
 
         Map<Affinity, Integer> base;
