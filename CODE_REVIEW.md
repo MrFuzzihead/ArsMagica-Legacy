@@ -921,7 +921,7 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 
 ### Current state
 
-- 468 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
+- 472 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
 - The server game test has 233 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
 - The client game test has 23 assertions at the main menu (proxy, key bindings, creative tabs, localisation).
 - Coverage is 177/69,939 lines (0.25%), with a 0.2% floor. The game-test coverage report is generated but not enforced.
@@ -999,7 +999,7 @@ A 0.2% floor cannot protect anything. Either set a meaningful per-package floor 
 - **`mcmod.info`** — update the author/credits metadata so it names the current maintainer of this fork and matches the
   README.
 - **README test counts** — currently says 19 unit tests / 109 server assertions / 23 client assertions. The actual
-  checked state is 468 unit tests / 233 server assertions / 23 client assertions; keep these in sync.
+  checked state is 472 unit tests / 233 server assertions / 23 client assertions; keep these in sync.
 - **`run`/IDE configuration** — stale jar-name and antlr4 classpath noise remain local-environment cleanup, not source
   defects.
 - **CI** — the game-test workflow already greps for success markers. Add a check that AM2 logs no `ERROR` entries during
@@ -1054,8 +1054,8 @@ These classes/features are unreferenced or incomplete. Some are intentionally re
 
 ## 10. Smaller correctness / UX issues
 
-- **`TileEntityManaBattery.breakBlock`** only saves the current `outputPowerType` amount (`BlockManaBattery.java:126-145`). If the battery holds multiple power types (possible while empty, as described above), the others are lost. Save all types or forbid mixed storage.
-- **`TileEntityCrystalMarker.cyclePriority`** sends a description packet to every nearby player individually (`TileEntityCrystalMarker.java:54-65`); `markBlockForUpdate`/`sendToAllAround` is simpler.
+> **Status: Fixed.** The listed keybinding, shrink, bucket, ethereal, projectile-owner, flicker-offset, battery
+> read/mixed-storage, AStar, crystal-marker and tab-list items have all been addressed and covered where practical.
 
 ---
 
@@ -1507,7 +1507,7 @@ Java files under src/main/java:      1085
 Lines under src/main/java:          152012
 Java files under src/test/java:     110
 Java files under src/gameTest/java: 3
-JUnit tests:                        468
+JUnit tests:                        472
 Game-test assertions:               233 server + 23 client
 JaCoCo line coverage:               3404 / 68386 (4.98%)
 JaCoCo branch coverage:             1316 / 29755 (4.42%)
