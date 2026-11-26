@@ -1055,8 +1055,10 @@ These classes/features are unreferenced or incomplete. Some are intentionally re
   `ContainerInscriptionTable.modifierCanBeAdded`.
 - `ExtendedProperties.isEntryLocked`/`isEntryNew` are now null-safe for missing entries and covered by
   `ExtendedPropertiesNbtTest`.
+- The always-false client-exprop desync path and the unused `MAGIC_LEVEL_UP` request/response packet were removed.
+- `AMGuiHelper.OpenBookGUI` is implemented instead of being an empty TODO; lost journals now open the vanilla book GUI.
 
-**Commented-out code and stale TODOs (3,064 comment lines, 21 TODO/FIXME):**
+**Commented-out code and stale TODOs (14 TODO/FIXME):**
 
 - The stale battery damage scheme, “devastating explosion” commentary and dead `allShapeGroupsAdded` field are gone.
 - `AMEventHandler`/`ExtendedProperties` comment cleanup is substantially improved; the profanity block and unused
@@ -1070,7 +1072,6 @@ These classes/features are unreferenced or incomplete. Some are intentionally re
   `Throwable` entirely (for example `EssenceGeneratorRenderer.java:198`, `FlickerHabitatRenderer.java:46,93`), which
   hides real rendering failures.
 - 59 raw `List`/`Map`/`Iterator` declarations; generally harmless on Java 8, but they make the packet code harder to audit.
-- Several comment blocks are shouty/profane (for example the repeated “I AM SO BLOODY TIRED…” in `ExtendedProperties.java:73-82`). Clean these up for a public MIT repo.
 
 ---
 
@@ -1086,8 +1087,6 @@ These classes/features are unreferenced or incomplete. Some are intentionally re
 - **`TileEntityManaBattery.readFromNBT`** uses `PowerTypes.getByID(...)`, which returns `NONE` for unknown IDs, but `outputPowerType` can still be `null` if a future `getByID` changes; add a null fallback and clamp.
 - **`TileEntityManaBattery.breakBlock`** only saves the current `outputPowerType` amount (`BlockManaBattery.java:126-145`). If the battery holds multiple power types (possible while empty, as described above), the others are lost. Save all types or forbid mixed storage.
 - **`AStar.Path.compareTo`** casts `f - p.f` to `int` (`AStar.java:49-53`), so paths with costs less than 1 apart compare equal. Use `Double.compare`.
-- **`ObeliskFuelHelper.registerFuelType`** mutates the caller's stack to size 0 (`ObeliskFuelHelper.java:18-21`). Copy first.
-- **`EnervatorRecipeHelper.getRecipe`** returns the shared output stack and mutates its `stackSize` (`EnervatorRecipeHelper.java:29-53`). Return a copy.
 - **`TileEntityCrystalMarker.cyclePriority`** sends a description packet to every nearby player individually (`TileEntityCrystalMarker.java:54-65`); `markBlockForUpdate`/`sendToAllAround` is simpler.
 - **`AMClientEventHandler.onJoinWorldClient`** builds a new `tablist` list from the player info list and removes names from that copy, then checks `tablist.isEmpty()`. The intent is to detect “only me online”; it works, but the removal from a copy is confusing. Add a comment or use a boolean count.
 
