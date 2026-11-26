@@ -62,6 +62,7 @@ import am2.handlers.BucketHandler;
 import am2.items.AMSpawnEgg;
 import am2.items.ItemOre;
 import am2.items.ItemSpellBook;
+import am2.items.ItemWakebloom;
 import am2.items.ItemsCommonProxy;
 import am2.mixins.early.DamageSourceAccessor;
 import am2.mixins.early.EntityArrowAccessor;
@@ -243,6 +244,9 @@ final class ArsMagicaGameTests {
             Item.getItemFromBlock(BlocksCommonProxy.witchwoodLog) != null,
             "the witchwood log must have an ItemBlock");
         check(Item.getItemFromBlock(BlocksCommonProxy.occulus) != null, "the occulus must have an ItemBlock");
+        check(
+            Item.getItemFromBlock(BlocksCommonProxy.wakebloom) instanceof ItemWakebloom,
+            "the wakebloom must use its water-placement ItemBlock");
     }
 
     private static void checkRegisteredBlock(String pName, Block pBlock) {

@@ -69,6 +69,7 @@ import am2.blocks.tileentities.TileEntitySummoner;
 import am2.crafting.SpellCraftingRecipe;
 import am2.items.ItemEssence;
 import am2.items.ItemOre;
+import am2.items.ItemWakebloom;
 import am2.items.ItemsCommonProxy;
 import am2.items.OreItem;
 import am2.spell.SkillManager;
@@ -874,7 +875,7 @@ public class BlocksCommonProxy {
         registerBlock(armorInfuser, "armorInfuser");
         registerBlock(flickerLure, "flickerLure");
         registerBlock(arcaneDeconstructor, "arcaneDeconstructor");
-        registerBlock(wakebloom, "wakebloom");
+        registerBlock(wakebloom, ItemWakebloom.class, "wakebloom");
         registerBlock(otherworldAura, "otherworldAura");
         registerBlock(spellSealedDoor, "spellSealedDoor");
         registerBlock(entropicEnervator, "entropicEvervator");
