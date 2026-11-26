@@ -953,7 +953,7 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 
 ### Current state
 
-- 447 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
+- 449 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
 - The server game test has 233 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
 - The client game test has 23 assertions at the main menu (proxy, key bindings, creative tabs, localisation).
 - Coverage is 177/69,939 lines (0.25%), with a 0.2% floor. The game-test coverage report is generated but not enforced.
@@ -1060,12 +1060,15 @@ These classes/features are unreferenced or incomplete. Some are intentionally re
 - `ItemWakebloom` is now registered as the wakebloom block's ItemBlock, restoring its water-placement behavior and
   removing the last unreferenced item class.
 
-**Commented-out code and stale TODOs (12 TODO/FIXME):**
+**Commented-out code and stale TODOs (4 TODO/FIXME):**
 
 - The stale battery damage scheme, “devastating explosion” commentary and dead `allShapeGroupsAdded` field are gone.
 - `AMEventHandler`/`ExtendedProperties` comment cleanup is substantially improved; the profanity block and unused
   `WorldGenEssenceLakes`/`SpellUtils` locals are gone.
 - The `String.format("ArrayIndex", i)` pattern no longer appears in the source.
+- Battery charge/tooltip strings are localized, the occulus book-slot validation is fixed and null-safe, and the stale
+  AMParticle/Dispel/Lectern/wakebloom/EntityBroom blocks are gone. Remaining TODOs are the two spell-loop sound hooks,
+  one OBJ normal fallback and one WizardsAutumn sound cue.
 
 **Error-handling cleanup:**
 
@@ -1543,7 +1546,7 @@ Java files under src/main/java:      1085
 Lines under src/main/java:          152012
 Java files under src/test/java:     110
 Java files under src/gameTest/java: 3
-JUnit tests:                        447
+JUnit tests:                        449
 Game-test assertions:               233 server + 23 client
 JaCoCo line coverage:               3404 / 68386 (4.98%)
 JaCoCo branch coverage:             1316 / 29755 (4.42%)
