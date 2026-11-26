@@ -55,11 +55,12 @@ public class TileEntityCrystalMarker extends TileEntity implements IInventory, I
         this.priority++;
         this.priority %= TileEntityFlickerHabitat.PRIORITY_LEVELS;
         if (!this.worldObj.isRemote) {
+            Packet packet = getDescriptionPacket();
             for (EntityPlayerMP player : (List<EntityPlayerMP>) this.worldObj.getEntitiesWithinAABB(
                 EntityPlayerMP.class,
                 AxisAlignedBB.getBoundingBox(xCoord, yCoord, zCoord, xCoord + 1, yCoord + 1, zCoord + 1)
                     .expand(64, 64, 64))) {
-                player.playerNetServerHandler.sendPacket(getDescriptionPacket());
+                player.playerNetServerHandler.sendPacket(packet);
             }
         }
     }
