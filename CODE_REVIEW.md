@@ -953,7 +953,7 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 
 ### Current state
 
-- 446 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
+- 447 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
 - The server game test has 232 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
 - The client game test has 23 assertions at the main menu (proxy, key bindings, creative tabs, localisation).
 - Coverage is 177/69,939 lines (0.25%), with a 0.2% floor. The game-test coverage report is generated but not enforced.
@@ -1072,7 +1072,7 @@ These classes/features are unreferenced or incomplete. Some are intentionally re
   `LogHelper.error(Throwable, ...)`/`LogHelper.warn(Throwable, ...)` overloads.
 - 26 intentionally empty renderer-guard catches remain. They still suppress rendering exceptions, but no longer swallow
   `Error`/linkage failures.
-- 59 raw `List`/`Map`/`Iterator` declarations; generally harmless on Java 8, but they make the packet code harder to audit.
+- No raw `List`/`Map`/`Iterator`/`Set`/`Collection` declarations remain; overrides and local queries now carry element types.
 
 ---
 
@@ -1541,16 +1541,16 @@ Java files under src/main/java:      1085
 Lines under src/main/java:          152012
 Java files under src/test/java:     110
 Java files under src/gameTest/java: 3
-JUnit tests:                        446
+JUnit tests:                        447
 Game-test assertions:               232 server + 23 client
-JaCoCo line coverage:               3389 / 68391 (4.96%)
-JaCoCo branch coverage:             1312 / 29757 (4.41%)
+JaCoCo line coverage:               3404 / 68386 (4.98%)
+JaCoCo branch coverage:             1316 / 29755 (4.42%)
 Coverage floor in addon.gradle.kts: 0.002 (0.2%)
 catch (Throwable ...):              0
 printStackTrace():                  0
 TODO/FIXME:                         12
 Commented-out lines (`//`):         3064
-Raw List/Map declarations:          59
+Raw List/Map declarations:          0
 Static collections:                 73
 @SideOnly annotations:              327
 ```
