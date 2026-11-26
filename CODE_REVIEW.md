@@ -82,47 +82,12 @@ and the automated tests that now cover the fix.
 | 6.7 API property getters | **Fixed** — null-safe entities/identifiers and lifecycle docs | `d148bbc` | `ArsMagicaApiPropertiesTest` |
 | 6.7 Legacy second mana API | **Fixed** — live legacy types deprecated, commented-out dead types removed | `9ff50da` | `LegacyManaApiTest` |
 | 6.6 Duplicated sync countdown | **Fixed** — shared `SyncWindow` for all three synced stores | `c268948` | `SyncWindowTest`, `SyncWindowIntegrationTest` |
-| 6.1 Bucket handler extraction | **Partially fixed** — bucket fill moved to `am2.handlers.BucketHandler` | `5d9dc43` | `BucketHandlerTest`, game-test bucket checks |
-| 6.1 Potion-brewing extraction | **Partially fixed** — brewing replacement moved to `PotionBrewingHandler` | `a583c03` | `PotionBrewingHandlerTest` |
-| 6.1 Passive-effect handlers | **Partially fixed** — temporal-anchor join cleanup and fury break-speed extracted | `e8b50a4` | `SmallEffectHandlersTest` |
-| 6.1 Cost/overlay handlers | **Partially fixed** — spellbook mana discount and client overlays extracted | `ff0fcdf` | `ManaCostHandlerTest`, `BlockOverlayHandlerTest` |
-| 6.1 Item-watch handlers | **Partially fixed** — item-frame interaction and item-toss watching extracted | `a1b1147` | `ItemWatchHandlerTest` |
-| 6.1 Entity construction | **Partially fixed** — property/attribute registration moved to `EntityConstructionHandler` | `b0db6bd` | `EntityConstructionHandlerTest` |
-| 6.1 Drop/pickup handlers | **Partially fixed** — summon drops and compendium pickup extracted | `a955317` | `SummonDropHandlerTest`, `CompendiumPickupHandlerTest` |
-| 6.1 Soulspike attacks | **Partially fixed** — soulspike on-hit logic extracted | `898455b` | `SoulspikeAttackHandlerTest` |
-| 6.1 Connection tickrate | **Partially fixed** — client connect/disconnect/login tickrate handling extracted | `e6266d5` | FML-runtime game tests only |
-| 6.1 Force-shield block protection | **Partially fixed** — protected block-break handling extracted | `fd3513b` | FML-runtime game tests only |
-| 6.1 Accelerated entity tick | **Partially fixed** — server-tick extra entity updates extracted | `1fce9b3` | `AcceleratedEntityTickHandlerTest` |
-| 6.1 Soulbound death handling | **Partially fixed** — death/clone inventory preservation extracted | `10d9b05` | `SoulboundItemsHandlerTest` |
-| 6.1 Player clone data | **Partially fixed** — extended/skill/rift/affinity clone transfer extracted | `77e43df` | `PlayerCloneDataHandlerTest` |
-| 6.1 Jump movement buffs | **Partially fixed** — agility/leap/entangled/ender-boot jump handling extracted | `ee51011` | `JumpHandlerTest` |
-| 6.1 Living attack defense | **Partially fixed** — fire armor retaliation and mana shield extracted | `c6bd8f0` | `CombatDefenseHandlerTest` |
-| 6.1 Fall handling | **Partially fixed** — slowfall/boots/gravity/fall protection extracted | `6cf97ea` | `FallHandlerTest` |
-| 6.1 Temporal-anchor death | **Partially fixed** — death prevention consolidated into `TemporalAnchorHandler` | `aed2560` | `SmallEffectHandlersTest` |
-| 6.1 Entity death handling | **Partially fixed** — contingencies/summon cleanup/karma/stem notification extracted | `fdc4bc5` | `EntityDeathHandlerTest` |
-| 6.1 Enderman teleport | **Partially fixed** — astral barrier/flicker teleport behavior extracted | `ab5f3a1` | `EndermanTeleportHandlerTest` |
-| 6.1 Living hurt handling | **Partially fixed** — armor/shield/contingency damage modifiers extracted | `47234c4` | `LivingHurtHandlerTest` |
 | 6.1 Handler split complete | **Fixed** — all event handlers moved; `AMEventHandler` is shared state/helpers only | `12e0951`, `24b1d02` | unit + game suites |
-| 6.2 World-scoped force shields | **Partially fixed** — force-shield state moved to `WorldStateManager` | `d8f9b33e` | `WorldStateManagerTest`, `AMEventHandlerStateTest` |
-| 6.2 World-scoped transient maps | **Partially fixed** — hallucination/dust/curse state moved to `WorldStateManager` | `75c21765` | `WorldStateManagerTest`, `AMEventHandlerStateTest` |
-| 6.2 World-scoped entity maps | **Partially fixed** — accelerated/slowed UUID maps moved to `WorldStateManager` | `a30fb74` | `WorldStateManagerTest`, `AMEventHandlerPerfGuardTest` |
-| 6.2 World-scoped retro-gen | **Partially fixed** — retrogen queues moved to `WorldStateManager` | `30fcbb3` | `RetroactiveWorldgeneratorTest`, `WorldStateManagerTest` |
-| 6.2 World-scoped power registry | **Partially fixed** — `PowerNodeRegistry` is now a world-scoped attachment | `e683637` | `PowerNodeRegistryWorldScopeTest`, `WorldStateManagerTest` |
-| 6.2 World-scoped flipped state | **Partially fixed** — last AMEventHandler transient map moved | `9fac8d7` | `WorldStateManagerTest`, `AMEventHandlerStateTest` |
-| 6.1 Handler section extraction | **Partially fixed** — `onEntityLiving` fully decomposed into named sections; other event families remain | `c8e815f`, `3cb040e`, `6bb2836`, `01e293e`, `6817ebc`, `a9c056a`, `5e101ac`, `b1c6314`, `3f47f30`, `3689056`, `9b76b22`, `aaeaf3b`, `388e527`, `6227d51` | `AMEventHandlerPerfGuardTest` |
-| 6.4 Packet payload validation | **Partially fixed** — 1 MiB cap before payload allocation on both processors | `092f9ea` | `PacketValidationTest` |
+| 6.2 World-scoped state | **Fixed** — `WorldStateManager` owns transient state and power registries by live world | `d8f9b33e`…`9fac8d7` | `WorldStateManagerTest`, `AMEventHandlerStateTest`, `PowerNodeRegistryWorldScopeTest` |
 | 6.4 Strict packet reads | **Fixed for both processors** — failure guards across server and client packet handlers | `74fc17f`, `e10b97c`, `eadef7a` | `AMDataReaderTest`, `AMPacketProcessorServerStrictReadTest`, `AMPacketProcessorClientStrictReadTest` |
 | 6.4 Packet direction tags | **Fixed** — per-ID direction registry enforced before dispatch | `493cb80` | `PacketValidationTest` |
-| 6.4 Self-scoped packet authority | **Partially fixed** — sender-bound desync/beta requests and spellbook slot bounds | `0e32562` | `PacketAuthorityTest` |
 | 6.4 Container authority rechecks | **Fixed** — workbench reach rechecked; customization bound to sender | `9dd5a72` | `PacketAuthorityTest` (reach/self helpers) |
-| 6.4 Validated packet envelope | **Partially fixed** — direction/size/id/payload centralized in `PacketEnvelope` | `f8a478b` | `PacketEnvelopeTest` |
 | 6.4 Typed handler registries | **Fixed** — packet switches replaced by typed per-side handler tables | `65de89d` | `PacketRegistryTest` |
-| 6.3 Typed timed-effect keys | **Partially fixed** — typed block/entity/vortex keys and codec extracted from `AMEventHandler` | `9e22120` | `TimedEffectCodecTest` |
-| 6.3 Accelerated-tile storage | **Partially fixed** — typed duration map is the hot-path source; string key retained for sync/NBT | `f550670` | `ExtendedPropertiesAcceleratedTileTest` |
-| 6.3 Entity effect storage | **Partially fixed** — accelerated/slowed entities use typed duration maps with legacy string mirroring | `50e3ceb` | `ExtendedPropertiesEntityEffectTest` |
-| 6.3 Slowed-tile storage | **Partially fixed** — slowed tiles use a typed duration map with legacy string mirroring | `2b51cac` | `ExtendedPropertiesSlowedTileTest` |
-| 6.3 Fortified/shielded storage | **Partially fixed** — both block families use typed duration maps with legacy string mirroring | `c009e3a` | `ExtendedPropertiesFortifiedShieldTest` |
-| 6.3 Spatial-vortex storage | **Partially fixed** — typed spatial map drives the vortex loop; legacy strings mirrored | `3f5b88e` | `ExtendedPropertiesSpatialVortexTest` |
 | 6.3 Typed effect storage | **Fixed** — typed maps are the source of truth; NBT/sync derive and migrate legacy strings | `cfa992c` | `ExtendedProperties*EffectTest`, `TimedEffectCodecTest` |
 
 The ASM/AT/reflection migration described in §12 is also fully implemented: no custom ASM transformers, no
@@ -927,6 +892,9 @@ would remove a whole class of bugs. At minimum, add a `PacketValidation` utility
 
 The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation, plus a 1,700-line `BytecodeTransformers`, plus a 1,000-line `ASMFix` builder. It currently does nothing in the shipped artifact (2.1). Maintaining a private ASM framework for 1.7.10 is risky: it is sensitive to obfuscation mappings, other mods' transformers, and Java 7/8 stack-map frames (it uses `COMPUTE_MAXS`, not `COMPUTE_FRAMES`). If the features are still wanted, prefer a small, focused Mixin set (the build already has the GTNH Mixin tooling available) or move the affected behavior into normal Forge events. If not, delete it; it is the largest unmaintained surface in the repo.
 
+> **Status: Fixed.** The old ASM/coremod/access-transformer layers are removed. The remaining transforms are Mixins, and
+> `verifyMixinManifest` plus the game-test transform checks keep the loader path guarded.
+
 ### 6.6 Reduce duplicated sync code
 
 `ExtendedProperties`, `AffinityData`, and `SkillData` each implement their own `ticksToSync`/`forcingSync`/`hasUpdate`/`getUpdateData`/`handlePacketData` pattern with slightly different semantics. Extract a base `SyncedExtendedProperties` helper. This will also make the `syncTickDelay` behavior consistent and testable.
@@ -1023,16 +991,19 @@ A 0.2% floor cannot protect anything. Either set a meaningful per-package floor 
 
 ## 8. Build / CI / dependency notes
 
-- **`coreModClass` empty** — see 2.1. This is the single most important build-level issue.
-- **Optional dependency declarations** — Baubles, Thermal Foundation, and Thermal Expansion are declared but unused. CoFH is used without runtime guards. Remove unused deps and add `@Optional`/reflection guards for the ones that remain.
-- **`mcmod.info`** — the author list is `TCLProject`, `Mithion`, `Zerodaimaru`; the README says this fork is maintained by MrFuzzihead. Update the metadata/credits to match the actual maintainer and the MIT source license. The asset-license note in the README is good; keep it in the repo.
-- **`NEIAM2Config`** — verify that NEI's `IConfigureNEI` discovery actually finds it. If not, register it explicitly or add a game test with NEI present.
-- **`run` logs** — the dev client log contains a `FileNotFoundException` for a versioned jar name with a space (`feature-Refactors.3 a40447bc42`). The actual artifacts use `+` (`feature-Refactors.3+a40447bc42`). This is a stale run configuration, not a source bug, but it makes local testing noisy; clean the `run`/IDE configuration.
-- **Antlr4 jar read error** — the dev launch complains that `antlr4-4.13.2.jar` is corrupt/unreadable. It is unrelated to the mod source, but it should be cleaned from the dev classpath so real errors are visible.
-- **README test counts** — the README says 19 unit tests / 109 server assertions / 23 client assertions, which matches the current run. Keep those numbers in sync if tests are added.
-- **CI** — the game-test workflow greps all logs for the markers, which is good. Add a check that the coremod marker is present (or explicitly absent) and that the test run fails on any `ERROR` from the mod's own logger.
-
----
+- **Mixin/coremod metadata** — resolved. `usesMixins = true`, `coreModClass = mixins.EarlyMixinsLoader`, and the
+  manifest/refmap are checked by `verifyMixinManifest`.
+- **Optional dependencies** — resolved. Unused Baubles/Thermal declarations are gone; CoFH remains `compileOnly` and
+  is short-circuited when absent.
+- **`NEIAM2Config`** — verified. NEI discovers classes named `NEI*Config`; the class now documents that contract.
+- **`mcmod.info`** — update the author/credits metadata so it names the current maintainer of this fork and matches the
+  README.
+- **README test counts** — currently says 19 unit tests / 109 server assertions / 23 client assertions. The actual
+  checked state is 449 unit tests / 233 server assertions / 23 client assertions; keep these in sync.
+- **`run`/IDE configuration** — stale jar-name and antlr4 classpath noise remain local-environment cleanup, not source
+  defects.
+- **CI** — the game-test workflow already greps for success markers. Add a check that AM2 logs no `ERROR` entries during
+  the run, so otherwise-passing tests cannot hide a recoverable startup/runtime failure.
 
 ## 9. Dead code / cleanup inventory
 
