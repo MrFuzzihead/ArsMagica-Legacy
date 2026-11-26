@@ -1055,20 +1055,20 @@ These classes/features are unreferenced or incomplete. Some are intentionally re
   `ContainerInscriptionTable.modifierCanBeAdded`.
 - `ExtendedProperties.isEntryLocked`/`isEntryNew` are now null-safe for missing entries and covered by
   `ExtendedPropertiesNbtTest`.
-- `ExtendedProperties.detectPossibleDesync` still always returns `false`; the client→server desync packet path remains
-  dead and is a candidate for removal.
 
 **Commented-out code and stale TODOs (3,064 comment lines, 21 TODO/FIXME):**
 
-- `BlockManaBattery` still has a commented-out damage/damage-item scheme.
-- `TileEntityCraftingAltar` still has large commented-out “devastating explosion” commentary.
-- `AMEventHandler`/`ExtendedProperties` comment cleanup is substantially improved; the profanity block and the dead
-  `allShapeGroupsAdded` field, unused `WorldGenEssenceLakes` local and dead `SpellUtils` local are gone.
-- Many `String.format("ArrayIndex", i)` calls should be plain constants.
+- The stale battery damage scheme, “devastating explosion” commentary and dead `allShapeGroupsAdded` field are gone.
+- `AMEventHandler`/`ExtendedProperties` comment cleanup is substantially improved; the profanity block and unused
+  `WorldGenEssenceLakes`/`SpellUtils` locals are gone.
+- The `String.format("ArrayIndex", i)` pattern no longer appears in the source.
 
 **Error-handling cleanup:**
 
-- 94 `catch (Throwable ...)` blocks and 84 `printStackTrace()` calls. Packet handlers catch `Throwable` and print full stack traces; a malicious client can use this for log flooding. Renderers swallow `Throwable` entirely (for example `EssenceGeneratorRenderer.java:198`, `FlickerHabitatRenderer.java:46,93`), which hides real rendering failures.
+- 78 `catch (Throwable ...)` blocks and 29 `printStackTrace()` calls remain. Packet handlers now emit one structured
+  error instead of a per-read stack trace, so malformed packets cannot flood the log as easily. Renderers still swallow
+  `Throwable` entirely (for example `EssenceGeneratorRenderer.java:198`, `FlickerHabitatRenderer.java:46,93`), which
+  hides real rendering failures.
 - 59 raw `List`/`Map`/`Iterator` declarations; generally harmless on Java 8, but they make the packet code harder to audit.
 - Several comment blocks are shouty/profane (for example the repeated “I AM SO BLOODY TIRED…” in `ExtendedProperties.java:73-82`). Clean these up for a public MIT repo.
 
