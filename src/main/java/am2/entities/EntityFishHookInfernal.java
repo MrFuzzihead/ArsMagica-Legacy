@@ -33,7 +33,7 @@ public class EntityFishHookInfernal extends EntityFishHook {
         return (EntityFishHookAccessor) (Object) this;
     }
 
-    public static final List nether_fishing = Arrays.asList(
+    public static final List<WeightedRandomFishable> nether_fishing = Arrays.asList(
         new WeightedRandomFishable[] { new WeightedRandomFishable(new ItemStack(Items.nether_wart), 10),
             new WeightedRandomFishable(new ItemStack(Items.blaze_powder), 10),
             new WeightedRandomFishable(
@@ -159,7 +159,7 @@ public class EntityFishHookInfernal extends EntityFishHook {
             }
 
             Entity entity = null;
-            List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(
+            List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(
                 this,
                 this.boundingBox.addCoord(this.motionX, this.motionY, this.motionZ)
                     .expand(1.0D, 1.0D, 1.0D));

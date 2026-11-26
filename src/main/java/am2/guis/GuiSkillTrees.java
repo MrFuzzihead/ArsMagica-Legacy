@@ -293,7 +293,7 @@ public class GuiSkillTrees extends GuiScreen {
         }
 
         if (hoveredAffinity != null) {
-            List list = AffinityData.For(Minecraft.getMinecraft().thePlayer)
+            List<String> list = AffinityData.For(Minecraft.getMinecraft().thePlayer)
                 .getColoredAffinityEffects(hoveredAffinity);
             // list.add(0, "\247f" + hoveredAffinity.name());
             drawHoveringText(list, lastMouseX, lastMouseY, fontRendererObj, 0xFFFFFF);
@@ -768,14 +768,14 @@ public class GuiSkillTrees extends GuiScreen {
         GL11.glEnable(GL12.GL_RESCALE_NORMAL);
     }
 
-    protected void drawHoveringText(List par1List, int par2, int par3, FontRenderer font, int color) {
+    protected void drawHoveringText(List<String> par1List, int par2, int par3, FontRenderer font, int color) {
         if (!par1List.isEmpty()) {
             GL11.glDisable(GL12.GL_RESCALE_NORMAL);
             RenderHelper.disableStandardItemLighting();
             GL11.glDisable(GL11.GL_LIGHTING);
             GL11.glDisable(GL11.GL_DEPTH_TEST);
             int k = 0;
-            Iterator iterator = par1List.iterator();
+            Iterator<String> iterator = par1List.iterator();
 
             while (iterator.hasNext()) {
                 String s = (String) iterator.next();

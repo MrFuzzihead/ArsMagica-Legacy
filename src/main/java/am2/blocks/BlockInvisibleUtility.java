@@ -68,7 +68,7 @@ public class BlockInvisibleUtility extends AMBlock {
 
     @Override
     public void addCollisionBoxesToList(World world, int x, int y, int z, AxisAlignedBB axisAlignedBB,
-        List collisionList, Entity entity) {
+        List<AxisAlignedBB> collisionList, Entity entity) {
 
         if (entity == null || world == null || entity instanceof EntityPlayer || entity instanceof EntityBroom) return;
 

@@ -1,7 +1,5 @@
 package am2.worldgen;
 
-import java.util.ArrayList;
-
 import net.minecraft.init.Blocks;
 import net.minecraft.world.biome.BiomeGenPlains;
 
@@ -11,7 +9,6 @@ import am2.entities.EntityHellCow;
 public class SCLBiome extends BiomeGenPlains {
 
     public static final SCLBiome instance;
-    ArrayList list = new ArrayList();
 
     private SCLBiome(int par1) {
         super(par1);

@@ -156,7 +156,8 @@ public class ItemKeystone extends ArsMagicaItem {
     }
 
     @Override
-    public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List par3List, boolean par4) {
+    public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par3List,
+        boolean par4) {
         ItemStack[] items = getMyInventory(par1ItemStack);
 
         String s = StatCollector.translateToLocal("am2.tooltip.open");

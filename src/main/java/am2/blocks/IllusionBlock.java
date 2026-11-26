@@ -244,7 +244,7 @@ public class IllusionBlock extends AMBlock {
     }
 
     @Override
-    public void getSubBlocks(Item par1, CreativeTabs par2CreativeTabs, List par3List) {
+    public void getSubBlocks(Item par1, CreativeTabs par2CreativeTabs, List<ItemStack> par3List) {
         par3List.add(new ItemStack(this, 1, 0));
         par3List.add(new ItemStack(this, 1, 1));
     }
@@ -312,7 +312,7 @@ public class IllusionBlock extends AMBlock {
      */
     @Override
     public void addCollisionBoxesToList(World par1World, int par2, int par3, int par4, AxisAlignedBB par5AxisAlignedBB,
-        List par6List, Entity par7Entity) {
+        List<AxisAlignedBB> par6List, Entity par7Entity) {
 
         if (alwaysPassable(par1World, par2, par3, par4)) return;
 

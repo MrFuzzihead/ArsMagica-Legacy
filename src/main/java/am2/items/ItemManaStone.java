@@ -29,7 +29,7 @@ public class ItemManaStone extends ArsMagicaItem {
     }
 
     @Override
-    public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean par4) {
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean par4) {
         String[] strings = StatCollector.translateToLocal("am2.tooltip.stoneUse")
             .split(" ");
         String firstHalf = "";

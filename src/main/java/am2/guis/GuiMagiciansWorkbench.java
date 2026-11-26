@@ -123,7 +123,7 @@ public class GuiMagiciansWorkbench extends GuiContainer {
         GL11.glDisable(GL11.GL_BLEND);
 
         // tabs
-        Iterator it = this.workbenchInventory.getRememberedRecipeItems()
+        Iterator<RememberedRecipe> it = this.workbenchInventory.getRememberedRecipeItems()
             .iterator();
         int n = 0;
         recipeIndex = -1;
@@ -205,14 +205,14 @@ public class GuiMagiciansWorkbench extends GuiContainer {
         }
     }
 
-    protected void drawHoveringText(List par1List, int par2, int par3, FontRenderer font, int color) {
+    protected void drawHoveringText(List<String> par1List, int par2, int par3, FontRenderer font, int color) {
         if (!par1List.isEmpty()) {
             GL11.glDisable(GL12.GL_RESCALE_NORMAL);
             RenderHelper.disableStandardItemLighting();
             GL11.glDisable(GL11.GL_LIGHTING);
             GL11.glDisable(GL11.GL_DEPTH_TEST);
             int k = 0;
-            Iterator iterator = par1List.iterator();
+            Iterator<String> iterator = par1List.iterator();
 
             while (iterator.hasNext()) {
                 String s = (String) iterator.next();

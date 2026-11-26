@@ -350,7 +350,8 @@ public class ItemSpellBook extends ArsMagicaItem {
     }
 
     @Override
-    public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List par3List, boolean par4) {
+    public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par3List,
+        boolean par4) {
         ItemSpellBase activeScroll = GetActiveScroll(par1ItemStack);
         ItemStack stack = GetActiveItemStack(par1ItemStack);
 
@@ -375,7 +376,7 @@ public class ItemSpellBook extends ArsMagicaItem {
 
     @Override
     public boolean isBookEnchantable(ItemStack bookStack, ItemStack enchantBook) {
-        Map enchantMap = EnchantmentHelper.getEnchantments(enchantBook);
+        Map<Integer, Integer> enchantMap = EnchantmentHelper.getEnchantments(enchantBook);
         for (Object o : enchantMap.keySet()) {
             if (o instanceof Integer) {
                 if ((Integer) o == AMEnchantments.soulbound.effectId) {

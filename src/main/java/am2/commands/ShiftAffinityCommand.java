@@ -97,7 +97,7 @@ public class ShiftAffinityCommand extends CommandBase {
     }
 
     @Override
-    public List addTabCompletionOptions(ICommandSender var1, String[] var2) {
+    public List<String> addTabCompletionOptions(ICommandSender var1, String[] var2) {
         ArrayList<String> completions = new ArrayList<String>();
         if (var2.length == 1) {
             for (String s : AllAffinities()) {

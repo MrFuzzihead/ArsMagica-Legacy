@@ -1,7 +1,11 @@
 package am2.playerextensions;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.List;
 
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -25,6 +29,16 @@ public class AffinityDataNbtTest {
 
         assertEquals(0.25F, loaded.getAffinityDepth(Affinity.AIR), 0.001F);
         assertEquals(0.5F, loaded.getAffinityDepth(Affinity.FIRE), 0.001F);
+    }
+
+    @Test
+    public void coloredAffinityEffectsAreNonEmptyStrings() {
+        AffinityData data = new AffinityData();
+
+        List<String> effects = data.getColoredAffinityEffects(Affinity.AIR);
+
+        assertFalse(effects.isEmpty());
+        for (String effect : effects) assertNotNull(effect);
     }
 
     @Test

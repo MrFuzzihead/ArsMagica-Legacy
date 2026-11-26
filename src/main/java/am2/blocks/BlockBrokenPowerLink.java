@@ -93,7 +93,7 @@ public class BlockBrokenPowerLink extends BlockContainer {
 
     @Override
     public void addCollisionBoxesToList(World par1World, int par2, int par3, int par4, AxisAlignedBB par5AxisAlignedBB,
-        List par6List, Entity par7Entity) {}
+        List<AxisAlignedBB> par6List, Entity par7Entity) {}
 
     @Override
     public boolean renderAsNormalBlock() {

@@ -162,7 +162,7 @@ public class ItemSpellStaff extends ArsMagicaItem {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, EntityPlayer par2EntityPlayer, List par3List, boolean par4) {
+    public void addInformation(ItemStack stack, EntityPlayer par2EntityPlayer, List<String> par3List, boolean par4) {
         if (stack.stackTagCompound == null || isMagiTechStaff()) return;
         float chargeCost = 1;
 

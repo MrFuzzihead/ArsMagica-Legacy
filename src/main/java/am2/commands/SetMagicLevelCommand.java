@@ -35,7 +35,7 @@ public class SetMagicLevelCommand extends CommandBase {
     }
 
     @Override
-    public List getCommandAliases() {
+    public List<String> getCommandAliases() {
         ArrayList<String> aliases = new ArrayList<String>();
         aliases.add("setmagelevel");
         return aliases;
@@ -84,7 +84,7 @@ public class SetMagicLevelCommand extends CommandBase {
     }
 
     @Override
-    public List addTabCompletionOptions(ICommandSender var1, String[] var2) {
+    public List<String> addTabCompletionOptions(ICommandSender var1, String[] var2) {
         if (var2.length == 1) {
             ArrayList<String> completions = new ArrayList<String>();
             EntityPlayer player = getCommandSenderAsPlayer(var1);

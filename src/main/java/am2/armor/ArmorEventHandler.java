@@ -88,9 +88,9 @@ public class ArmorEventHandler {
 
             ArrayList<AttributeModifier> toRemove = new ArrayList<AttributeModifier>();
 
-            Collection c = instance.func_111122_c();
-            ArrayList arraylist = new ArrayList(c);
-            Iterator iterator = arraylist.iterator();
+            Collection<AttributeModifier> c = instance.func_111122_c();
+            ArrayList<AttributeModifier> arraylist = new ArrayList<AttributeModifier>(c);
+            Iterator<AttributeModifier> iterator = arraylist.iterator();
 
             while (iterator.hasNext()) {
                 AttributeModifier attributemodifier = (AttributeModifier) iterator.next();

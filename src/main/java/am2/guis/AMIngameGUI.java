@@ -741,7 +741,7 @@ public class AMIngameGUI {
     }
 
     private ArrayList<PotionEffect> getPotionEffectsByTimeRemaining() {
-        Iterator i = mc.thePlayer.getActivePotionEffects()
+        Iterator<PotionEffect> i = mc.thePlayer.getActivePotionEffects()
             .iterator();
         ArrayList<PotionEffect> potions = new ArrayList<PotionEffect>();
 

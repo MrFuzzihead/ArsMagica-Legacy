@@ -158,7 +158,7 @@ public class MathUtilities {
         }
 
         // get all entities within distance
-        List distanceFilter = world.getEntitiesWithinAABB(
+        List<Entity> distanceFilter = world.getEntitiesWithinAABB(
             filterClass,
             AxisAlignedBB.getBoundingBox(
                 (float) source.posX - radius,
@@ -176,7 +176,7 @@ public class MathUtilities {
             }
         }
 
-        ArrayList angleFilter = new ArrayList();
+        ArrayList<Entity> angleFilter = new ArrayList<Entity>();
 
         // get the angle that the player is facing and normalize it
         double playerAngle = NormalizeRotation(source.rotationYaw);
@@ -277,7 +277,7 @@ public class MathUtilities {
         Vec3 vec3d1 = entityplayer.getLookVec();
         Vec3 vec3d2 = vec3d.addVector(vec3d1.xCoord * d, vec3d1.yCoord * d, vec3d1.zCoord * d);
         double f1 = collideRadius;
-        List list = world.getEntitiesWithinAABBExcludingEntity(
+        List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(
             entityplayer,
             entityplayer.boundingBox.addCoord(vec3d1.xCoord * d, vec3d1.yCoord * d, vec3d1.zCoord * d)
                 .expand(f1, f1, f1));

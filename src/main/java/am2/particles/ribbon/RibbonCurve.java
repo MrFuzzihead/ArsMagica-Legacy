@@ -12,7 +12,7 @@ public class RibbonCurve {
     AMVector3 startPt, endPt, controlPt;
     int stepId;
     float ribbonColor = 0;
-    LinkedList quads;
+    LinkedList<Quad3D> quads;
 
     RibbonCurve(AMVector3 pStartPt, AMVector3 pEndPt, AMVector3 pControlPt, float pwidth, float presolution,
         float pcolor) {
@@ -23,13 +23,13 @@ public class RibbonCurve {
         ribbonWidth = pwidth;
         stepId = 0;
         ribbonColor = pcolor;
-        quads = new LinkedList();
+        quads = new LinkedList<Quad3D>();
     }
 
     void draw() {
         int size = quads.size();
         for (int i = 0; i < size; i++) {
-            Quad3D q = (Quad3D) quads.get(i);
+            Quad3D q = quads.get(i);
             q.draw();
         }
     }

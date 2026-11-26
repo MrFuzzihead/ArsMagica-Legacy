@@ -298,7 +298,7 @@ public class AffinityData implements IExtendedEntityProperties, IAffinityData {
         values = values.subList(values.size() - 2, values.size());
 
         // remove entries that are too low
-        Iterator it = values.iterator();
+        Iterator<Float> it = values.iterator();
         while (it.hasNext()) {
             Float f = (Float) it.next();
             if (Math.floor(f * 100.0f) / 100.0f == 0) it.remove();
@@ -309,13 +309,13 @@ public class AffinityData implements IExtendedEntityProperties, IAffinityData {
         HashMap<Integer, Float> clone = (HashMap<Integer, Float>) affinityDepths.clone();
 
         for (Float f : values) {
-            it = clone.entrySet()
+            Iterator<Entry<Integer, Float>> entryIt = clone.entrySet()
                 .iterator();
-            while (it.hasNext()) {
-                Entry<Integer, Float> e = (Entry<Integer, Float>) it.next();
+            while (entryIt.hasNext()) {
+                Entry<Integer, Float> e = entryIt.next();
                 if (compareFloats(e.getValue(), f, 2)) {
                     resolvedAffinties.add(Affinity.getByID(e.getKey()));
-                    it.remove();
+                    entryIt.remove();
                     break;
                 }
             }
@@ -337,8 +337,8 @@ public class AffinityData implements IExtendedEntityProperties, IAffinityData {
         isLocked = locked;
     }
 
-    public List getColoredAffinityEffects(Affinity aff) {
-        ArrayList list = new ArrayList();
+    public List<String> getColoredAffinityEffects(Affinity aff) {
+        ArrayList<String> list = new ArrayList<String>();
         switch (aff) {
             case AIR:
                 list.add(

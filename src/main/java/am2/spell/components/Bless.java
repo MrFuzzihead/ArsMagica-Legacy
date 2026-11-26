@@ -49,7 +49,7 @@ public class Bless implements ISpellComponent {
         List<Integer> effectsToRemove = new ArrayList<Integer>();
         HashMap<Integer, String> effectsToMagnify = new HashMap<Integer, String>();
 
-        Iterator iter = ((EntityLivingBase) target).getActivePotionEffects()
+        Iterator<PotionEffect> iter = ((EntityLivingBase) target).getActivePotionEffects()
             .iterator();
 
         int magnitudeLeft = 6 + (SpellUtils.instance.countModifiers(SpellModifiers.BUFF_POWER, stack) * 2);

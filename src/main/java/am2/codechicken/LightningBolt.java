@@ -149,7 +149,7 @@ public class LightningBolt extends EntityFX {
         int renderlength = (int) ((this.main.particleAge + partialframe + (int) (this.main.length * 3.0F))
             / (int) (this.main.length * 3.0F)
             * this.main.numsegments0);
-        for (Iterator iterator = this.main.segments.iterator(); iterator.hasNext();) {
+        for (Iterator<LightningBoltCommon.Segment> iterator = this.main.segments.iterator(); iterator.hasNext();) {
             LightningBoltCommon.Segment rendersegment = (LightningBoltCommon.Segment) iterator.next();
             if (rendersegment.segmentno <= renderlength) {
                 float width = 0.03F * (getRelativeViewVector(rendersegment.startpoint.point).length() / 10.0F + 1.0F)

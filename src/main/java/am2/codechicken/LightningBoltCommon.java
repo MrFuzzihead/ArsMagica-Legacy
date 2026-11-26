@@ -23,10 +23,10 @@ import am2.api.math.AMVector3;
 
 public class LightningBoltCommon {
 
-    ArrayList segments;
+    ArrayList<Segment> segments;
     AMVector3 start;
     AMVector3 end;
-    HashMap splitparents;
+    HashMap<Integer, Integer> splitparents;
     public float multiplier;
     public float length;
     public int numsegments0;
@@ -46,8 +46,8 @@ public class LightningBoltCommon {
     public int damage;
 
     public LightningBoltCommon(World world, AMVector3 jammervec, AMVector3 targetvec, long seed) {
-        this.segments = new ArrayList();
-        this.splitparents = new HashMap();
+        this.segments = new ArrayList<Segment>();
+        this.splitparents = new HashMap<Integer, Integer>();
         this.canhittarget = true;
         this.world = world;
         this.start = jammervec;
@@ -124,10 +124,10 @@ public class LightningBoltCommon {
 
     public void fractal(int splits, float amount, float splitchance, float splitlength, float splitangle) {
         if (this.finalized) return;
-        ArrayList oldsegments = this.segments;
-        this.segments = new ArrayList();
+        ArrayList<Segment> oldsegments = this.segments;
+        this.segments = new ArrayList<Segment>();
         Segment prev = null;
-        for (Iterator iterator = oldsegments.iterator(); iterator.hasNext();) {
+        for (Iterator<Segment> iterator = oldsegments.iterator(); iterator.hasNext();) {
             Segment segment = (Segment) iterator.next();
             prev = segment.prev;
             AMVector3 subsegment = segment.diff.copy()
@@ -231,12 +231,12 @@ public class LightningBoltCommon {
     }
 
     private void calculateCollisionAndDiffs() {
-        HashMap lastactivesegment = new HashMap();
+        HashMap<Integer, Integer> lastactivesegment = new HashMap<Integer, Integer>();
         Collections.sort(this.segments, new SegmentSorter());
         int lastsplitcalc = 0;
         int lastactiveseg = 0;
         float splitresistance = 0.0F;
-        for (Iterator iterator = this.segments.iterator(); iterator.hasNext();) {
+        for (Iterator<Segment> iterator = this.segments.iterator(); iterator.hasNext();) {
             Segment segment = (Segment) iterator.next();
             if (segment.splitno > lastsplitcalc) {
                 lastactivesegment.put(lastsplitcalc, lastactiveseg);
@@ -253,7 +253,7 @@ public class LightningBoltCommon {
         lastsplitcalc = 0;
         lastactiveseg = ((Integer) lastactivesegment.get(0)).intValue();
         Segment segment;
-        for (Iterator iterator = this.segments.iterator(); iterator.hasNext(); segment.calcEndDiffs()) {
+        for (Iterator<Segment> iterator = this.segments.iterator(); iterator.hasNext(); segment.calcEndDiffs()) {
             segment = (Segment) iterator.next();
             if (lastsplitcalc != segment.splitno) {
                 lastsplitcalc = segment.splitno;

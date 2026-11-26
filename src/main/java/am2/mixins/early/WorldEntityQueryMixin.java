@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.command.IEntitySelector;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
@@ -48,13 +49,13 @@ public abstract class WorldEntityQueryMixin {
         }
     }
 
-    private static List filterEthereal(List original) {
+    private static List<Entity> filterEthereal(List<Entity> original) {
         if (original == null || original.isEmpty()) {
             return original;
         }
 
-        List filtered = new ArrayList(original.size());
-        for (Object entry : original) {
+        List<Entity> filtered = new ArrayList<Entity>(original.size());
+        for (Entity entry : original) {
             if (!(entry instanceof EntityPlayer) || !EtherealState.isEthereal((EntityPlayer) entry)) {
                 filtered.add(entry);
             }

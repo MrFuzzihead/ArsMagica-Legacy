@@ -21,14 +21,14 @@ public class AMEnchantmentHelper implements IAMEnchantmentHelper {
     }
 
     public static ItemStack soulbindStack(ItemStack stack) {
-        Map map = EnchantmentHelper.getEnchantments(stack);
+        Map<Integer, Integer> map = EnchantmentHelper.getEnchantments(stack);
         map.put(AMEnchantments.soulbound.effectId, 1);
         EnchantmentHelper.setEnchantments(map, stack);
         return stack;
     }
 
     public static ItemStack silkTouchStack(ItemStack stack, int level) {
-        Map map = EnchantmentHelper.getEnchantments(stack);
+        Map<Integer, Integer> map = EnchantmentHelper.getEnchantments(stack);
         if (level > 0) {
             map.put(Enchantment.silkTouch.effectId, level);
         } else {
@@ -39,14 +39,14 @@ public class AMEnchantmentHelper implements IAMEnchantmentHelper {
     }
 
     public static ItemStack fortuneStack(ItemStack stack, int level) {
-        Map map = EnchantmentHelper.getEnchantments(stack);
+        Map<Integer, Integer> map = EnchantmentHelper.getEnchantments(stack);
         applyEnchantment(map, Enchantment.fortune.effectId, level);
         EnchantmentHelper.setEnchantments(map, stack);
         return stack;
     }
 
     public static ItemStack lootingStack(ItemStack stack, int level) {
-        Map map = EnchantmentHelper.getEnchantments(stack);
+        Map<Integer, Integer> map = EnchantmentHelper.getEnchantments(stack);
         applyEnchantment(map, Enchantment.looting.effectId, level);
         EnchantmentHelper.setEnchantments(map, stack);
         return stack;
@@ -56,7 +56,7 @@ public class AMEnchantmentHelper implements IAMEnchantmentHelper {
      * Sets or removes exactly the requested enchantment. The old fortune/looting zero-level paths removed Silk Touch
      * instead, leaving the intended enchantment in place and silently stripping an unrelated one.
      */
-    static void applyEnchantment(Map map, int enchantmentId, int level) {
+    static void applyEnchantment(Map<Integer, Integer> map, int enchantmentId, int level) {
         if (level > 0) {
             map.put(enchantmentId, level);
         } else {
@@ -65,7 +65,7 @@ public class AMEnchantmentHelper implements IAMEnchantmentHelper {
     }
 
     public static void copyEnchantments(ItemStack source, ItemStack dest) {
-        Map map = EnchantmentHelper.getEnchantments(source);
+        Map<Integer, Integer> map = EnchantmentHelper.getEnchantments(source);
         if (map != null) {
             EnchantmentHelper.setEnchantments(map, dest);
         }

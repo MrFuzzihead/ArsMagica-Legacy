@@ -65,7 +65,7 @@ public class ItemAstrocalis extends ArsMagicaItem {
 
     @SideOnly(Side.CLIENT)
     @Override
-    public void addInformation(ItemStack stack, EntityPlayer player, List lines, boolean iHaveNoIdea) {
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> lines, boolean iHaveNoIdea) {
         super.addInformation(stack, player, lines, iHaveNoIdea);
         lines.add(StatCollector.translateToLocal("am2.tooltip.sideeffects"));
     }

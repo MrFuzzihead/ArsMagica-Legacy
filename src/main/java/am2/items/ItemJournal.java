@@ -34,7 +34,7 @@ public class ItemJournal extends ArsMagicaItem {
     }
 
     @Override
-    public void addInformation(ItemStack journal, EntityPlayer player, List list, boolean par4) {
+    public void addInformation(ItemStack journal, EntityPlayer player, List<String> list, boolean par4) {
         String owner = getOwner(journal);
         if (owner == null) {
             list.add(StatCollector.translateToLocal("am2.tooltip.unowned"));

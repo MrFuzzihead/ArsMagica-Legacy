@@ -113,7 +113,7 @@ public class SpellBase extends ItemSpellBase {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean par4) {
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean par4) {
 
         if (!stack.hasTagCompound()) return;
 
@@ -298,7 +298,7 @@ public class SpellBase extends ItemSpellBase {
     }
 
     @Override
-    public void getSubItems(Item item, CreativeTabs tabs, List list) {}
+    public void getSubItems(Item item, CreativeTabs tabs, List<ItemStack> list) {}
 
     @Override
     @SideOnly(Side.CLIENT)

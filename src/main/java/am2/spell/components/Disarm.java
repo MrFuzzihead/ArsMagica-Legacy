@@ -81,7 +81,7 @@ public class Disarm implements ISpellComponent {
 
             ((EntityMob) target).setAttackTarget(caster);
 
-            Iterator it = ((EntityMob) target).tasks.taskEntries.iterator();
+            Iterator<EntityAITaskEntry> it = ((EntityMob) target).tasks.taskEntries.iterator();
             boolean removed = false;
             while (it.hasNext()) {
                 EntityAITaskEntry task = (EntityAITaskEntry) it.next();

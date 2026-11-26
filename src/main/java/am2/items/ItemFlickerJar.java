@@ -88,7 +88,7 @@ public class ItemFlickerJar extends ArsMagicaItem {
     }
 
     @Override
-    public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, List par3List) {
+    public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, List<ItemStack> par3List) {
         for (Affinity aff : Affinity.values()) {
             par3List.add(new ItemStack(this, 1, aff.ID));
         }

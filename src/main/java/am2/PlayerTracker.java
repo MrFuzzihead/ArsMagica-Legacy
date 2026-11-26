@@ -2,6 +2,7 @@ package am2;
 
 import java.util.List;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -47,7 +48,7 @@ public class PlayerTracker {
     public void onPlayerLogout(PlayerLoggedOutEvent event) {
         // kill any summoned creatures
         if (!event.player.worldObj.isRemote) {
-            List list = event.player.worldObj.loadedEntityList;
+            List<Entity> list = event.player.worldObj.loadedEntityList;
             for (Object o : list) {
                 if (o instanceof EntityLivingBase && EntityUtilities.isSummon((EntityLivingBase) o)
                     && EntityUtilities.getOwner((EntityLivingBase) o) == event.player.getEntityId()) {
@@ -61,7 +62,7 @@ public class PlayerTracker {
     public void onPlayerChangedDimension(PlayerChangedDimensionEvent event) {
         // kill any summoned creatures, eventually respawn them in the new dimension
         if (!event.player.worldObj.isRemote) {
-            List list = event.player.worldObj.loadedEntityList;
+            List<Entity> list = event.player.worldObj.loadedEntityList;
             for (Object o : list) {
                 if (o instanceof EntityLivingBase && EntityUtilities.isSummon((EntityLivingBase) o)
                     && EntityUtilities.getOwner((EntityLivingBase) o) == event.player.getEntityId()) {

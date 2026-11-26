@@ -955,7 +955,7 @@ public class GuiArcaneCompendium extends GuiScreen {
 
     private void renderItemToolTip(ItemStack stack, int x, int y) {
         try {
-            List list = stack.getTooltip(this.mc.thePlayer, this.mc.gameSettings.advancedItemTooltips);
+            List<String> list = stack.getTooltip(this.mc.thePlayer, this.mc.gameSettings.advancedItemTooltips);
 
             CompendiumEntry entry;
             if (stack.getItem() instanceof ItemBlock) {
@@ -1021,7 +1021,7 @@ public class GuiArcaneCompendium extends GuiScreen {
         }
     }
 
-    protected void drawHoveringText(List par1List, int par2, int par3, FontRenderer font) {
+    protected void drawHoveringText(List<String> par1List, int par2, int par3, FontRenderer font) {
         if (!par1List.isEmpty()) {
             GL11.glDisable(GL12.GL_RESCALE_NORMAL);
             RenderHelper.disableStandardItemLighting();

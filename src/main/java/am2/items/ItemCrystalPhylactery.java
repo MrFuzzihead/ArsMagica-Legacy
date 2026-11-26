@@ -49,7 +49,8 @@ public class ItemCrystalPhylactery extends ArsMagicaItem {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List par3List, boolean par4) {
+    public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par3List,
+        boolean par4) {
         if (par1ItemStack.hasTagCompound()) {
             String className = par1ItemStack.stackTagCompound.getString("SpawnClassName");
             if (className != null) {
@@ -230,7 +231,7 @@ public class ItemCrystalPhylactery extends ArsMagicaItem {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, List par3List) {
+    public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, List<ItemStack> par3List) {
         par3List.add(new ItemStack(this));
         for (String s : spawnableEntities.keySet()) {
             ItemStack stack = new ItemStack(this, 1, META_FULL);

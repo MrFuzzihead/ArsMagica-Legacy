@@ -172,7 +172,7 @@ public class BlockManaBattery extends PoweredBlock {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void getSubBlocks(Item par1, CreativeTabs par2CreativeTabs, List par3List) {
+    public void getSubBlocks(Item par1, CreativeTabs par2CreativeTabs, List<ItemStack> par3List) {
         ItemStack stack = new ItemStack(this);
         par3List.add(stack);
         for (PowerTypes type : PowerTypes.all()) {

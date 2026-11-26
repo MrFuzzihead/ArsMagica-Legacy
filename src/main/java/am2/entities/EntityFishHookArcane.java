@@ -33,7 +33,7 @@ public class EntityFishHookArcane extends EntityFishHook {
         return (EntityFishHookAccessor) (Object) this;
     }
 
-    public static final List ender_fishing = Arrays.asList(
+    public static final List<WeightedRandomFishable> ender_fishing = Arrays.asList(
         new WeightedRandomFishable[] { new WeightedRandomFishable(new ItemStack(Items.ender_eye), 10),
             new WeightedRandomFishable(new ItemStack(Items.ender_pearl), 10),
             new WeightedRandomFishable(
@@ -144,7 +144,7 @@ public class EntityFishHookArcane extends EntityFishHook {
             }
 
             Entity entity = null;
-            List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(
+            List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(
                 this,
                 this.boundingBox.addCoord(this.motionX, this.motionY, this.motionZ)
                     .expand(1.0D, 1.0D, 1.0D));

@@ -13,6 +13,7 @@ import net.minecraft.item.ItemMultiTexture;
 import net.minecraft.item.ItemSlab;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.oredict.OreDictionary;
@@ -404,7 +405,7 @@ public class BlocksCommonProxy {
 
     public void InitRecipes() {
 
-        List recipes = CraftingManager.getInstance()
+        List<IRecipe> recipes = CraftingManager.getInstance()
             .getRecipeList();
 
         // Dynamic staff/scroll/armor combinations have priority over the static recipe list.

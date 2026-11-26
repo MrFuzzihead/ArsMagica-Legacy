@@ -64,7 +64,7 @@ public class Dispel implements ISpellComponent {
 
         List<Integer> effectsToRemove = new ArrayList<Integer>();
 
-        Iterator iter = ((EntityLivingBase) target).getActivePotionEffects()
+        Iterator<PotionEffect> iter = ((EntityLivingBase) target).getActivePotionEffects()
             .iterator();
 
         int magnitudeLeft = 6 + (SpellUtils.instance.countModifiers(SpellModifiers.BUFF_POWER, stack) * 2);

@@ -47,7 +47,7 @@ public class ItemSoulspike extends ItemSword {
     }
 
     @Override
-    public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean par4) {
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean par4) {
         list.add(String.format(StatCollector.translateToLocal("am2.tooltip.containedMana"), getManaInSpike(stack)));
     }
 
