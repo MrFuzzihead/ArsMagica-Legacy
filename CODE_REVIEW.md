@@ -921,7 +921,7 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 
 ### Current state
 
-- 449 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
+- 457 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
 - The server game test has 233 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
 - The client game test has 23 assertions at the main menu (proxy, key bindings, creative tabs, localisation).
 - Coverage is 177/69,939 lines (0.25%), with a 0.2% floor. The game-test coverage report is generated but not enforced.
@@ -999,7 +999,7 @@ A 0.2% floor cannot protect anything. Either set a meaningful per-package floor 
 - **`mcmod.info`** — update the author/credits metadata so it names the current maintainer of this fork and matches the
   README.
 - **README test counts** — currently says 19 unit tests / 109 server assertions / 23 client assertions. The actual
-  checked state is 449 unit tests / 233 server assertions / 23 client assertions; keep these in sync.
+  checked state is 457 unit tests / 233 server assertions / 23 client assertions; keep these in sync.
 - **`run`/IDE configuration** — stale jar-name and antlr4 classpath noise remain local-environment cleanup, not source
   defects.
 - **CI** — the game-test workflow already greps for success markers. Add a check that AM2 logs no `ERROR` entries during
@@ -1054,16 +1054,11 @@ These classes/features are unreferenced or incomplete. Some are intentionally re
 
 ## 10. Smaller correctness / UX issues
 
-- **`AMKeyBindings`**: `SpellBookNextSpellKey` and `AffinityActivationKey` both default to `X` (`AMKeyBindings.java:26-45`). Because the event handler uses an `else if` chain, pressing X with a spell book never reaches the affinity ability, and pressing X without a spell book still consumes the branch. Bind them to different keys (and check for conflicts with other mods).
 - **`ShrinkHandler`** subscribes to `LivingEvent` rather than `LivingEvent.LivingUpdateEvent` (`ShrinkHandler.java:16-18`), so the shrink logic also runs on jump/fall events and can apply multiple times per tick. Change the parameter type.
 - **`ShrinkHandler`** returns early when the `Shrink` skill is disabled (`21-23`) without restoring the player's size, so disabling the skill can leave a player permanently small until relog. Run the restore path before the early return.
-- **`AMEventHandler.onBucketFill`** removes the liquid block in `attemptFill` without a `world.isRemote` guard (`AMEventHandler.java:1793-1813`). `FillBucketEvent` fires on both sides; the client predicts the removal. Make the block change server-authoritative and use the normal bucket flow.
 - **`ItemSoulspike`** ethereal form sets `capabilities.disableDamage = true`, `allowEdit = false`, and `noClip` on the server; if the player disconnects/crashes while the extra variable is present, the cleanup path depends on `LivingUpdateEvent`. Add a login-time sanitizer that clears `ethereal`, restores capabilities, and removes the boots tag if the duration is invalid.
 - **`EntitySpellProjectile.getShootingEntity`** (`221-225`): the `-999` sentinel calls `getClosestPlayer(..., -1)` and returns the nearest player regardless of distance. A projectile with a missing owner can target an unrelated player. Store the caster UUID in NBT/datawatcher or use a `DummyEntityPlayer` consistently.
-- **`TileEntityFlickerHabitat` constructor** checks `worldObj != null` before randomising `rotateOffset`/`floatOffset`, but `worldObj` is always null in a `TileEntity` constructor. The random offsets are never set. Move the randomisation to `setWorldObj` or `updateEntity`.
-- **`TileEntityManaBattery.readFromNBT`** uses `PowerTypes.getByID(...)`, which returns `NONE` for unknown IDs, but `outputPowerType` can still be `null` if a future `getByID` changes; add a null fallback and clamp.
 - **`TileEntityManaBattery.breakBlock`** only saves the current `outputPowerType` amount (`BlockManaBattery.java:126-145`). If the battery holds multiple power types (possible while empty, as described above), the others are lost. Save all types or forbid mixed storage.
-- **`AStar.Path.compareTo`** casts `f - p.f` to `int` (`AStar.java:49-53`), so paths with costs less than 1 apart compare equal. Use `Double.compare`.
 - **`TileEntityCrystalMarker.cyclePriority`** sends a description packet to every nearby player individually (`TileEntityCrystalMarker.java:54-65`); `markBlockForUpdate`/`sendToAllAround` is simpler.
 - **`AMClientEventHandler.onJoinWorldClient`** builds a new `tablist` list from the player info list and removes names from that copy, then checks `tablist.isEmpty()`. The intent is to detect “only me online”; it works, but the removal from a copy is confusing. Add a comment or use a boolean count.
 
@@ -1517,7 +1512,7 @@ Java files under src/main/java:      1085
 Lines under src/main/java:          152012
 Java files under src/test/java:     110
 Java files under src/gameTest/java: 3
-JUnit tests:                        449
+JUnit tests:                        457
 Game-test assertions:               233 server + 23 client
 JaCoCo line coverage:               3404 / 68386 (4.98%)
 JaCoCo branch coverage:             1316 / 29755 (4.42%)
