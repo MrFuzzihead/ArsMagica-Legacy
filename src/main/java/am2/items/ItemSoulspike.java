@@ -101,6 +101,21 @@ public class ItemSoulspike extends ItemSword {
         nbttagcompound.setBoolean("ethereal", true); // why are we storing this in display? Not sure.
     }
 
+    /** Clears any persisted ethereal-form side effects after login or a malformed duration. */
+    public static void clearEtherealForm(EntityPlayer player, ExtendedProperties properties) {
+        if (player.inventory != null && player.inventory.armorInventory != null) {
+            removeTagFromBoots(player.inventory.armorInventory[0]);
+        }
+        if (player.capabilities != null) {
+            player.capabilities.disableDamage = false;
+            player.capabilities.allowEdit = true;
+            player.capabilities.isFlying = false;
+        }
+        player.noClip = false;
+        player.setInvisible(false);
+        properties.removeFromExtraVariables("ethereal");
+    }
+
     public static void removeTagFromBoots(ItemStack boots) {
         if (boots == null) return;
         if (boots.stackTagCompound == null) {

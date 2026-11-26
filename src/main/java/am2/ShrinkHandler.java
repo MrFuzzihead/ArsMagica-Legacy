@@ -14,14 +14,18 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 public class ShrinkHandler {
 
     @SubscribeEvent
-    public void onEntityLiving(LivingEvent event) {
+    public void onEntityLiving(LivingEvent.LivingUpdateEvent event) {
         if (!(event.entityLiving instanceof EntityPlayer)) return;
 
         EntityPlayer player = (EntityPlayer) event.entityLiving;
-
-        if (SkillTreeManager.instance.isSkillDisabled(SkillManager.instance.getSkill("Shrink"))) return;
-
         ExtendedProperties exProps = ExtendedProperties.For(player);
+        if (exProps == null) return;
+
+        if (SkillTreeManager.instance.isSkillDisabled(SkillManager.instance.getSkill("Shrink"))) {
+            restoreSize(player, exProps);
+            return;
+        }
+
         if (exProps.originalSize == null) {
             exProps.originalSize = new AMVector2(player.width, player.height);
         }
@@ -75,6 +79,22 @@ public class ShrinkHandler {
         if (player.worldObj.isRemote && exProps.getPrevShrinkPct() != exProps.getShrinkPct()) {
             // Vanilla player is 1.8f height with 1.62f yOffset => 0.9f
             player.yOffset = (float) exProps.getOriginalSize().y * 0.9f * (1f - 0.5f * exProps.getShrinkPct());
+        }
+    }
+
+    static void restoreSize(EntityPlayer player, ExtendedProperties exProps) {
+        if (exProps.shrinkAmount != 0f) {
+            AMVector2 size = exProps.getOriginalSize();
+            if (size != null) {
+                EntityUtilities.setSize(player, (float) size.x, (float) size.y);
+                player.eyeHeight = player.getDefaultEyeHeight();
+                player.yOffset = 0.0f;
+            }
+            exProps.shrinkAmount = 0f;
+        }
+        exProps.setShrinkPct(0f);
+        if (exProps.getIsShrunk()) {
+            exProps.setIsShrunk(false);
         }
     }
 }

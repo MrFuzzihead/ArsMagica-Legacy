@@ -2,7 +2,6 @@ package am2;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -472,14 +471,12 @@ public class AMClientEventHandler {
                 return; // singleplayer
             }
 
-            List<String> tablist = ((List<GuiPlayerInfo>) Minecraft.getMinecraft().thePlayer.sendQueue.playerInfoList)
-                .stream()
-                .map(r -> r.name)
-                .collect(Collectors.toList());
-            tablist.remove(Minecraft.getMinecraft().thePlayer.getDisplayName());
-            tablist.remove(Minecraft.getMinecraft().thePlayer.getCommandSenderName());
-            if (event.entity == Minecraft.getMinecraft().thePlayer && tablist.isEmpty()) { // no players to sync the map
-                                                                                           // from, clear it instead
+            List<GuiPlayerInfo> players = Minecraft.getMinecraft().thePlayer.sendQueue.playerInfoList;
+            boolean onlyLocalPlayer = !hasOtherPlayers(
+                players,
+                Minecraft.getMinecraft().thePlayer.getDisplayName(),
+                Minecraft.getMinecraft().thePlayer.getCommandSenderName());
+            if (event.entity == Minecraft.getMinecraft().thePlayer && onlyLocalPlayer) {
                 ClientPlayerModelMap.map()
                     .clear();
             }
@@ -508,4 +505,16 @@ public class AMClientEventHandler {
             }
         }
     }
+
+    static boolean hasOtherPlayers(List<GuiPlayerInfo> players, String... localNames) {
+        if (players == null) return false;
+        outer: for (GuiPlayerInfo player : players) {
+            for (String localName : localNames) {
+                if (player.name.equals(localName)) continue outer;
+            }
+            return true;
+        }
+        return false;
+    }
+
 }

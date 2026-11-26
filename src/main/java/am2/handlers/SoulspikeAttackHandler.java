@@ -10,9 +10,24 @@ import am2.entities.EntityHallucination;
 import am2.items.ItemSoulspike;
 import am2.playerextensions.ExtendedProperties;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent;
 
 /** Soulspike on-hit mana gain and bonus damage. */
 public class SoulspikeAttackHandler {
+
+    @SubscribeEvent
+    public void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        ExtendedProperties properties = ExtendedProperties.For(event.player);
+        if (properties == null || !properties.hasExtraVariable("ethereal")) return;
+
+        String value = properties.getExtraVariable("ethereal");
+        try {
+            if (Integer.parseInt(value) > 0) return;
+        } catch (NumberFormatException ignored) {
+            // Fall through: a malformed duration must be cleaned up.
+        }
+        ItemSoulspike.clearEtherealForm(event.player, properties);
+    }
 
     @SubscribeEvent
     public void onAttack(AttackEntityEvent event) {

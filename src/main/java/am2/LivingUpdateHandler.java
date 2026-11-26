@@ -594,14 +594,7 @@ public class LivingUpdateHandler extends AMEventHandler {
     void tickEtherealForm(EntityPlayer player, ExtendedProperties extendedProperties) {
         int durationLeft = Integer.parseInt(extendedProperties.getExtraVariable("ethereal"));
         if (durationLeft < 3) {
-            // deactivate form
-            ItemSoulspike.removeTagFromBoots(player.inventory.armorInventory[0]);
-            player.capabilities.disableDamage = false;
-            player.capabilities.allowEdit = true;
-            player.capabilities.isFlying = false;
-            player.noClip = false;
-            player.setInvisible(false);
-            extendedProperties.removeFromExtraVariables("ethereal");
+            ItemSoulspike.clearEtherealForm(player, extendedProperties);
         } else {
             // tick ethereal form
             // decrease duration
