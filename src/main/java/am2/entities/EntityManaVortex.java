@@ -42,7 +42,7 @@ public class EntityManaVortex extends Entity {
     public int getTicksToExist() {
         try {
             return this.dataWatcher.getWatchableObjectInt(DW_TICKS_TO_EXIST);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             return -1;
         }
     }

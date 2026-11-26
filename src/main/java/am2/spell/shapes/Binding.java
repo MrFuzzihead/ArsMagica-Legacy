@@ -6,6 +6,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
+import am2.LogHelper;
 import am2.api.spell.ItemSpellBase;
 import am2.api.spell.component.interfaces.ISpellShape;
 import am2.api.spell.enums.Affinity;
@@ -103,8 +104,8 @@ public class Binding implements ISpellShape {
         int type = 0;
         try {
             type = Integer.parseInt(SpellUtils.instance.getSpellMetadata(spellStack, "binding_type"));
-        } catch (Throwable t) {
-            t.printStackTrace();
+        } catch (Exception t) {
+            LogHelper.error(t, "Malformed binding type metadata");
         }
         return type;
     }

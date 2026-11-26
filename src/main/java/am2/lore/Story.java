@@ -110,7 +110,7 @@ public class Story {
                         if (i < colorStrings.length) {
                             try {
                                 this.colors[i] = Integer.parseInt(colorStrings[i], 16);
-                            } catch (Throwable t) {
+                            } catch (Exception t) {
                                 this.colors[i] = 0xFFFFFF;
                             }
                         } else {
@@ -123,7 +123,7 @@ public class Story {
             }
             br.close();
             stream.close();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             LogHelper.error("Error reading JRN File Data!");
             return "";
         }

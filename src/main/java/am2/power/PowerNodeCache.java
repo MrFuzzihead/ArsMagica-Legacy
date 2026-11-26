@@ -150,7 +150,7 @@ public class PowerNodeCache {
         try {
             NBTTagCompound compound = CompressedStreamTools.read(file);
             return compound == null ? new NBTTagCompound() : compound;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             // A corrupt or empty file should not take the power network down; start a fresh region.
             return new NBTTagCompound();
         }

@@ -37,7 +37,7 @@ public class ShiftAffinityCommand extends CommandBase {
     private float tryParseFloat(String input) {
         try {
             return Float.parseFloat(input);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             return 0;
         }
     }
@@ -67,7 +67,7 @@ public class ShiftAffinityCommand extends CommandBase {
 
         try {
             enumAffinity = Affinity.valueOf(affinity);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             player.addChatMessage(new ChatComponentText("Unknown affinity name specified."));
             return;
         }

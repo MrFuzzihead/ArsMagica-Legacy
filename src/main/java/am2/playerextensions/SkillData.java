@@ -394,8 +394,8 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
                     }
                     break;
             }
-        } catch (Throwable t) {
-            t.printStackTrace();
+        } catch (Exception t) {
+            LogHelper.error(t, "Failed to handle skill packet");
             return false;
         }
         return true;

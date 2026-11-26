@@ -148,7 +148,7 @@ public class ModelSummoner extends ModelBase {
         }
         try {
             crystalmodel.renderAll();
-        } catch (Throwable t) {}
+        } catch (Exception t) {}
         GL11.glEnable(GL11.GL_LIGHTING);
         GL11.glPopMatrix();
     }

@@ -288,7 +288,7 @@ public class LightningBolt extends EntityFX {
         renderBolt(tessellator, partialframe, cosyaw, cospitch, sinyaw, cossinpitch, 0);
         try {
             tessellator.draw();
-        } catch (Throwable t) {}
+        } catch (Exception t) {}
 
         brightness = 0xF00F0;
 
@@ -342,12 +342,12 @@ public class LightningBolt extends EntityFX {
 
         try {
             tessellator.startDrawingQuads();
-        } catch (Throwable t) {} ;
+        } catch (Exception t) {} ;
         tessellator.setBrightness(brightness);
         renderBolt(tessellator, partialframe, cosyaw, cospitch, sinyaw, cossinpitch, 1);
         try {
             tessellator.draw();
-        } catch (Throwable t) {}
+        } catch (Exception t) {}
 
         brightness = 0xF00F0;
 
@@ -402,16 +402,16 @@ public class LightningBolt extends EntityFX {
 
         try {
             tessellator.startDrawingQuads();
-        } catch (Throwable t) {}
+        } catch (Exception t) {}
         tessellator.setBrightness(brightness);
         renderBolt(tessellator, partialframe, cosyaw, cospitch, sinyaw, cossinpitch, 2);
         try {
             tessellator.draw();
-        } catch (Throwable t) {}
+        } catch (Exception t) {}
 
         try {
             tessellator.startDrawingQuads();
-        } catch (Throwable t) {}
+        } catch (Exception t) {}
 
         GL11.glDisable(GL11.GL_BLEND);
         GL11.glDepthMask(true);

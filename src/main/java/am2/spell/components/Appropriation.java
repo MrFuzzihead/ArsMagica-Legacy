@@ -26,6 +26,7 @@ import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 
 import am2.AMCore;
+import am2.LogHelper;
 import am2.api.spell.component.interfaces.ISpellComponent;
 import am2.api.spell.enums.Affinity;
 import am2.blocks.BlocksCommonProxy;
@@ -226,8 +227,8 @@ public class Appropriation implements ISpellComponent {
                     // remove tile entity first to prevent content dropping which is already saved in the NBT
                     try {
                         world.removeTileEntity(blockx, blocky, blockz);
-                    } catch (Throwable exception) {
-                        exception.printStackTrace();
+                    } catch (Exception exception) {
+                        LogHelper.error(exception, "Failed to remove the appropriated tile entity");
                     }
                 }
 
@@ -357,8 +358,8 @@ public class Appropriation implements ISpellComponent {
                             ent.setPosition(hitX, hitY, hitZ);
                             world.spawnEntityInWorld(ent);
                         }
-                    } catch (Throwable t) {
-                        t.printStackTrace();
+                    } catch (Exception t) {
+                        LogHelper.error(t, "Failed to place the appropriated entity");
                     }
                 } else if (type.equals("block")) {
                     // String blockName = storageCompound.getString("blockName");

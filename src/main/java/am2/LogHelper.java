@@ -27,8 +27,16 @@ public class LogHelper {
         log(Level.ERROR, format, data);
     }
 
+    public static void error(Throwable ex, String format, Object... data) {
+        log(Level.ERROR, ex, format, data);
+    }
+
     public static void warn(String format, Object... data) {
         log(Level.WARN, format, data);
+    }
+
+    public static void warn(Throwable ex, String format, Object... data) {
+        log(Level.WARN, ex, format, data);
     }
 
     public static void info(String format, Object... data) {

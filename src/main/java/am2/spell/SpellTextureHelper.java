@@ -48,9 +48,9 @@ public class SpellTextureHelper {
             for (String s : resources) {
                 icons[count++] = ResourceManager.RegisterTexture(s, register);
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             if (icons == null) icons = new IIcon[0];
-            e.printStackTrace();
+            LogHelper.error(e, "Failed to register spell icons");
         }
 
     }

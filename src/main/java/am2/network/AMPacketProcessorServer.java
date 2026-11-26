@@ -129,12 +129,12 @@ public class AMPacketProcessorServer {
             PacketRegistry.Handler<EntityPlayerMP> handler = packetHandlers.get(packetID);
             if (handler == null) return;
             handler.handle(player, remaining);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             LogHelper.log(Level.ERROR, t, "Server packet %d failed to handle", packetID);
         } finally {
             try {
                 bbis.close();
-            } catch (Throwable ignored) {
+            } catch (Exception ignored) {
                 // Closing a failed stream must not mask the handler result.
             }
         }

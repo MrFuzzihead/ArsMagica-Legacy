@@ -90,7 +90,7 @@ public class OBJModel {
             }
             br.close();
             stream.close();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             LogHelper.error("Error reading OBJ File Data!");
             return false;
         }

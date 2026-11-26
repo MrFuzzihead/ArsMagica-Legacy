@@ -98,7 +98,7 @@ public class RenderOtherworldAura extends TileEntitySpecialRenderer {
             tessellator.addVertexWithUV(f4 - f5, f4 - f6, 0.0D, BRX, TLY);
             tessellator.addVertexWithUV(0.0F - f5, f4 - f6, 0.0D, TLX, TLY);
             tessellator.draw();
-        } catch (Throwable t) {
+        } catch (Exception t) {
 
         }
     }

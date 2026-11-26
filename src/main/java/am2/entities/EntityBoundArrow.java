@@ -350,7 +350,7 @@ public class EntityBoundArrow extends EntityArrow {
                                         0);
                                 }
                             }
-                        } catch (Throwable throwable) {
+                        } catch (Exception throwable) {
                             CrashReport crashreport = CrashReport
                                 .makeCrashReport(throwable, "Colliding entity with block");
                             CrashReportCategory crashreportcategory = crashreport

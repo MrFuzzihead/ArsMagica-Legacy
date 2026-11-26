@@ -103,8 +103,7 @@ public class ArcaneCompendium implements ILoreHelper {
                 }
             }
         } catch (Exception e) {
-            LogHelper.error("Compendium unlock state failed to save! Please report this error!");
-            e.printStackTrace();
+            LogHelper.error(e, "Compendium unlock state failed to save! Please report this error!");
         }
     }
 
@@ -126,8 +125,7 @@ public class ArcaneCompendium implements ILoreHelper {
                     .requestEntriesUpdateFromServer();
             }
         } catch (Exception e) {
-            LogHelper.error("Compendium unlock state failed to load! Please report this error!");
-            e.printStackTrace();
+            LogHelper.error(e, "Compendium unlock state failed to load! Please report this error!");
         }
     }
 
@@ -159,7 +157,7 @@ public class ArcaneCompendium implements ILoreHelper {
         try {
             stream.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            LogHelper.error(e, "Failed to close the compendium stream");
         }
     }
 
@@ -228,8 +226,8 @@ public class ArcaneCompendium implements ILoreHelper {
                 }
             }
 
-        } catch (Throwable t) {
-            t.printStackTrace();
+        } catch (Exception t) {
+            LogHelper.error(t, "Failed to load compendium entries");
         }
     }
 
@@ -475,7 +473,7 @@ public class ArcaneCompendium implements ILoreHelper {
                     .setCompendiumEntry(entryKey, state);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LogHelper.error(e, "Failed to update compendium entry state");
         }
 
         LogHelper.debug("Successfully added compendium entry %s", entryKey);

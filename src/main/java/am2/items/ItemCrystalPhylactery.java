@@ -21,6 +21,7 @@ import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
 import am2.AMCore;
+import am2.LogHelper;
 import am2.texture.ResourceManager;
 import am2.utility.EntityUtilities;
 import cpw.mods.fml.relauncher.Side;
@@ -220,8 +221,8 @@ public class ItemCrystalPhylactery extends ArsMagicaItem {
                         }
                         spawnableEntities.put(entityName, color);
                     }
-                } catch (Throwable e) {
-                    // e.printStackTrace();
+                } catch (Exception e) {
+                    LogHelper.error(e, "Failed to read phylactery entity data");
                 }
             }
         }

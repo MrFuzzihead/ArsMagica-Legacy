@@ -338,7 +338,7 @@ public class GuiArcaneCompendium extends GuiScreen {
                                     int amount = (Integer) recipeItems[++i];
                                     recipe.add(
                                         new ItemStack(ItemsCommonProxy.essence, amount, ItemEssence.META_MAX + type));
-                                } catch (Throwable t) {
+                                } catch (Exception t) {
                                     continue;
                                 }
                             } else {
@@ -427,7 +427,7 @@ public class GuiArcaneCompendium extends GuiScreen {
                 name = split[0];
                 try {
                     meta = Integer.parseInt(split[1]);
-                } catch (Throwable t) {
+                } catch (Exception t) {
                     meta = -1;
                 }
             }
@@ -1016,7 +1016,7 @@ public class GuiArcaneCompendium extends GuiScreen {
             FontRenderer font = stack.getItem()
                 .getFontRenderer(stack);
             drawHoveringText(list, x, y, (font == null ? this.fontRendererObj : font));
-        } catch (Throwable ignored) {
+        } catch (Exception ignored) {
 
         }
     }
@@ -1349,7 +1349,7 @@ public class GuiArcaneCompendium extends GuiScreen {
         try {
             AMGuiHelper.DrawItemAtXY(stack, sx, sy, this.zLevel);
             RenderHelper.disableStandardItemLighting();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             forcedMetas.put(stack.getItem(), 0);
         }
 

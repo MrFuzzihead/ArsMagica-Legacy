@@ -17,6 +17,7 @@ import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
 import am2.AMCore;
+import am2.LogHelper;
 
 public class AM2FontRenderer {
 
@@ -170,8 +171,8 @@ public class AM2FontRenderer {
             widthString = new String(buf).replace("\r", "")
                 .replace("\n", "");
             stream.close();
-        } catch (Throwable e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            LogHelper.error(e, "Failed to load a font definition");
         }
 
         String[] split = widthString.split(",");

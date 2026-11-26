@@ -43,7 +43,7 @@ public class FlickerHabitatRenderer extends TileEntitySpecialRenderer {
         GL11.glTranslated(x + 0.5, y, z + 0.5);
         try {
             model.renderOnly("frame");
-        } catch (Throwable t) {}
+        } catch (Exception t) {}
 
         if (tileentity.hasFlicker()) {
 
@@ -90,7 +90,7 @@ public class FlickerHabitatRenderer extends TileEntitySpecialRenderer {
                     (color & 0xFF) / 255.0f // isolate blue & convert to normalized float
                 );
                 model.renderOnly("crystal");
-            } catch (Throwable t) {}
+            } catch (Exception t) {}
         }
         GL11.glEnable(GL11.GL_CULL_FACE);
         GL11.glPopAttrib();

@@ -645,7 +645,7 @@ public class AMGuiHelper {
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
             return true;
-        } catch (Throwable t) {
+        } catch (Exception t) {
             return false;
         }
     }
@@ -656,7 +656,7 @@ public class AMGuiHelper {
             GL11.glPopAttrib();
 
             return true;
-        } catch (Throwable t) {
+        } catch (Exception t) {
             return false;
         }
     }

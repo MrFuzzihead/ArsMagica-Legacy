@@ -7,6 +7,7 @@ import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 
+import am2.LogHelper;
 import am2.bosses.BossActions;
 import am2.bosses.EntityLifeGuardian;
 import am2.bosses.IArsMagicaBoss;
@@ -90,8 +91,8 @@ public class EntityAISummonAllies extends EntityAIBase {
                     host.worldObj.spawnEntityInWorld(mob);
 
                     host.queued_minions.add(mob);
-                } catch (Throwable e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    LogHelper.error(e, "Failed to summon an ally");
                     return;
                 }
             }

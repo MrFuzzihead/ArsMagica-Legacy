@@ -74,7 +74,7 @@ public class RecipeUtilities {
                 }
                 return (IRecipe) possibleRecipes.get(0);
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
 
         }
 

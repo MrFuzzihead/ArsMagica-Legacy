@@ -60,9 +60,8 @@ public class AMEnchantments {
             T ench = factory.create(enchID, weight);
             LogHelper.info("Successfully registered enchanment!");
             return ench;
-        } catch (Throwable t) {
-            LogHelper.error("Failed to register enchantment %s!", configID);
-            t.printStackTrace();
+        } catch (Exception t) {
+            LogHelper.error(t, "Failed to register enchantment %s!", configID);
         }
         return null;
     }

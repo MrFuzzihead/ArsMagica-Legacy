@@ -152,9 +152,8 @@ public class BuffList implements IBuffHelper {
             for (int i = 0; i < numBuffs; ++i) {
                 particlesForBuffID.put(i, 0);
             }
-        } catch (Throwable t) {
-            LogHelper.error("Buffs failed to initialize!  This will make the game very unstable!");
-            t.printStackTrace();
+        } catch (Exception t) {
+            LogHelper.error(t, "Buffs failed to initialize!  This will make the game very unstable!");
         }
     }
 

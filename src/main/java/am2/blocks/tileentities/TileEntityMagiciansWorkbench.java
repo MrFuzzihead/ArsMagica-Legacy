@@ -385,7 +385,7 @@ public class TileEntityMagiciansWorkbench extends TileEntity implements IKeyston
                 output.setTag("components", components);
                 output.setBoolean("isLocked", recipe.isLocked);
                 recall.appendTag(output);
-            } catch (Throwable t) {
+            } catch (Exception t) {
                 // no log, as this is likely due to a mod being removed and the recipe no longer exists.
             }
         }

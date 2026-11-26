@@ -750,9 +750,8 @@ public class AMConfig extends Configuration {
             if (s.isEmpty()) continue;
             try {
                 worldgenWhitelist[count1] = Integer.parseInt(s.trim());
-            } catch (Throwable t) {
-                LogHelper.info("Malformed item in worldgen whitelist (%s).  Skipping.", s);
-                t.printStackTrace();
+            } catch (Exception t) {
+                LogHelper.warn(t, "Malformed item in worldgen whitelist (%s).  Skipping.", s);
                 worldgenWhitelist[count1] = -1;
             } finally {
                 count1++;
@@ -771,9 +770,8 @@ public class AMConfig extends Configuration {
             if (s.isEmpty()) continue;
             try {
                 worldgenBlacklist[count] = Integer.parseInt(s.trim());
-            } catch (Throwable t) {
-                LogHelper.info("Malformed item in worldgen blacklist (%s).  Skipping.", s);
-                t.printStackTrace();
+            } catch (Exception t) {
+                LogHelper.warn(t, "Malformed item in worldgen blacklist (%s).  Skipping.", s);
                 worldgenBlacklist[count] = -1;
             } finally {
                 count++;
@@ -817,9 +815,8 @@ public class AMConfig extends Configuration {
             if (s.isEmpty()) continue;
             try {
                 mobBlacklist[count2] = Integer.parseInt(s.trim());
-            } catch (Throwable t) {
-                LogHelper.info("Malformed item in worldgen blacklist (%s).  Skipping.", s);
-                t.printStackTrace();
+            } catch (Exception t) {
+                LogHelper.warn(t, "Malformed item in mod blacklist (%s).  Skipping.", s);
                 mobBlacklist[count2] = -1;
             } finally {
                 count2++;
@@ -852,9 +849,8 @@ public class AMConfig extends Configuration {
                 } else {
                     appropriationMobBlacklist[count] = clazz;
                 }
-            } catch (Throwable t) {
-                LogHelper.info("Malformed item in appropriation entity blacklist (%s).  Skipping.", s);
-                t.printStackTrace();
+            } catch (Exception | LinkageError t) {
+                LogHelper.warn(t, "Malformed item in appropriation entity blacklist (%s).  Skipping.", s);
                 appropriationMobBlacklist[count] = null;
             } finally {
                 count++;

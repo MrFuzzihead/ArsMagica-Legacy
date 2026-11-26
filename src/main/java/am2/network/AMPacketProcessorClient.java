@@ -147,12 +147,12 @@ public class AMPacketProcessorClient extends AMPacketProcessorServer {
             PacketRegistry.Handler<EntityPlayer> handler = packetHandlers.get(packetID);
             if (handler == null) return;
             handler.handle(player, remaining);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             LogHelper.log(Level.ERROR, t, "Client packet %d failed to handle", packetID);
         } finally {
             try {
                 if (bbis != null) bbis.close();
-            } catch (Throwable ignored) {
+            } catch (Exception ignored) {
                 // Closing a failed stream must not mask the handler result.
             }
         }
@@ -455,7 +455,7 @@ public class AMPacketProcessorClient extends AMPacketProcessorServer {
         try {
             CompressedStreamTools.write(compound, file);
         } catch (IOException e) {
-            e.printStackTrace();
+            LogHelper.error(e, "Failed to write the NBT dump");
             player.addChatMessage(
                 new ChatComponentText(
                     "An error occurred while attempting to write the NBT, check the console for more information."));

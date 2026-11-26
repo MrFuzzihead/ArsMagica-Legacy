@@ -37,7 +37,7 @@ public class SetAffinityCommand extends CommandBase {
     private int tryParseInt(String input) {
         try {
             return Integer.parseInt(input);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             return 0;
         }
     }
@@ -67,7 +67,7 @@ public class SetAffinityCommand extends CommandBase {
 
         try {
             enumAffinity = Affinity.valueOf(affinity);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             player.addChatMessage(new ChatComponentText("Unknown affinity name specified."));
             return;
         }

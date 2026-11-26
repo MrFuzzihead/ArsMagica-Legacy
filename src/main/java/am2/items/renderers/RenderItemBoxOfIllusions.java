@@ -60,7 +60,7 @@ public class RenderItemBoxOfIllusions implements IItemRenderer {
 
         try {
             model_celestial.renderAll();
-        } catch (Throwable t) {
+        } catch (Exception t) {
 
         }
 
