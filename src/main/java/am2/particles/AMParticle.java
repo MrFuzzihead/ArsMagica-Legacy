@@ -116,19 +116,7 @@ public class AMParticle extends EntityFX {
 
     public void SetParticleTextureByName(String name) {
         this.particleName = name;
-        if (name.startsWith("break_")) {
-            // TODO:
-            /*
-             * String[] split = name.replace("break_", "").split("_");
-             * int bid = Integer.parseInt(split[0]);
-             * int meta = Integer.parseInt(split[1]);
-             * Block block = Block.getBlockById(bid);
-             * if (block != null){
-             * this.particleIcon = block.getIcon(rand.nextInt(6), meta);
-             * isBreak = true;
-             * }
-             */
-        } else {
+        if (!name.startsWith("break_")) {
             this.particleIcon = AMParticleIcons.instance.getIconByName(name);
         }
         if (name.equals("radiant")) isRadiant = true;

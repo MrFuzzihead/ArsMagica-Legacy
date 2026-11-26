@@ -16,6 +16,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.StatCollector;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
@@ -65,15 +66,17 @@ public class BlockManaBattery extends PoweredBlock {
                 : te.getPowerType()
                     .chatColor();
             AMNetHandler.INSTANCE.sendPowerRequestToServer(new AMVector3(te));
-            // TODO localize these messages
             if (par1World.isRemote) {
-                if (AMCore.config.colourblindMode()) {
-                    par5EntityPlayer.addChatMessage(
-                        new ChatComponentText(String.format("Charge Level: %.2f %% [%s]", charge, color)));
-                } else {
-                    par5EntityPlayer.addChatMessage(
-                        new ChatComponentText(String.format("Charge Level: %s%.2f \u00A7f%%", color, charge)));
-                }
+                String message = AMCore.config.colourblindMode()
+                    ? StatCollector.translateToLocalFormatted(
+                        "am2.tooltip.manaBatteryChargeColourblind",
+                        String.format("%.2f", charge),
+                        color)
+                    : StatCollector.translateToLocalFormatted(
+                        "am2.tooltip.manaBatteryCharge",
+                        color,
+                        String.format("%.2f", charge));
+                par5EntityPlayer.addChatMessage(new ChatComponentText(message));
             }
         }
 

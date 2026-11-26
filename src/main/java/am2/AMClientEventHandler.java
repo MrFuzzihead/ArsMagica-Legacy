@@ -242,11 +242,10 @@ public class AMClientEventHandler {
                     PowerTypes powerType = PowerTypes
                         .getByID(stack.stackTagCompound.getInteger("mana_battery_powertype"));
                     if (batteryCharge != 0) {
-                        // TODO localize this tooltip
                         event.toolTip.add(
-                            String.format(
-                                "§r§9Contains §5%.2f %s%s §9etherium",
-                                batteryCharge,
+                            StatCollector.translateToLocalFormatted(
+                                "am2.tooltip.manaBatteryContains",
+                                String.format("%.2f", batteryCharge),
                                 powerType.chatColor(),
                                 powerType.name()));
                     }
