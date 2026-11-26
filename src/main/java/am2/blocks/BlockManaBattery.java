@@ -129,11 +129,6 @@ public class BlockManaBattery extends PoweredBlock {
                 float f1 = world.rand.nextFloat() * 0.8F + 0.1F;
                 float f2 = world.rand.nextFloat() * 0.8F + 0.1F;
                 ItemStack stack = new ItemStack(this, 1, metadata);
-                // These currently don't do anything without a custom ItemBlock, so I'm removing them temporarily
-                // int dmg = (int)((PowerNodeRegistry.For(world).getPower(te, te.getPowerType()) / te.getCapacity()) *
-                // 100);
-                // if (dmg == 0) dmg = 1;
-                // stack.damageItem(stack.getMaxDamage() - dmg, new EntityDummyCaster(world));
                 stack.stackTagCompound = new NBTTagCompound();
                 stack.stackTagCompound.setFloat(
                     "mana_battery_charge",

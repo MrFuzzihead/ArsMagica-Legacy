@@ -33,7 +33,6 @@ public final class PacketValidation {
             AMPacketIDs.SYNCCOMPENDIUM,
             AMPacketIDs.SYNCCOMPENDIUMREQUEST,
             AMPacketIDs.REQUESTWORLDDATACHANGE,
-            AMPacketIDs.POSSIBLE_CLIENT_EXPROP_DESYNC,
             AMPacketIDs.SPELL_CUSTOMIZE,
             AMPacketIDs.SPELLBOOK_CHANGE_ACTIVE_SLOT,
             AMPacketIDs.DECO_BLOCK_UPDATE,

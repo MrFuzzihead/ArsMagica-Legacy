@@ -36,7 +36,6 @@ public class AMDataReader {
                 ID = dataStream.readByte();
             } catch (IOException e) {
                 LogHelper.error("AMDataReader (getID): " + e.toString());
-                e.printStackTrace();
                 failed = true;
             }
         }
@@ -48,7 +47,6 @@ public class AMDataReader {
             value = dataStream.readInt();
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getInt): " + e.toString());
-            e.printStackTrace();
             failed = true;
         }
         return value;
@@ -60,7 +58,6 @@ public class AMDataReader {
             value = dataStream.readFloat();
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getFloat): " + e.toString());
-            e.printStackTrace();
             failed = true;
         }
         return value;
@@ -72,7 +69,6 @@ public class AMDataReader {
             value = dataStream.readDouble();
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getDouble): " + e.toString());
-            e.printStackTrace();
             failed = true;
         }
         return value;
@@ -84,7 +80,6 @@ public class AMDataReader {
             value = dataStream.readBoolean();
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getBoolean): " + e.toString());
-            e.printStackTrace();
             failed = true;
         }
         return value;
@@ -96,7 +91,6 @@ public class AMDataReader {
             value = dataStream.readUTF();
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getString): " + e.toString());
-            e.printStackTrace();
             failed = true;
         }
         return value;
@@ -108,7 +102,6 @@ public class AMDataReader {
             value = dataStream.readByte();
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getByte): " + e.toString());
-            e.printStackTrace();
             failed = true;
         }
         return value;
@@ -120,7 +113,6 @@ public class AMDataReader {
             value = dataStream.readShort();
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getShort): " + e.toString());
-            e.printStackTrace();
             failed = true;
         }
         return value;
@@ -132,7 +124,6 @@ public class AMDataReader {
             value = dataStream.readLong();
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getLong): " + e.toString());
-            e.printStackTrace();
             failed = true;
         }
         return value;
@@ -152,7 +143,6 @@ public class AMDataReader {
             return ByteBufUtils.readTag(buf);
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getNBTTagCompound): " + e.toString());
-            e.printStackTrace();
             failed = true;
         }
         return null;
@@ -169,7 +159,6 @@ public class AMDataReader {
             dataStream.readFully(remaining);
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getRemainingBytes): " + e.toString());
-            e.printStackTrace();
             failed = true;
         }
 
@@ -199,7 +188,6 @@ public class AMDataReader {
             return arr;
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getIntArray): " + e.toString());
-            e.printStackTrace();
             failed = true;
         }
 

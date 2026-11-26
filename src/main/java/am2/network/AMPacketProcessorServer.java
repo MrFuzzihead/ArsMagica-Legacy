@@ -11,6 +11,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
+import org.apache.logging.log4j.Level;
+
 import am2.AMCore;
 import am2.LogHelper;
 import am2.PlayerTracker;
@@ -63,9 +65,6 @@ public class AMPacketProcessorServer {
             (player, payload) -> handleRequestWorldDataChange(payload, player));
         packetHandlers
             .register(AMPacketIDs.SYNC_BETA_PARTICLES, (player, payload) -> handleSyncBetaParticles(payload, player));
-        packetHandlers.register(
-            AMPacketIDs.POSSIBLE_CLIENT_EXPROP_DESYNC,
-            (player, payload) -> handlePossibleClientExpropDesync(payload, player));
         packetHandlers.register(
             AMPacketIDs.REQUEST_BETA_PARTICLES,
             (player, payload) -> handleRequestBetaParticles(payload, player));
@@ -132,14 +131,12 @@ public class AMPacketProcessorServer {
             if (handler == null) return;
             handler.handle(player, remaining);
         } catch (Throwable t) {
-            LogHelper.error("Server Packet Failed to Handle!");
-            LogHelper.error("Packet Type: " + packetID);
-            t.printStackTrace();
+            LogHelper.log(Level.ERROR, t, "Server packet %d failed to handle", packetID);
         } finally {
             try {
                 bbis.close();
-            } catch (Throwable t) {
-                t.printStackTrace();
+            } catch (Throwable ignored) {
+                // Closing a failed stream must not mask the handler result.
             }
         }
     }
@@ -427,23 +424,6 @@ public class AMPacketProcessorServer {
         writer.add(expropData);
 
         AMNetHandler.INSTANCE.sendPacketToClientPlayer(player, AMPacketIDs.REQUEST_BETA_PARTICLES, writer.generate());
-    }
-
-    private void handlePossibleClientExpropDesync(byte[] data, EntityPlayerMP player) {
-        AMDataReader rdr = new AMDataReader(data, false);
-        int entityID = rdr.getInt();
-        if (rdr.hasFailed()) return;
-
-        EntityLivingBase e = getEntityByID(entityID);
-        if (!PacketAuthority.isSelf(player, e)) return;
-
-        if (e instanceof EntityPlayer) {
-            ExtendedProperties props = ExtendedProperties.For(e);
-            if (!props.detectPossibleDesync()) {
-                props.setFullSync();
-                props.forceSync();
-            }
-        }
     }
 
     private void handleSyncBetaParticles(byte[] data, EntityPlayerMP player) {

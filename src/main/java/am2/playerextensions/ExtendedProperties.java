@@ -1174,10 +1174,6 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         }
     }
 
-    public boolean detectPossibleDesync() {
-        return false;
-    }
-
     private Map<String, String> buildSerializableExtraProperties() {
         Map<String, String> serializable = new HashMap<String, String>(extra_properties);
         for (Map.Entry<TimedBlockEffect, Integer> entry : acceleratedTiles.entrySet()) {
@@ -1958,14 +1954,6 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
                 data);
         }
 
-        if (entity.worldObj.isRemote) {
-            if (this.detectPossibleDesync()) {
-                AMNetHandler.INSTANCE.sendPacketToServer(
-                    AMPacketIDs.POSSIBLE_CLIENT_EXPROP_DESYNC,
-                    new AMDataWriter().add(entity.getEntityId())
-                        .generate());
-            }
-        }
     }
 
     public void syncTKDistance() {

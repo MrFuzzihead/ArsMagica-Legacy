@@ -389,19 +389,8 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
             checkForEndCondition();
             updatePowerRequestData();
             if (!worldObj.isRemote && !currentDefinitionIsWithinStructurePower() && this.ticksExisted > 100) {
-                worldObj.newExplosion(null, xCoord + 0.5, yCoord - 1.5, zCoord + 0.5, this.maxEffects, false, true); // the
-                                                                                                                     // better
-                                                                                                                     // the
-                                                                                                                     // altar,
-                                                                                                                     // the
-                                                                                                                     // mode
-                                                                                                                     // devastating
-                                                                                                                     // the
-                                                                                                                     // explosion
-                                                                                                                     // in
-                                                                                                                     // case
-                                                                                                                     // of
-                                                                                                                     // overload
+                // Better altars cause a larger overload explosion.
+                worldObj.newExplosion(null, xCoord + 0.5, yCoord - 1.5, zCoord + 0.5, this.maxEffects, false, true);
                 setCrafting(false);
                 return;
             }

@@ -17,7 +17,6 @@ public class AMPacketIDs {
     public static final byte SYNC_EXTENDED_PROPS = 16;
     public static final byte SYNC_BETA_PARTICLES = 17;
     public static final byte SYNC_SPELL_KNOWLEDGE = 27;
-    public static final byte POSSIBLE_CLIENT_EXPROP_DESYNC = 29;
     public static final byte REQUEST_BETA_PARTICLES = 31;
     public static final byte SPELL_CUSTOMIZE = 32;
     public static final byte SYNC_AIR_CHANGE = 33;

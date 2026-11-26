@@ -17,6 +17,8 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
+import org.apache.logging.log4j.Level;
+
 import am2.AMCore;
 import am2.LogHelper;
 import am2.PlayerTracker;
@@ -147,14 +149,12 @@ public class AMPacketProcessorClient extends AMPacketProcessorServer {
             if (handler == null) return;
             handler.handle(player, remaining);
         } catch (Throwable t) {
-            LogHelper.error("Client Packet Failed to Handle!");
-            LogHelper.error("Packet Type: " + packetID);
-            t.printStackTrace();
+            LogHelper.log(Level.ERROR, t, "Client packet %d failed to handle", packetID);
         } finally {
             try {
                 if (bbis != null) bbis.close();
-            } catch (Throwable t) {
-                t.printStackTrace();
+            } catch (Throwable ignored) {
+                // Closing a failed stream must not mask the handler result.
             }
         }
     }
