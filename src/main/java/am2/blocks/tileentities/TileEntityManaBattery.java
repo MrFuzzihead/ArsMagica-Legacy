@@ -90,8 +90,10 @@ public class TileEntityManaBattery extends TileEntityAMPower {
     public void readFromNBT(NBTTagCompound nbttagcompound) {
         super.readFromNBT(nbttagcompound);
         active = nbttagcompound.getBoolean("isActive");
-        if (nbttagcompound.hasKey("outputType"))
-            outputPowerType = PowerTypes.getByID(nbttagcompound.getInteger("outputType"));
+        if (nbttagcompound.hasKey("outputType")) {
+            PowerTypes type = PowerTypes.getByID(nbttagcompound.getInteger("outputType"));
+            outputPowerType = type == null ? PowerTypes.NONE : type;
+        }
     }
 
     @Override

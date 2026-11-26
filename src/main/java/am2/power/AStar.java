@@ -51,7 +51,7 @@ public abstract class AStar<T> {
         @Override
         public int compareTo(Object o) {
             Path p = (Path) o;
-            return (int) (f - p.f);
+            return Double.compare(f, p.f);
         }
 
         /**

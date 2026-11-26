@@ -30,7 +30,9 @@ public class BucketHandler {
 
         if (block == BlocksCommonProxy.liquidEssence) {
             if (world.getBlockMetadata(target.blockX, target.blockY, target.blockZ) == 0) {
-                world.setBlock(target.blockX, target.blockY, target.blockZ, Blocks.air);
+                if (!world.isRemote) {
+                    world.setBlock(target.blockX, target.blockY, target.blockZ, Blocks.air);
+                }
                 return new ItemStack(ItemsCommonProxy.itemAMBucket);
             }
         }

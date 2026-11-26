@@ -69,10 +69,14 @@ public class TileEntityFlickerHabitat extends TileEntityFlickerControllerBase im
 
     public TileEntityFlickerHabitat() {
         initLocationLists();
+    }
 
-        if (worldObj != null && worldObj.isRemote) {
-            rotateOffset = worldObj.rand.nextFloat() * FULL_CIRCLE - 1;
-            floatOffset = MAX_FLOAT_DOWN + (worldObj.rand.nextFloat() * (MAX_FLOAT_UP - MAX_FLOAT_DOWN) + 1);
+    @Override
+    public void setWorldObj(net.minecraft.world.World world) {
+        super.setWorldObj(world);
+        if (world != null && world.isRemote) {
+            rotateOffset = world.rand.nextFloat() * FULL_CIRCLE - 1;
+            floatOffset = MAX_FLOAT_DOWN + (world.rand.nextFloat() * (MAX_FLOAT_UP - MAX_FLOAT_DOWN) + 1);
         }
     }
 

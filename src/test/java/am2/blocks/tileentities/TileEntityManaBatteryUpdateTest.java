@@ -1,5 +1,6 @@
 package am2.blocks.tileentities;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -8,12 +9,15 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.storage.WorldInfo;
 
 import org.junit.Test;
+
+import am2.api.power.PowerTypes;
 
 /**
  * Pins the mana battery's change-gated metadata update. The old code sent a block metadata update and full tile NBT
@@ -45,6 +49,28 @@ public class TileEntityManaBatteryUpdateTest {
 
         verify(world).setBlockMetadataWithNotify(0, 0, 0, 2, 2);
         verify(world).markBlockForUpdate(0, 0, 0);
+    }
+
+    @Test
+    public void unknownOutputPowerTypeFallsBackToNone() {
+        TileEntityManaBattery battery = new TileEntityManaBattery();
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setInteger("outputType", 9999);
+
+        battery.readFromNBT(tag);
+
+        assertEquals(PowerTypes.NONE, battery.getPowerType());
+    }
+
+    @Test
+    public void knownOutputPowerTypeIsRestored() {
+        TileEntityManaBattery battery = new TileEntityManaBattery();
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setInteger("outputType", PowerTypes.LIGHT.ID());
+
+        battery.readFromNBT(tag);
+
+        assertEquals(PowerTypes.LIGHT, battery.getPowerType());
     }
 
     /** Set the protected field directly so the test does not register a node in the global power registry. */
