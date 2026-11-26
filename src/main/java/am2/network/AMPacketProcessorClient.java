@@ -79,7 +79,6 @@ public class AMPacketProcessorClient extends AMPacketProcessorServer {
         packetHandlers.register(AMPacketIDs.SYNCMAPTOCLIENTS, (player, payload) -> handleSyncMap(payload));
         packetHandlers.register(AMPacketIDs.SYNCCOMPENDIUMRESPONSE, (player, payload) -> handleCompendiumSync(payload));
         packetHandlers.register(AMPacketIDs.SYNCWORLDDATATOCLIENTS, (player, payload) -> handleSyncWorldData(payload));
-        packetHandlers.register(AMPacketIDs.MAGIC_LEVEL_UP, (player, payload) -> handleMagicLevelUpResponse(payload));
         packetHandlers.register(
             AMPacketIDs.PARTICLE_SPAWN_SPECIAL,
             (player, payload) -> AMCore.proxy.particleManager
@@ -668,21 +667,6 @@ public class AMPacketProcessorClient extends AMPacketProcessorServer {
         if (localPlayer.motionY > 0) return;
 
         localPlayer.addVelocity(velX, velY, velZ);
-    }
-
-    private void handleMagicLevelUpResponse(byte[] data) {
-        AMDataReader rdr = new AMDataReader(data, false);
-        boolean success = rdr.getBoolean();
-        int newXPLevel = rdr.getInt();
-        if (rdr.hasFailed()) return;
-        if (success) {
-            EntityPlayer player = Minecraft.getMinecraft().thePlayer;
-            player.experienceLevel = newXPLevel;
-            ExtendedProperties.For(player)
-                .setMagicLevelWithMana(
-                    ExtendedProperties.For(player)
-                        .getMagicLevel() + 1);
-        }
     }
 
     private void handleSpellCast(byte[] data) {

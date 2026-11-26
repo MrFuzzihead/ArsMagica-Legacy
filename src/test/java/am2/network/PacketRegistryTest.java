@@ -29,7 +29,7 @@ public class PacketRegistryTest {
 
     @Test
     public void processorsRegisterEverySwitchCase() {
-        assertEquals(24, new AMPacketProcessorServer().handlerCount());
-        assertEquals(35, new AMPacketProcessorClient().handlerCount());
+        assertEquals(23, new AMPacketProcessorServer().handlerCount());
+        assertEquals(34, new AMPacketProcessorClient().handlerCount());
     }
 }

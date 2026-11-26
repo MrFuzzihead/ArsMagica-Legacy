@@ -10,6 +10,7 @@ import java.util.Random;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiScreenBook;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.RenderHelper;
@@ -191,7 +192,9 @@ public class AMGuiHelper {
     }
 
     public static void OpenBookGUI(ItemStack stack) {
-        // TODO Auto-generated method stub
+        if (stack == null || Minecraft.getMinecraft().thePlayer == null) return;
+        Minecraft.getMinecraft()
+            .displayGuiScreen(new GuiScreenBook(Minecraft.getMinecraft().thePlayer, stack, false));
     }
 
     public static void OpenCompendiumGui(ItemStack stack) {

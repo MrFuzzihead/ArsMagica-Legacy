@@ -54,7 +54,6 @@ public class AMPacketProcessorServer {
         packetHandlers.register(
             AMPacketIDs.SPELL_SHAPE_GROUP_CHANGE,
             (player, payload) -> handleCastingModeChange(payload, player));
-        packetHandlers.register(AMPacketIDs.MAGIC_LEVEL_UP, (player, payload) -> handleMagicLevelUp(payload, player));
         packetHandlers.register(AMPacketIDs.SYNCMAPTOSERVER, (player, payload) -> handleSyncMapServer(payload));
         packetHandlers.register(AMPacketIDs.SYNCCOMPENDIUM, (player, payload) -> handleSyncCompendium(payload, player));
         packetHandlers.register(
@@ -466,27 +465,6 @@ public class AMPacketProcessorServer {
                     ((ItemSpellBook) stack.getItem()).replaceAciveItemStack(stack, spellStack);
                 }
         }
-    }
-
-    private void handleMagicLevelUp(byte[] data, EntityPlayerMP player) {
-        /*
-         * AMDataReader reader = new AMDataReader(data, false);
-         * int entityID = reader.getInt();
-         * Entity ent = getEntityByID(entityID);
-         * if (ent == null || !(ent instanceof EntityLiving)) return;
-         * if (AMCore.proxy.IncreaseEntityMagicLevel((EntityLiving)ent, ent.worldObj)){
-         * if (ent instanceof EntityPlayerMP){
-         * EntityPlayerMP player = (EntityPlayerMP)ent;
-         * AMDataWriter writer = new AMDataWriter();
-         * writer.add(true);
-         * writer.add(player.experienceLevel);
-         * Packet pkt = createArsMagicaClientPacket(AMPacketIDs.MAGIC_LEVEL_UP, writer.generate());
-         * PacketDispatcher.sendPacketToPlayer(pkt, (Player) player);
-         * }
-         * }
-         */
-
-        // TODO
     }
 
     public WorldServer[] getWorldServers() {

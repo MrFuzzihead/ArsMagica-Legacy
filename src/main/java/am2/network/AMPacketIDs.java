@@ -4,7 +4,6 @@ public class AMPacketIDs {
 
     public static final byte SPELL_SHAPE_GROUP_CHANGE = 1;
     public static final byte SPELL_CAST = 2;
-    public static final byte MAGIC_LEVEL_UP = 3;
     public static final byte CRAFTING_ALTAR_DATA = 4;
     public static final byte PARTICLE_SPAWN_SPECIAL = 5;
     public static final byte PLAYER_VELOCITY_ADD = 7;

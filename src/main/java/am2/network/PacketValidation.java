@@ -73,7 +73,6 @@ public final class PacketValidation {
             AMPacketIDs.CALEFACTOR_DATA,
             AMPacketIDs.OBELISK_DATA);
         bidirectional(
-            AMPacketIDs.MAGIC_LEVEL_UP,
             AMPacketIDs.SYNC_EXTENDED_PROPS,
             AMPacketIDs.SYNC_BETA_PARTICLES,
             AMPacketIDs.SYNC_SPELL_KNOWLEDGE,
