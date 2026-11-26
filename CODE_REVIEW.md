@@ -1086,7 +1086,6 @@ These classes/features are unreferenced or incomplete. Some are intentionally re
 - **`TileEntityManaBattery.readFromNBT`** uses `PowerTypes.getByID(...)`, which returns `NONE` for unknown IDs, but `outputPowerType` can still be `null` if a future `getByID` changes; add a null fallback and clamp.
 - **`TileEntityManaBattery.breakBlock`** only saves the current `outputPowerType` amount (`BlockManaBattery.java:126-145`). If the battery holds multiple power types (possible while empty, as described above), the others are lost. Save all types or forbid mixed storage.
 - **`AStar.Path.compareTo`** casts `f - p.f` to `int` (`AStar.java:49-53`), so paths with costs less than 1 apart compare equal. Use `Double.compare`.
-- **`IllEffectsManager.entriesSortedByValues`** creates a sorted set and then ignores it; the returned `TreeMap` is unsorted. Either implement the sort or remove the method.
 - **`ObeliskFuelHelper.registerFuelType`** mutates the caller's stack to size 0 (`ObeliskFuelHelper.java:18-21`). Copy first.
 - **`EnervatorRecipeHelper.getRecipe`** returns the shared output stack and mutates its `stackSize` (`EnervatorRecipeHelper.java:29-53`). Return a copy.
 - **`TileEntityCrystalMarker.cyclePriority`** sends a description packet to every nearby player individually (`TileEntityCrystalMarker.java:54-65`); `markBlockForUpdate`/`sendToAllAround` is simpler.
