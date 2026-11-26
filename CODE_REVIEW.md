@@ -1040,35 +1040,30 @@ These classes/features are unreferenced or incomplete. Some are intentionally re
 
 **Unreferenced classes (class name appears only in its own file):**
 
-- `am2/blocks/renderers/EverstoneRenderHandler`
-- `am2/bosses/ai/WaterGuardianTargetSelector`
-- `am2/commands/SetCompendiumState` (also has a `var2[1]` out-of-bounds bug; see below)
-- `am2/entities/ai/TargetTypes`
-- `am2/illeffect/IllEffectDrainMana`, `IllEffectExplode`, `IllEffectSpark`, `IllEffectSparkStorm`, `IllEffectSpawnDarkling`
-- `am2/interop/NEIAM2Config` (unless NEI auto-discovers it)
-- `am2/spell/components/Permanence` (both effect methods are TODO; not registered in `SkillManager`)
-- `am2/utility/BlockUtilities`
-- `net/tclproject/mysteriumlib/math/LocalityHelper`
+- None. The empty renderer/AI/utility/enum stubs, the unregistered `SetCompendiumState`, the unused
+  ill-effect implementations/manager, `Permanence` and `BlockUtilities` were removed in `b6602de`'s cleanup batch.
+- `am2/interop/NEIAM2Config` is **not** dead: NEI discovers classes named `NEI*Config`. It now carries a comment
+  recording that contract.
 
 **Incomplete / abandoned features:**
 
-- `TileEntityAMPowerNew` is entirely commented out; `TileEntityManaBatteryNew` extends `TileManaHandler` and is unused.
-- `ManaContainerRegistry` is almost entirely commented-out code; `IManaContainerItem` is commented out.
-- The `illeffect` subsystem has no registrations: `IllEffectsManager.instance` is never populated and the only caller in `TileEntityBlackAurem` is commented out (`TileEntityBlackAurem.java:255-260`). The `entriesSortedByValues` method creates a `sortedEntries` set and then ignores it (`IllEffectsManager.java:106-120`), so the “sorted” map is not sorted.
-- `SetCompendiumState.processCommand` checks `var2.length != 1` and then reads `var2[1]` (`SetCompendiumState.java:32-40`); even if registered, it would throw `ArrayIndexOutOfBoundsException`. It is not registered in `AMCore.serverStarting`.
-- `SpellValidator.modifierCanBeAdded` always returns `false` (`SpellValidator.java:139-141`); the real check lives in `ContainerInscriptionTable`. Remove the stub or delegate.
-- `ExtendedProperties.isEntryLocked`/`isEntryNew` (`1411-1419`) are unused and dereference a possibly absent map entry.
-- `ExtendedProperties.detectPossibleDesync` always returns `false` (`1166-1168`); the client→server desync packet path is dead.
-- `AMEventHandler.tempFlipped`/`getMinIndex` etc. are used, but the `IPowerNodeComparer` inner class in `PowerNodeRegistry` (`487-509`) is unused.
+- `TileEntityAMPowerNew`, `ManaContainerRegistry` and `IManaContainerItem` are already absent from the artifact. The
+  remaining second-mana types are deliberately retained and marked `@Deprecated` for addon compatibility.
+- The `illeffect` implementations and `IllEffectsManager` have been removed. The public `IIllEffect`/`IllEffectBase`/
+  `IllEffectSeverity` API remains for addon compatibility but has no AM2-side implementation.
+- `SpellValidator.modifierCanBeAdded` and the duplicate `TileEntityInscriptionTable` stub were removed; the live check is
+  `ContainerInscriptionTable.modifierCanBeAdded`.
+- `ExtendedProperties.isEntryLocked`/`isEntryNew` are now null-safe for missing entries and covered by
+  `ExtendedPropertiesNbtTest`.
+- `ExtendedProperties.detectPossibleDesync` still always returns `false`; the client→server desync packet path remains
+  dead and is a candidate for removal.
 
 **Commented-out code and stale TODOs (3,064 comment lines, 21 TODO/FIXME):**
 
-- `AMEventHandler` contains a large commented-out `onEntityDeathHighPriority` block, a commented-out `MDE`/`MFR` integration, and commented-out sound loop code.
-- `BlockManaBattery` has a commented-out damage/damage-item scheme.
-- `TileEntityBlackAurem` has the commented-out ill-effect trigger.
-- `TileEntityCraftingAltar` has large commented-out “devastating explosion” commentary and dead fields (`allShapeGroupsAdded` is `final false`).
-- `SpellUtils` has commented-out old stream code and a dead `ISkillTreeEntry entry = ...` local (`SpellUtils.java:695`).
-- `AM2WorldDecorator` constructs a `WorldGenEssenceLakes` local and never uses it (`AM2WorldDecorator.java:111`); the actual lake generation creates another instance at `203`.
+- `BlockManaBattery` still has a commented-out damage/damage-item scheme.
+- `TileEntityCraftingAltar` still has large commented-out “devastating explosion” commentary.
+- `AMEventHandler`/`ExtendedProperties` comment cleanup is substantially improved; the profanity block and the dead
+  `allShapeGroupsAdded` field, unused `WorldGenEssenceLakes` local and dead `SpellUtils` local are gone.
 - Many `String.format("ArrayIndex", i)` calls should be plain constants.
 
 **Error-handling cleanup:**
