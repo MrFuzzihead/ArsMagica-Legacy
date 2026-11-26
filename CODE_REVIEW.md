@@ -1041,7 +1041,7 @@ These classes/features are unreferenced or incomplete. Some are intentionally re
 **Unreferenced classes (class name appears only in its own file):**
 
 - None. The empty renderer/AI/utility/enum stubs, the unregistered `SetCompendiumState`, the unused
-  ill-effect implementations/manager, `Permanence` and `BlockUtilities` were removed in `b6602de`'s cleanup batch.
+  ill-effect implementations/manager, `Permanence` and `BlockUtilities` were removed in `7f3ffa9` cleanup batch.
 - `am2/interop/NEIAM2Config` is **not** dead: NEI discovers classes named `NEI*Config`. It now carries a comment
   recording that contract.
 
