@@ -954,7 +954,7 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 ### Current state
 
 - 447 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
-- The server game test has 232 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
+- The server game test has 233 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
 - The client game test has 23 assertions at the main menu (proxy, key bindings, creative tabs, localisation).
 - Coverage is 177/69,939 lines (0.25%), with a 0.2% floor. The game-test coverage report is generated but not enforced.
 
@@ -1057,6 +1057,8 @@ These classes/features are unreferenced or incomplete. Some are intentionally re
   `ExtendedPropertiesNbtTest`.
 - The always-false client-exprop desync path and the unused `MAGIC_LEVEL_UP` request/response packet were removed.
 - `AMGuiHelper.OpenBookGUI` is implemented instead of being an empty TODO; lost journals now open the vanilla book GUI.
+- `ItemWakebloom` is now registered as the wakebloom block's ItemBlock, restoring its water-placement behavior and
+  removing the last unreferenced item class.
 
 **Commented-out code and stale TODOs (12 TODO/FIXME):**
 
@@ -1542,7 +1544,7 @@ Lines under src/main/java:          152012
 Java files under src/test/java:     110
 Java files under src/gameTest/java: 3
 JUnit tests:                        447
-Game-test assertions:               232 server + 23 client
+Game-test assertions:               233 server + 23 client
 JaCoCo line coverage:               3404 / 68386 (4.98%)
 JaCoCo branch coverage:             1316 / 29755 (4.42%)
 Coverage floor in addon.gradle.kts: 0.002 (0.2%)
