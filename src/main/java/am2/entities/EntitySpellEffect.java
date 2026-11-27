@@ -315,8 +315,9 @@ public class EntitySpellEffect extends Entity {
                 }
             }
 
-            // TODO: SoundHelper.instance.loopSound(worldObj, (float)posX, (float)posY, (float)posZ,
-            // "arsmagica2:spell.loop.fire", 1.0f);
+            if (shouldPlayLoopSound(this.ticksExisted)) {
+                worldObj.playSound(this.posX, this.posY, this.posZ, "arsmagica2:spell.loop.fire", 0.6F, 1.0F, false);
+            }
         } else {
             List<Entity> possibleTargets = (List) worldObj.getEntitiesWithinAABB(
                 EntityLivingBase.class,
@@ -404,8 +405,9 @@ public class EntitySpellEffect extends Entity {
                     .AddParticleController(new ParticleFleePoint(particle, new AMVector3(x, y, z), 0.1f, 3f, 1, false));
             }
 
-            // TODO: SoundHelper.instance.loopSound(worldObj, (float)posX, (float)posY, (float)posZ,
-            // "arsmagica2:spell.loop.air", 1.0f);
+            if (shouldPlayLoopSound(this.ticksExisted)) {
+                worldObj.playSound(this.posX, this.posY, this.posZ, "arsmagica2:spell.loop.air", 0.6F, 1.0F, false);
+            }
         } else {
             List<Entity> possibleTargets = (List) worldObj.getEntitiesWithinAABB(
                 EntityLivingBase.class,
@@ -686,6 +688,10 @@ public class EntitySpellEffect extends Entity {
 
     public boolean isRainOfFire() {
         return this.dataWatcher.getWatchableObjectInt(WATCHER_TYPE) == TYPE_ROF;
+    }
+
+    static boolean shouldPlayLoopSound(int ticksExisted) {
+        return ticksExisted > 0 && ticksExisted % 20 == 0;
     }
 
 }

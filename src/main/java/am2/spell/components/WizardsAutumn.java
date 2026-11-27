@@ -37,6 +37,13 @@ public class WizardsAutumn implements ISpellComponent {
         double impactX, double impactY, double impactZ, EntityLivingBase caster) {
 
         if (!world.isRemote) {
+            world.playSoundEffect(
+                blockx + 0.5D,
+                blocky + 0.5D,
+                blockz + 0.5D,
+                "arsmagica2:spell.cast.nature",
+                0.7F,
+                0.8F + world.rand.nextFloat() * 0.2F);
             int radius = 2;
             radius = SpellUtils.instance
                 .getModifiedInt_Add(radius, stack, caster, caster, world, 0, SpellModifiers.RADIUS);
@@ -60,7 +67,6 @@ public class WizardsAutumn implements ISpellComponent {
                                     blocky + j,
                                     blockz + k,
                                     meta);
-                                // TODO: play sound
                             }
                         }
                     }
