@@ -10,6 +10,7 @@ import java.util.Random;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiScreenBook;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.RenderHelper;
@@ -29,8 +30,8 @@ import org.lwjgl.opengl.GLContext;
 
 import am2.LogHelper;
 import am2.buffs.BuffList;
+import am2.mixins.early.EntityRendererAccessor;
 import am2.playerextensions.ExtendedProperties;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 
 public class AMGuiHelper {
 
@@ -191,7 +192,9 @@ public class AMGuiHelper {
     }
 
     public static void OpenBookGUI(ItemStack stack) {
-        // TODO Auto-generated method stub
+        if (stack == null || Minecraft.getMinecraft().thePlayer == null) return;
+        Minecraft.getMinecraft()
+            .displayGuiScreen(new GuiScreenBook(Minecraft.getMinecraft().thePlayer, stack, false));
     }
 
     public static void OpenCompendiumGui(ItemStack stack) {
@@ -642,7 +645,7 @@ public class AMGuiHelper {
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
             return true;
-        } catch (Throwable t) {
+        } catch (Exception t) {
             return false;
         }
     }
@@ -653,7 +656,7 @@ public class AMGuiHelper {
             GL11.glPopAttrib();
 
             return true;
-        } catch (Throwable t) {
+        } catch (Exception t) {
             return false;
         }
     }
@@ -737,32 +740,20 @@ public class AMGuiHelper {
         }
 
         if (mc.gameSettings.smoothCamera) {
-            String[] scy = { "field_78496_H", "smoothCamYaw" };
-            String[] scp = { "field_78521_m", "smoothCamPitch" };
-            String[] scpt = { "field_78533_p", "smoothCamPartialTicks" };
-            String[] scfx = { "field_78518_n", "smoothCamFilterX" };
-            String[] scfy = { "field_78499_K", "smoothCamFilterY" };
+            EntityRendererAccessor accessor = (EntityRendererAccessor) renderer;
 
-            // renderer.smoothCamYaw += f3;
-            ReflectionHelper.setPrivateValue(
-                EntityRenderer.class,
-                renderer,
-                (Float) ReflectionHelper.getPrivateValue(EntityRenderer.class, renderer, scy) - f3,
-                scy);
-            // renderer.smoothCamPitch += f4;
-            ReflectionHelper.setPrivateValue(
-                EntityRenderer.class,
-                renderer,
-                (Float) ReflectionHelper.getPrivateValue(EntityRenderer.class, renderer, scp) - f4,
-                scp);
+            // renderer.smoothCamYaw -= f3;
+            accessor.am2$setSmoothCamYaw(accessor.am2$getSmoothCamYaw() - f3);
+            // renderer.smoothCamPitch -= f4;
+            accessor.am2$setSmoothCamPitch(accessor.am2$getSmoothCamPitch() - f4);
             // float f5 = f - renderer.smoothCamPartialTicks;
-            float f5 = f - (Float) ReflectionHelper.getPrivateValue(EntityRenderer.class, renderer, scpt);
+            float f5 = f - accessor.am2$getSmoothCamPartialTicks();
             // renderer.smoothCamPartialTicks = f;
-            ReflectionHelper.setPrivateValue(EntityRenderer.class, renderer, f, scpt);
+            accessor.am2$setSmoothCamPartialTicks(f);
             // f3 = renderer.smoothCamFilterX * f5;
-            f3 = (Float) ReflectionHelper.getPrivateValue(EntityRenderer.class, renderer, scfx) * f5;
+            f3 = accessor.am2$getSmoothCamFilterX() * f5;
             // f4 = renderer.smoothCamFilterY * f5;
-            f4 = (Float) ReflectionHelper.getPrivateValue(EntityRenderer.class, renderer, scfy) * f5;
+            f4 = accessor.am2$getSmoothCamFilterY() * f5;
             mc.thePlayer.setAngles(-f3, f4 * (float) b0);
         } else {
             mc.thePlayer.setAngles(-f3, f4 * (float) b0);

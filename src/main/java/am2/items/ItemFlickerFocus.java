@@ -38,7 +38,7 @@ public class ItemFlickerFocus extends ArsMagicaItem {
     }
 
     @Override
-    public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, List par3List) {
+    public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, List<ItemStack> par3List) {
         for (int i : FlickerOperatorRegistry.instance.getMasks()) {
             par3List.add(new ItemStack(this, 1, i));
         }

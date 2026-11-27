@@ -149,7 +149,7 @@ public class LightningBolt extends EntityFX {
         int renderlength = (int) ((this.main.particleAge + partialframe + (int) (this.main.length * 3.0F))
             / (int) (this.main.length * 3.0F)
             * this.main.numsegments0);
-        for (Iterator iterator = this.main.segments.iterator(); iterator.hasNext();) {
+        for (Iterator<LightningBoltCommon.Segment> iterator = this.main.segments.iterator(); iterator.hasNext();) {
             LightningBoltCommon.Segment rendersegment = (LightningBoltCommon.Segment) iterator.next();
             if (rendersegment.segmentno <= renderlength) {
                 float width = 0.03F * (getRelativeViewVector(rendersegment.startpoint.point).length() / 10.0F + 1.0F)
@@ -288,7 +288,7 @@ public class LightningBolt extends EntityFX {
         renderBolt(tessellator, partialframe, cosyaw, cospitch, sinyaw, cossinpitch, 0);
         try {
             tessellator.draw();
-        } catch (Throwable t) {}
+        } catch (Exception t) {}
 
         brightness = 0xF00F0;
 
@@ -342,12 +342,12 @@ public class LightningBolt extends EntityFX {
 
         try {
             tessellator.startDrawingQuads();
-        } catch (Throwable t) {} ;
+        } catch (Exception t) {} ;
         tessellator.setBrightness(brightness);
         renderBolt(tessellator, partialframe, cosyaw, cospitch, sinyaw, cossinpitch, 1);
         try {
             tessellator.draw();
-        } catch (Throwable t) {}
+        } catch (Exception t) {}
 
         brightness = 0xF00F0;
 
@@ -402,16 +402,16 @@ public class LightningBolt extends EntityFX {
 
         try {
             tessellator.startDrawingQuads();
-        } catch (Throwable t) {}
+        } catch (Exception t) {}
         tessellator.setBrightness(brightness);
         renderBolt(tessellator, partialframe, cosyaw, cospitch, sinyaw, cossinpitch, 2);
         try {
             tessellator.draw();
-        } catch (Throwable t) {}
+        } catch (Exception t) {}
 
         try {
             tessellator.startDrawingQuads();
-        } catch (Throwable t) {}
+        } catch (Exception t) {}
 
         GL11.glDisable(GL11.GL_BLEND);
         GL11.glDepthMask(true);

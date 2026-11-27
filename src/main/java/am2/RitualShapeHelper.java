@@ -119,6 +119,30 @@ public class RitualShapeHelper {
         initWorldFusion();
     }
 
+    /**
+     * Looks up a ritual structure by the name used in the Arcane Compendium XML (for example {@code purification}).
+     * Replaces the reflective field lookup so the lookup is explicit and cannot be broken by an obfuscation mapping.
+     */
+    public MultiblockStructureDefinition getRitualShape(String name) {
+        if (name == null) {
+            return null;
+        }
+        switch (name) {
+            case "ringedCross":
+                return ringedCross;
+            case "hourglass":
+                return hourglass;
+            case "corruption":
+                return corruption;
+            case "purification":
+                return purification;
+            case "worldFusion":
+                return worldFusion;
+            default:
+                return null;
+        }
+    }
+
     private void initWorldFusion() {
         worldFusion = new MultiblockStructureDefinition("worldFusion");
 

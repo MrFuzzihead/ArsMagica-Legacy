@@ -1,43 +1,41 @@
 package am2.worldgen;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Deque;
 
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 
 import am2.AMCore;
 import am2.LogHelper;
+import am2.world.WorldStateManager;
 
 public class RetroactiveWorldgenerator {
 
-    public static final HashMap<Integer, ArrayList<ChunkCoordIntPair>> deferredChunkGeneration = new HashMap<Integer, ArrayList<ChunkCoordIntPair>>();
     public static final RetroactiveWorldgenerator instance = new RetroactiveWorldgenerator();
 
     public void continueRetrogen(World world) {
-        if (world == null) return;
+        if (world == null || world.isRemote) return;
 
-        int dimensionID = world.provider.dimensionId;
+        Deque<ChunkCoordIntPair> chunks = WorldStateManager.retroGenChunks(world);
+        if (chunks == null || chunks.isEmpty()) return;
 
         int count = 0;
-        ArrayList<ChunkCoordIntPair> chunks = deferredChunkGeneration.get(dimensionID);
-        if (chunks != null && chunks.size() > 0) {
-            int amt = Math.min(5, chunks.size());
-            for (int i = 0; i < amt; ++i) {
-                count++;
-                ChunkCoordIntPair chunkPos = chunks.get(0);
-                AMCore.proxy.worldGen.generate(
-                    world.rand,
-                    chunkPos.chunkXPos,
-                    chunkPos.chunkZPos,
-                    world,
-                    world.getChunkProvider(),
-                    world.getChunkProvider());
-                chunks.remove(0);
-            }
+        int amt = Math.min(5, chunks.size());
+        for (int i = 0; i < amt; ++i) {
+            ChunkCoordIntPair chunkPos = chunks.peekFirst();
+            if (chunkPos == null) break;
+            count++;
+            AMCore.proxy.worldGen.generate(
+                world.rand,
+                chunkPos.chunkXPos,
+                chunkPos.chunkZPos,
+                world,
+                world.getChunkProvider(),
+                world.getChunkProvider());
+            chunks.pollFirst();
+        }
 
-            deferredChunkGeneration.put(dimensionID, chunks);
-
+        if (count > 0) {
             LogHelper.info("Retro-genned %d chunks, %d left to generate.", count, chunks.size());
         }
     }

@@ -21,9 +21,14 @@ import net.minecraft.util.ReportedException;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
+import am2.mixins.early.EntityArrowAccessor;
 import am2.spell.SpellHelper;
 
 public class EntityBoundArrow extends EntityArrow {
+
+    private EntityArrowAccessor acc() {
+        return (EntityArrowAccessor) (Object) this;
+    }
 
     private ItemStack castStack; // the spell
 
@@ -50,23 +55,23 @@ public class EntityBoundArrow extends EntityArrow {
                 / Math.PI);
         }
 
-        Block block = this.worldObj.getBlock(this.field_145791_d, this.field_145792_e, this.field_145789_f);
+        Block block = this.worldObj.getBlock(acc().am2$getXTile(), acc().am2$getYTile(), acc().am2$getZTile());
 
         if (block.getMaterial() != Material.air) {
             block.setBlockBoundsBasedOnState(
                 this.worldObj,
-                this.field_145791_d,
-                this.field_145792_e,
-                this.field_145789_f);
+                acc().am2$getXTile(),
+                acc().am2$getYTile(),
+                acc().am2$getZTile());
             AxisAlignedBB axisalignedbb = block.getCollisionBoundingBoxFromPool(
                 this.worldObj,
-                this.field_145791_d,
-                this.field_145792_e,
-                this.field_145789_f);
+                acc().am2$getXTile(),
+                acc().am2$getYTile(),
+                acc().am2$getZTile());
 
             if (axisalignedbb != null
                 && axisalignedbb.isVecInside(Vec3.createVectorHelper(this.posX, this.posY, this.posZ))) {
-                this.inGround = true;
+                acc().am2$setInGround(true);
             }
         }
 
@@ -74,25 +79,25 @@ public class EntityBoundArrow extends EntityArrow {
             --this.arrowShake;
         }
 
-        if (this.inGround) {
-            int j = this.worldObj.getBlockMetadata(this.field_145791_d, this.field_145792_e, this.field_145789_f);
+        if (acc().am2$isInGround()) {
+            int j = this.worldObj.getBlockMetadata(acc().am2$getXTile(), acc().am2$getYTile(), acc().am2$getZTile());
 
-            if (block == this.field_145790_g && j == this.inData) {
-                ++this.ticksInGround;
+            if (block == acc().am2$getInTile() && j == acc().am2$getInData()) {
+                acc().am2$setTicksInGround(acc().am2$getTicksInGround() + 1);
 
-                if (this.ticksInGround == 1200) {
+                if (acc().am2$getTicksInGround() == 1200) {
                     this.setDead();
                 }
             } else {
-                this.inGround = false;
+                acc().am2$setInGround(false);
                 this.motionX *= (double) (this.rand.nextFloat() * 0.2F);
                 this.motionY *= (double) (this.rand.nextFloat() * 0.2F);
                 this.motionZ *= (double) (this.rand.nextFloat() * 0.2F);
-                this.ticksInGround = 0;
-                this.ticksInAir = 0;
+                acc().am2$setTicksInGround(0);
+                acc().am2$setTicksInAir(0);
             }
         } else {
-            ++this.ticksInAir;
+            acc().am2$setTicksInAir(acc().am2$getTicksInAir() + 1);
             Vec3 vec31 = Vec3.createVectorHelper(this.posX, this.posY, this.posZ);
             Vec3 vec3 = Vec3
                 .createVectorHelper(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
@@ -109,7 +114,7 @@ public class EntityBoundArrow extends EntityArrow {
             }
 
             Entity entity = null;
-            List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(
+            List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(
                 this,
                 this.boundingBox.addCoord(this.motionX, this.motionY, this.motionZ)
                     .expand(1.0D, 1.0D, 1.0D));
@@ -120,7 +125,7 @@ public class EntityBoundArrow extends EntityArrow {
             for (i = 0; i < list.size(); ++i) {
                 Entity entity1 = (Entity) list.get(i);
 
-                if (entity1.canBeCollidedWith() && (entity1 != this.shootingEntity || this.ticksInAir >= 5)) {
+                if (entity1.canBeCollidedWith() && (entity1 != this.shootingEntity || acc().am2$getTicksInAir() >= 5)) {
                     f1 = 0.3F;
                     AxisAlignedBB axisalignedbb1 = entity1.boundingBox.expand((double) f1, (double) f1, (double) f1);
                     MovingObjectPosition movingobjectposition1 = axisalignedbb1.calculateIntercept(vec31, vec3);
@@ -157,7 +162,7 @@ public class EntityBoundArrow extends EntityArrow {
                 if (movingobjectposition.entityHit != null) {
                     f2 = MathHelper.sqrt_double(
                         this.motionX * this.motionX + this.motionY * this.motionY + this.motionZ * this.motionZ);
-                    int k = MathHelper.ceiling_double_int((double) f2 * this.damage);
+                    int k = MathHelper.ceiling_double_int((double) f2 * acc().am2$getDamage());
 
                     if (this.getIsCritical()) {
                         k += this.rand.nextInt(k / 2 + 2);
@@ -179,16 +184,16 @@ public class EntityBoundArrow extends EntityArrow {
                         if (movingobjectposition.entityHit instanceof EntityLivingBase) {
                             EntityLivingBase target = (EntityLivingBase) movingobjectposition.entityHit;
 
-                            if (this.knockbackStrength > 0) {
+                            if (acc().am2$getKnockbackStrength() > 0) {
                                 f4 = MathHelper.sqrt_double(this.motionX * this.motionX + this.motionZ * this.motionZ);
 
                                 if (f4 > 0.0F) {
                                     movingobjectposition.entityHit.addVelocity(
-                                        this.motionX * (double) this.knockbackStrength
+                                        this.motionX * (double) acc().am2$getKnockbackStrength()
                                             * 0.6000000238418579D
                                             / (double) f4,
                                         0.1D,
-                                        this.motionZ * (double) this.knockbackStrength
+                                        this.motionZ * (double) acc().am2$getKnockbackStrength()
                                             * 0.6000000238418579D
                                             / (double) f4);
                                 }
@@ -216,16 +221,17 @@ public class EntityBoundArrow extends EntityArrow {
                         this.motionZ *= -0.10000000149011612D;
                         this.rotationYaw += 180.0F;
                         this.prevRotationYaw += 180.0F;
-                        this.ticksInAir = 0;
+                        acc().am2$setTicksInAir(0);
                     }
                 } else {
-                    this.field_145791_d = movingobjectposition.blockX;
-                    this.field_145792_e = movingobjectposition.blockY;
-                    this.field_145789_f = movingobjectposition.blockZ;
-                    this.field_145790_g = this.worldObj
-                        .getBlock(this.field_145791_d, this.field_145792_e, this.field_145789_f);
-                    this.inData = this.worldObj
-                        .getBlockMetadata(this.field_145791_d, this.field_145792_e, this.field_145789_f);
+                    acc().am2$setXTile(movingobjectposition.blockX);
+                    acc().am2$setYTile(movingobjectposition.blockY);
+                    acc().am2$setZTile(movingobjectposition.blockZ);
+                    acc().am2$setInTile(
+                        this.worldObj.getBlock(acc().am2$getXTile(), acc().am2$getYTile(), acc().am2$getZTile()));
+                    acc().am2$setInData(
+                        this.worldObj
+                            .getBlockMetadata(acc().am2$getXTile(), acc().am2$getYTile(), acc().am2$getZTile()));
                     this.motionX = (double) ((float) (movingobjectposition.hitVec.xCoord - this.posX));
                     this.motionY = (double) ((float) (movingobjectposition.hitVec.yCoord - this.posY));
                     this.motionZ = (double) ((float) (movingobjectposition.hitVec.zCoord - this.posZ));
@@ -234,7 +240,7 @@ public class EntityBoundArrow extends EntityArrow {
                     this.posX -= this.motionX / (double) f2 * 0.05000000074505806D;
                     this.posY -= this.motionY / (double) f2 * 0.05000000074505806D;
                     this.posZ -= this.motionZ / (double) f2 * 0.05000000074505806D;
-                    this.inGround = true;
+                    acc().am2$setInGround(true);
                     this.arrowShake = 7;
                     this.setIsCritical(false);
                 }
@@ -326,7 +332,7 @@ public class EntityBoundArrow extends EntityArrow {
 
                         try {
                             block.onEntityCollidedWithBlock(this.worldObj, k1, l1, i2, this);
-                            if (this.field_145790_g != null) {
+                            if (acc().am2$getInTile() != null) {
                                 if (this.shootingEntity != null && this.shootingEntity instanceof EntityLivingBase
                                     && !cast) {
                                     cast = true;
@@ -344,7 +350,7 @@ public class EntityBoundArrow extends EntityArrow {
                                         0);
                                 }
                             }
-                        } catch (Throwable throwable) {
+                        } catch (Exception throwable) {
                             CrashReport crashreport = CrashReport
                                 .makeCrashReport(throwable, "Colliding entity with block");
                             CrashReportCategory crashreportcategory = crashreport

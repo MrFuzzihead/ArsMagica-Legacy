@@ -90,7 +90,7 @@ public class ModelEssenceConduit extends ModelBase {
         GL11.glRotatef(rotationZ, 0, 1, 0);
         try {
             crystalmodel.renderAll();
-        } catch (Throwable t) {}
+        } catch (Exception t) {}
         GL11.glEnable(GL11.GL_LIGHTING);
         GL11.glPopMatrix();
 

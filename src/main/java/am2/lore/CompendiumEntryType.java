@@ -1,5 +1,7 @@
 package am2.lore;
 
+import java.util.function.Supplier;
+
 import net.minecraft.util.IIcon;
 
 import org.w3c.dom.Node;
@@ -11,13 +13,13 @@ public class CompendiumEntryType {
     private String categoryLabel;
     private int order;
     private IIcon representItem;
-    private Class<? extends CompendiumEntry> compendiumClass;
+    private final Supplier<CompendiumEntry> compendiumFactory;
 
     public CompendiumEntryType(String categoryName, String nodeName, String categoryLabel, int order,
-        Class<? extends CompendiumEntry> compendiumClass) {
+        Supplier<CompendiumEntry> compendiumFactory) {
         this.categoryName = categoryName;
         this.nodeName = nodeName;
-        this.compendiumClass = compendiumClass;
+        this.compendiumFactory = compendiumFactory;
         this.categoryLabel = categoryLabel;
         this.order = order;
     }
@@ -35,14 +37,16 @@ public class CompendiumEntryType {
     }
 
     public CompendiumEntry createCompendiumEntry(Node node) {
-        try {
-            CompendiumEntry ce = this.compendiumClass.newInstance();
-            ce.parse(node);
-            return ce;
-        } catch (Throwable t) {
-            t.printStackTrace();
+        CompendiumEntry ce = createBlank();
+        if (ce == null) {
+            return null;
         }
-        return null;
+        ce.parse(node);
+        return ce;
+    }
+
+    CompendiumEntry createBlank() {
+        return compendiumFactory.get();
     }
 
     public String getCategoryLabel() {

@@ -1,5 +1,6 @@
 package am2.api.power;
 
+@Deprecated
 public final class ManaContainerInfo {
 
     public final ManaStack mana;

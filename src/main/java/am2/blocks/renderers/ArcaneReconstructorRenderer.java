@@ -61,7 +61,7 @@ public class ArcaneReconstructorRenderer extends TileEntitySpecialRenderer {
 
         try {
             model.renderPart("Main");
-        } catch (Throwable t) {
+        } catch (Exception t) {
 
         }
         GL11.glTranslatef(0, 0.22f + floatingOffset, 0);
@@ -139,7 +139,7 @@ public class ArcaneReconstructorRenderer extends TileEntitySpecialRenderer {
         GL11.glRotatef(rotation.z, 1.0f, 0.0f, 1.0f);
         try {
             model.renderPart(groupName);
-        } catch (Throwable t) {
+        } catch (Exception t) {
 
         }
         GL11.glPopMatrix();

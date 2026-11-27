@@ -1,5 +1,6 @@
 package am2.items;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
@@ -13,7 +14,11 @@ import am2.blocks.BlocksCommonProxy;
 public class ItemWakebloom extends ItemBlock {
 
     public ItemWakebloom() {
-        super(BlocksCommonProxy.wakebloom);
+        this(BlocksCommonProxy.wakebloom);
+    }
+
+    public ItemWakebloom(Block block) {
+        super(block);
     }
 
     /**

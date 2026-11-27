@@ -14,9 +14,13 @@ import io.netty.buffer.Unpooled;
 
 public class AMDataReader {
 
+    /** Hard cap for a single NBT payload. Legitimate AM2 packets are far smaller. */
+    public static final int MAX_NBT_BYTES = 1 << 20;
+
     ByteArrayInputStream input;
     DataInputStream dataStream;
     public byte ID;
+    private boolean failed;
 
     public AMDataReader(byte[] data) {
         this(data, true);
@@ -32,7 +36,7 @@ public class AMDataReader {
                 ID = dataStream.readByte();
             } catch (IOException e) {
                 LogHelper.error("AMDataReader (getID): " + e.toString());
-                e.printStackTrace();
+                failed = true;
             }
         }
     }
@@ -43,7 +47,7 @@ public class AMDataReader {
             value = dataStream.readInt();
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getInt): " + e.toString());
-            e.printStackTrace();
+            failed = true;
         }
         return value;
     }
@@ -54,7 +58,7 @@ public class AMDataReader {
             value = dataStream.readFloat();
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getFloat): " + e.toString());
-            e.printStackTrace();
+            failed = true;
         }
         return value;
     }
@@ -65,7 +69,7 @@ public class AMDataReader {
             value = dataStream.readDouble();
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getDouble): " + e.toString());
-            e.printStackTrace();
+            failed = true;
         }
         return value;
     }
@@ -76,7 +80,7 @@ public class AMDataReader {
             value = dataStream.readBoolean();
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getBoolean): " + e.toString());
-            e.printStackTrace();
+            failed = true;
         }
         return value;
     }
@@ -87,7 +91,7 @@ public class AMDataReader {
             value = dataStream.readUTF();
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getString): " + e.toString());
-            e.printStackTrace();
+            failed = true;
         }
         return value;
     }
@@ -98,7 +102,7 @@ public class AMDataReader {
             value = dataStream.readByte();
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getByte): " + e.toString());
-            e.printStackTrace();
+            failed = true;
         }
         return value;
     }
@@ -109,7 +113,7 @@ public class AMDataReader {
             value = dataStream.readShort();
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getShort): " + e.toString());
-            e.printStackTrace();
+            failed = true;
         }
         return value;
     }
@@ -120,34 +124,42 @@ public class AMDataReader {
             value = dataStream.readLong();
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getLong): " + e.toString());
-            e.printStackTrace();
+            failed = true;
         }
         return value;
     }
 
     public NBTTagCompound getNBTTagCompound() {
-        NBTTagCompound data = null;
         try {
             int len = dataStream.readInt();
+            if (len < 0 || len > MAX_NBT_BYTES) {
+                LogHelper.error("AMDataReader (getNBTTagCompound): invalid length %d", len);
+                failed = true;
+                return null;
+            }
             byte[] bytes = new byte[len];
-            dataStream.read(bytes);
+            dataStream.readFully(bytes);
             ByteBuf buf = Unpooled.copiedBuffer(bytes);
-            data = ByteBufUtils.readTag(buf);
+            return ByteBufUtils.readTag(buf);
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getNBTTagCompound): " + e.toString());
-            e.printStackTrace();
+            failed = true;
         }
-        return data;
+        return null;
+    }
+
+    public boolean hasFailed() {
+        return failed;
     }
 
     public byte[] getRemainingBytes() {
         byte[] remaining = null;
         try {
             remaining = new byte[dataStream.available()];
-            dataStream.read(remaining);
+            dataStream.readFully(remaining);
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getRemainingBytes): " + e.toString());
-            e.printStackTrace();
+            failed = true;
         }
 
         return remaining;
@@ -162,12 +174,21 @@ public class AMDataReader {
 
     public int[] getIntArray() {
         try {
-            int[] arr = new int[dataStream.readInt()];
+            int len = dataStream.readInt();
+            if (len < 0 || len > dataStream.available() / 4) {
+                LogHelper.error(
+                    "AMDataReader (getIntArray): invalid length %d for %d available bytes",
+                    len,
+                    dataStream.available());
+                failed = true;
+                return new int[0];
+            }
+            int[] arr = new int[len];
             for (int i = 0; i < arr.length; ++i) arr[i] = dataStream.readInt();
             return arr;
         } catch (IOException e) {
             LogHelper.error("AMDataReader (getIntArray): " + e.toString());
-            e.printStackTrace();
+            failed = true;
         }
 
         return new int[0];

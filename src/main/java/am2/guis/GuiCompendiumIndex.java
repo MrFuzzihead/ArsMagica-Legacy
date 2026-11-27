@@ -17,6 +17,7 @@ import net.minecraft.util.StatCollector;
 
 import org.lwjgl.opengl.GL11;
 
+import am2.LogHelper;
 import am2.api.SkillTreeEntry;
 import am2.api.spell.component.interfaces.ISkillTreeEntry;
 import am2.api.spell.enums.LearnStates;
@@ -171,8 +172,8 @@ public class GuiCompendiumIndex extends GuiScreen implements GuiYesNoCallback {
         try {
             Desktop.getDesktop()
                 .browse(par1URI);
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
+        } catch (Exception throwable) {
+            LogHelper.error(throwable, "Failed to open the compendium link");
         }
     }
 

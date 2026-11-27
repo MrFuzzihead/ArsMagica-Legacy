@@ -6,7 +6,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
 
-import cpw.mods.fml.relauncher.ReflectionHelper;
+import am2.mixins.early.DamageSourceAccessor;
 
 public class DamageSources {
 
@@ -133,7 +133,7 @@ public class DamageSources {
     }
 
     public static DamageSource setDamageSourceUnblockable(DamageSource original) {
-        ReflectionHelper.setPrivateValue(DamageSource.class, original, true, "field_76374_o", "isUnblockable");
+        ((DamageSourceAccessor) original).am2$setUnblockable(true);
         return original;
     }
 

@@ -1,8 +1,5 @@
 package am2.proxy.tick;
 
-import static am2.AMEventHandler.tempCurseMap;
-import static am2.spell.SpellHelper.lingeringSpellList;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,9 +13,9 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
-import net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixesMagicka;
 
 import am2.AMCore;
+import am2.AMEventHandler;
 import am2.EntityItemWatcher;
 import am2.MeteorSpawnHelper;
 import am2.bosses.BossSpawnHelper;
@@ -28,6 +25,8 @@ import am2.network.AMNetHandler;
 import am2.network.AMPacketIDs;
 import am2.spell.SpellHelper;
 import am2.utility.DimensionUtilities;
+import am2.utility.TickrateController;
+import am2.world.WorldStateManager;
 import am2.worldgen.RetroactiveWorldgenerator;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -72,8 +71,17 @@ public class ServerTickHandler {
     }
 
     @SubscribeEvent
+    public void onWorldUnload(net.minecraftforge.event.world.WorldEvent.Unload event) {
+        SpellHelper.clearLingeringSpells(event.world);
+        AMCore.proxy.itemFrameWatcher.clearWorld(event.world);
+        AMEventHandler.clearWorldState(event.world);
+    }
+
+    @SubscribeEvent
     public void onWorldTick(TickEvent.WorldTickEvent event) {
-        if (AMCore.config.retroactiveWorldgen()) RetroactiveWorldgenerator.instance.continueRetrogen(event.world);
+        if (event.phase == TickEvent.Phase.END && !event.world.isRemote && AMCore.config.retroactiveWorldgen()) {
+            RetroactiveWorldgenerator.instance.continueRetrogen(event.world);
+        }
 
         // WorldTickEvent is also fired for the client world, which in an integrated server means it
         // can arrive on the client thread. Both queues below end up mutating server entities, so
@@ -85,24 +93,13 @@ public class ServerTickHandler {
             }
         }
 
-        // update lingering spells
-        if (lingeringSpellList.size() > 0) {
-            SpellHelper.LingeringSpell[] toRemove = new SpellHelper.LingeringSpell[lingeringSpellList.size()];
-            for (int i = 0; i < lingeringSpellList.size(); i++) {
-                boolean toRemoveThis = lingeringSpellList.get(i)
-                    .doUpdate();
-                if (toRemoveThis) toRemove[i] = lingeringSpellList.get(i);
-                else toRemove[i] = null;
-            }
-
-            for (int j = 0; j < toRemove.length; j++) {
-                if (toRemove[j] != null) {
-                    lingeringSpellList.remove(toRemove[j]);
-                }
-            }
+        // Update lingering spells exactly once per world tick, on the server only.
+        if (event.phase == TickEvent.Phase.END && !event.world.isRemote) {
+            SpellHelper.tickLingeringSpells(event.world);
         }
 
         // handle temporary curses
+        Map<EntityCreature, Integer> tempCurseMap = WorldStateManager.tempCurseMap(event.world);
         ArrayList<EntityCreature> toRemove = new ArrayList<EntityCreature>();
         HashMap<EntityCreature, Integer> toChange = new HashMap<EntityCreature, Integer>();
         for (Map.Entry<EntityCreature, Integer> entry : tempCurseMap.entrySet()) {
@@ -121,11 +118,11 @@ public class ServerTickHandler {
 
         MinecraftServer server = MinecraftServer.getServer();
         if ((server != null) && (server.getConfigurationManager() != null)) {
-            if (MysteriumPatchesFixesMagicka.countdownToChangeBack >= 3) {
-                MysteriumPatchesFixesMagicka.countdownToChangeBack--;
-            } else if (MysteriumPatchesFixesMagicka.countdownToChangeBack != -1) {
-                MysteriumPatchesFixesMagicka.countdownToChangeBack = -1;
-                MysteriumPatchesFixesMagicka.changeTickrate(20);
+            if (TickrateController.countdownToChangeBack >= 3) {
+                TickrateController.countdownToChangeBack--;
+            } else if (TickrateController.countdownToChangeBack != -1) {
+                TickrateController.countdownToChangeBack = -1;
+                TickrateController.changeTickrate(TickrateController.DEFAULT_TICKS_PER_SECOND);
             }
         }
     }

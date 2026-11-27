@@ -42,7 +42,7 @@ public class EntityManaVortex extends Entity {
     public int getTicksToExist() {
         try {
             return this.dataWatcher.getWatchableObjectInt(DW_TICKS_TO_EXIST);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             return -1;
         }
     }
@@ -65,7 +65,7 @@ public class EntityManaVortex extends Entity {
         if (getTicksToExist() - this.ticksExisted <= 5 && !hasGoneBoom) {
             hasGoneBoom = true;
             if (!worldObj.isRemote) {
-                List players = worldObj.getEntitiesWithinAABB(
+                List<EntityLivingBase> players = worldObj.getEntitiesWithinAABB(
                     EntityLivingBase.class,
                     this.boundingBox
                         .expand(3 + Math.floor(this.ticksExisted / 50), 2, 3 + Math.floor(this.ticksExisted / 50)));

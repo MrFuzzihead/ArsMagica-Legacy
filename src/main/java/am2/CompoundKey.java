@@ -31,8 +31,8 @@ public class CompoundKey {
     @Override
     public int hashCode() {
         if (cachedHash == null) {
-            String hashString = String.format("%d@%d", Item.getIdFromItem(this.item), this.meta);
-            cachedHash = hashString.hashCode();
+            // equals() treats meta -1 as a wildcard, so the hash must not depend on meta either.
+            cachedHash = this.item == null ? 0 : this.item.hashCode();
         }
         return cachedHash;
     }

@@ -13,11 +13,14 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.StatCollector;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
 
 import am2.AMCore;
 import am2.api.math.AMVector3;
@@ -65,15 +68,17 @@ public class BlockManaBattery extends PoweredBlock {
                 : te.getPowerType()
                     .chatColor();
             AMNetHandler.INSTANCE.sendPowerRequestToServer(new AMVector3(te));
-            // TODO localize these messages
             if (par1World.isRemote) {
-                if (AMCore.config.colourblindMode()) {
-                    par5EntityPlayer.addChatMessage(
-                        new ChatComponentText(String.format("Charge Level: %.2f %% [%s]", charge, color)));
-                } else {
-                    par5EntityPlayer.addChatMessage(
-                        new ChatComponentText(String.format("Charge Level: %s%.2f \u00A7f%%", color, charge)));
-                }
+                String message = AMCore.config.colourblindMode()
+                    ? StatCollector.translateToLocalFormatted(
+                        "am2.tooltip.manaBatteryChargeColourblind",
+                        String.format("%.2f", charge),
+                        color)
+                    : StatCollector.translateToLocalFormatted(
+                        "am2.tooltip.manaBatteryCharge",
+                        color,
+                        String.format("%.2f", charge));
+                par5EntityPlayer.addChatMessage(new ChatComponentText(message));
             }
         }
 
@@ -105,14 +110,7 @@ public class BlockManaBattery extends PoweredBlock {
         if (stack != null) {
             TileEntityManaBattery te = getTileEntity(par1World, par2, par3, par4);
             if (te != null && stack.stackTagCompound != null) {
-                if (stack.stackTagCompound.hasKey("mana_battery_charge")
-                    && stack.stackTagCompound.hasKey("mana_battery_powertype"))
-                    PowerNodeRegistry.For(par1World)
-                        .setPower(
-                            te,
-                            PowerTypes.getByID(stack.stackTagCompound.getInteger("mana_battery_powertype")),
-                            stack.stackTagCompound.getFloat("mana_battery_charge"));
-                else te.setPowerType(PowerTypes.NONE, false);
+                loadPowerData(PowerNodeRegistry.For(par1World), te, stack.stackTagCompound);
             }
 
         }
@@ -123,26 +121,13 @@ public class BlockManaBattery extends PoweredBlock {
     public void breakBlock(World world, int i, int j, int k, Block theBlock, int metadata) {
         TileEntityManaBattery te = getTileEntity(world, i, j, k);
         if (te != null && !world.isRemote) {
-            if (PowerNodeRegistry.For(world)
-                .getPower(te, te.getPowerType()) != 0.0f) {
+            PowerNodeRegistry registry = PowerNodeRegistry.For(world);
+            if (hasStoredPower(registry, te)) {
                 float f = world.rand.nextFloat() * 0.8F + 0.1F;
                 float f1 = world.rand.nextFloat() * 0.8F + 0.1F;
                 float f2 = world.rand.nextFloat() * 0.8F + 0.1F;
                 ItemStack stack = new ItemStack(this, 1, metadata);
-                // These currently don't do anything without a custom ItemBlock, so I'm removing them temporarily
-                // int dmg = (int)((PowerNodeRegistry.For(world).getPower(te, te.getPowerType()) / te.getCapacity()) *
-                // 100);
-                // if (dmg == 0) dmg = 1;
-                // stack.damageItem(stack.getMaxDamage() - dmg, new EntityDummyCaster(world));
-                stack.stackTagCompound = new NBTTagCompound();
-                stack.stackTagCompound.setFloat(
-                    "mana_battery_charge",
-                    PowerNodeRegistry.For(world)
-                        .getPower(te, te.getPowerType()));
-                stack.stackTagCompound.setInteger(
-                    "mana_battery_powertype",
-                    te.getPowerType()
-                        .ID());
+                stack.stackTagCompound = savePowerData(registry, te);
 
                 EntityItem entityitem = new EntityItem(world, i + f, j + f1, k + f2, stack);
                 float f3 = 0.05F;
@@ -177,7 +162,7 @@ public class BlockManaBattery extends PoweredBlock {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void getSubBlocks(Item par1, CreativeTabs par2CreativeTabs, List par3List) {
+    public void getSubBlocks(Item par1, CreativeTabs par2CreativeTabs, List<ItemStack> par3List) {
         ItemStack stack = new ItemStack(this);
         par3List.add(stack);
         for (PowerTypes type : PowerTypes.all()) {
@@ -208,4 +193,52 @@ public class BlockManaBattery extends PoweredBlock {
     public int getRenderType() {
         return BlocksCommonProxy.commonBlockRenderID;
     }
+
+    static boolean hasStoredPower(PowerNodeRegistry registry, TileEntityManaBattery battery) {
+        for (PowerTypes type : PowerTypes.all()) {
+            if (registry.getPower(battery, type) != 0.0F) return true;
+        }
+        return false;
+    }
+
+    static NBTTagCompound savePowerData(PowerNodeRegistry registry, TileEntityManaBattery battery) {
+        NBTTagCompound tag = new NBTTagCompound();
+        NBTTagList powers = new NBTTagList();
+        for (PowerTypes type : PowerTypes.all()) {
+            float power = registry.getPower(battery, type);
+            if (power == 0.0F) continue;
+            NBTTagCompound entry = new NBTTagCompound();
+            entry.setInteger("type", type.ID());
+            entry.setFloat("charge", power);
+            powers.appendTag(entry);
+        }
+        tag.setTag("mana_battery_powers", powers);
+        tag.setFloat("mana_battery_charge", registry.getPower(battery, battery.getPowerType()));
+        tag.setInteger(
+            "mana_battery_powertype",
+            battery.getPowerType()
+                .ID());
+        return tag;
+    }
+
+    static void loadPowerData(PowerNodeRegistry registry, TileEntityManaBattery battery, NBTTagCompound tag) {
+        NBTTagList powers = tag.getTagList("mana_battery_powers", Constants.NBT.TAG_COMPOUND);
+        if (powers.tagCount() > 0) {
+            for (int i = 0; i < powers.tagCount(); i++) {
+                NBTTagCompound entry = powers.getCompoundTagAt(i);
+                PowerTypes type = PowerTypes.getByID(entry.getInteger("type"));
+                if (type != null && type != PowerTypes.NONE) {
+                    registry.setPower(battery, type, entry.getFloat("charge"));
+                }
+            }
+            return;
+        }
+        if (tag.hasKey("mana_battery_charge") && tag.hasKey("mana_battery_powertype")) {
+            PowerTypes type = PowerTypes.getByID(tag.getInteger("mana_battery_powertype"));
+            if (type != null) registry.setPower(battery, type, tag.getFloat("mana_battery_charge"));
+        } else {
+            battery.setPowerType(PowerTypes.NONE, false);
+        }
+    }
+
 }

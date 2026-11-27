@@ -37,7 +37,7 @@ public class RiftStorage implements IExtendedEntityProperties, IInventory {
         NBTTagList nbttaglist = new NBTTagList();
         for (int i = 0; i < inventory.length; i++) {
             if (inventory[i] != null) {
-                String tag = String.format("ArrayIndex", i);
+                String tag = "ArrayIndex";
                 NBTTagCompound nbttagcompound1 = new NBTTagCompound();
                 nbttagcompound1.setByte(tag, (byte) i);
                 inventory[i].writeToNBT(nbttagcompound1);
@@ -53,7 +53,7 @@ public class RiftStorage implements IExtendedEntityProperties, IInventory {
         NBTTagList nbttaglist = compound.getTagList("PlayerRiftStorage", Constants.NBT.TAG_COMPOUND);
         inventory = new ItemStack[getSizeInventory()];
         for (int i = 0; i < nbttaglist.tagCount(); i++) {
-            String tag = String.format("ArrayIndex", i);
+            String tag = "ArrayIndex";
             NBTTagCompound nbttagcompound1 = (NBTTagCompound) nbttaglist.getCompoundTagAt(i);
             byte index = nbttagcompound1.getByte(tag);
             if (index >= 0 && index < inventory.length) {

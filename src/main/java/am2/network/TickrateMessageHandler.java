@@ -1,7 +1,6 @@
 package am2.network;
 
-import net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixesMagicka;
-
+import am2.utility.ClientTickrateController;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -15,7 +14,7 @@ public class TickrateMessageHandler implements IMessageHandler<TickrateMessage, 
         float tickrate = msg.getTickrate();
         if (FMLCommonHandler.instance()
             .getSide() != Side.SERVER) {
-            MysteriumPatchesFixesMagicka.changeClientTickrate(tickrate);
+            ClientTickrateController.changeClientTickrate(tickrate);
         }
         return null;
     }

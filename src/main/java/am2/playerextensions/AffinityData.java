@@ -48,9 +48,8 @@ public class AffinityData implements IExtendedEntityProperties, IAffinityData {
 
     private boolean hasUpdate = false;
 
-    private boolean forcingSync = false;
-    private int ticksToSync = 0;
     private final int syncTickDelay = 100;
+    private final SyncWindow syncWindow = new SyncWindow(syncTickDelay);
 
     private boolean isLocked = false;
 
@@ -170,7 +169,9 @@ public class AffinityData implements IExtendedEntityProperties, IAffinityData {
     public void saveNBTData(NBTTagCompound compound) {
         NBTTagCompound tags = new NBTTagCompound();
         for (Integer affinity : affinityDepths.keySet()) {
-            tags.setDouble(Affinity.values()[affinity].name(), affinityDepths.get(affinity));
+            if (affinity != null && affinity >= 0 && affinity < Affinity.values().length) {
+                tags.setDouble(Affinity.values()[affinity].name(), affinityDepths.get(affinity));
+            }
         }
         compound.setTag("AffinityDepthData", tags);
         compound.setBoolean("AffinityLocked", isLocked);
@@ -208,29 +209,22 @@ public class AffinityData implements IExtendedEntityProperties, IAffinityData {
     }
 
     public void setFullSync() {
-        this.ticksToSync = 0;
         this.hasUpdate = true;
         this.hasDoneFullSync = true;
-        this.forcingSync = true;
+        this.syncWindow.fullSync();
     }
 
     public void setDelayedSync(int delay) {
         setFullSync();
-        this.ticksToSync = delay;
+        this.syncWindow.setTicks(delay);
     }
 
     public void forceSync() {
-        this.forcingSync = true;
-        this.ticksToSync = 0;
+        this.syncWindow.force();
     }
 
     public boolean hasUpdate() {
-        if (!(this.entity instanceof EntityPlayer) && !forcingSync) {
-            return false;
-        }
-        this.ticksToSync--;
-        if (this.ticksToSync <= 0) this.ticksToSync = this.syncTickDelay;
-        return this.hasUpdate && this.ticksToSync == this.syncTickDelay;
+        return this.syncWindow.shouldSend(this.entity instanceof EntityPlayer, this.hasUpdate);
     }
 
     private byte[] getUpdateData() {
@@ -251,7 +245,7 @@ public class AffinityData implements IExtendedEntityProperties, IAffinityData {
         writer.add(isLocked);
 
         this.hasUpdate = false;
-        this.forcingSync = false;
+        this.syncWindow.clearForcing();
 
         return writer.generate();
     }
@@ -304,7 +298,7 @@ public class AffinityData implements IExtendedEntityProperties, IAffinityData {
         values = values.subList(values.size() - 2, values.size());
 
         // remove entries that are too low
-        Iterator it = values.iterator();
+        Iterator<Float> it = values.iterator();
         while (it.hasNext()) {
             Float f = (Float) it.next();
             if (Math.floor(f * 100.0f) / 100.0f == 0) it.remove();
@@ -315,13 +309,13 @@ public class AffinityData implements IExtendedEntityProperties, IAffinityData {
         HashMap<Integer, Float> clone = (HashMap<Integer, Float>) affinityDepths.clone();
 
         for (Float f : values) {
-            it = clone.entrySet()
+            Iterator<Entry<Integer, Float>> entryIt = clone.entrySet()
                 .iterator();
-            while (it.hasNext()) {
-                Entry<Integer, Float> e = (Entry<Integer, Float>) it.next();
+            while (entryIt.hasNext()) {
+                Entry<Integer, Float> e = entryIt.next();
                 if (compareFloats(e.getValue(), f, 2)) {
                     resolvedAffinties.add(Affinity.getByID(e.getKey()));
-                    it.remove();
+                    entryIt.remove();
                     break;
                 }
             }
@@ -343,8 +337,8 @@ public class AffinityData implements IExtendedEntityProperties, IAffinityData {
         isLocked = locked;
     }
 
-    public List getColoredAffinityEffects(Affinity aff) {
-        ArrayList list = new ArrayList();
+    public List<String> getColoredAffinityEffects(Affinity aff) {
+        ArrayList<String> list = new ArrayList<String>();
         switch (aff) {
             case AIR:
                 list.add(

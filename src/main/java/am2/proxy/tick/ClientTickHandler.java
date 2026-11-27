@@ -1,7 +1,5 @@
 package am2.proxy.tick;
 
-import static am2.spell.SpellHelper.lingeringSpellList;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,7 +18,6 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.sound.PlaySoundEvent17;
-import net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixesMagicka;
 
 import am2.AMCore;
 import am2.EntityItemWatcher;
@@ -51,10 +48,9 @@ import am2.particles.AMParticle;
 import am2.particles.ParticleFadeOut;
 import am2.playerextensions.ExtendedProperties;
 import am2.power.PowerNodeEntry;
-import am2.spell.SpellHelper;
 import am2.spell.SpellUtils;
 import am2.spell.components.Telekinesis;
-import am2.worldgen.RetroactiveWorldgenerator;
+import am2.utility.EtherealState;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -128,8 +124,8 @@ public class ClientTickHandler {
 
     @SubscribeEvent
     public void onGuiOpen(GuiOpenEvent event) { // you're a ghost, how are you looking inside yourself
-        if (MysteriumPatchesFixesMagicka.isPlayerEthereal(Minecraft.getMinecraft().thePlayer)
-            && event.gui instanceof GuiInventory) event.setCanceled(true);
+        if (EtherealState.isEthereal(Minecraft.getMinecraft().thePlayer) && event.gui instanceof GuiInventory)
+            event.setCanceled(true);
     }
 
     @SubscribeEvent
@@ -394,24 +390,6 @@ public class ClientTickHandler {
                 }
             }
 
-            if (Minecraft.getMinecraft().theWorld != null) {
-                // update lingering spells
-                if (!lingeringSpellList.isEmpty()) {
-                    SpellHelper.LingeringSpell[] toRemove = new SpellHelper.LingeringSpell[lingeringSpellList.size()];
-                    for (int i = 0; i < lingeringSpellList.size(); i++) {
-                        boolean toRemoveThis = lingeringSpellList.get(i)
-                            .doUpdate();
-                        if (toRemoveThis) toRemove[i] = lingeringSpellList.get(i);
-                        else toRemove[i] = null;
-                    }
-
-                    for (SpellHelper.LingeringSpell lingeringSpell : toRemove) {
-                        if (lingeringSpell != null) {
-                            lingeringSpellList.remove(lingeringSpell);
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -428,10 +406,9 @@ public class ClientTickHandler {
 
     @SubscribeEvent
     public void onWorldTick(TickEvent.WorldTickEvent event) {
-        if (Minecraft.getMinecraft()
-            .isIntegratedServerRunning()) {
-            if (AMCore.config.retroactiveWorldgen()) RetroactiveWorldgenerator.instance.continueRetrogen(event.world);
-        }
+        // Retroactive worldgen is driven by ServerTickHandler on the logical server. The client world shares the
+        // dimension id with the integrated server world, so processing it here would generate the same chunks twice
+        // (and from the client thread).
         // Dimension transfers are server-authoritative: doDimensionTransfer calls
         // MinecraftServer.getServer() and removes/spawns entities in WorldServer instances. It is
         // drained by ServerTickHandler, never from here.

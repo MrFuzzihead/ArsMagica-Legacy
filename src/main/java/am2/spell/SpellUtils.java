@@ -522,12 +522,34 @@ public class SpellUtils implements ISpellUtils {
         float burnout = stack.stackTagCompound.getFloat(BaseBurnoutIdentifier);
 
         int[] reagentList = stack.stackTagCompound.getIntArray(BaseReagentsIdentifier);
-        ArrayList<ItemStack> reagents = new ArrayList<ItemStack>();
-        for (int i = 0; i < reagentList.length; i += 3) {
-            reagents.add(new ItemStack(Item.getItemById(reagentList[i]), reagentList[i + 1], reagentList[i + 2]));
-        }
+        return new SpellRequirements(manaCost, burnout, readReagents(reagentList));
+    }
 
-        return new SpellRequirements(manaCost, burnout, reagents);
+    /**
+     * Reads {@code [itemId, count, meta]} triples and ignores a trailing incomplete triple. A corrupt NBT array must
+     * not throw an {@code ArrayIndexOutOfBoundsException} while a tooltip or cast requirement is read.
+     */
+    static ArrayList<ItemStack> readReagents(int[] reagentList) {
+        ArrayList<ItemStack> reagents = new ArrayList<ItemStack>();
+        for (int[] triple : readReagentTriples(reagentList)) {
+            Item item = Item.getItemById(triple[0]);
+            if (item != null) {
+                reagents.add(new ItemStack(item, triple[1], triple[2]));
+            }
+        }
+        return reagents;
+    }
+
+    /** Splits the stored flat array into complete triples, ignoring a trailing partial triple. */
+    static ArrayList<int[]> readReagentTriples(int[] reagentList) {
+        ArrayList<int[]> triples = new ArrayList<int[]>();
+        if (reagentList == null) {
+            return triples;
+        }
+        for (int i = 0; i + 2 < reagentList.length; i += 3) {
+            triples.add(new int[] { reagentList[i], reagentList[i + 1], reagentList[i + 2] });
+        }
+        return triples;
     }
 
     private void writeSpellRequirements(ItemStack stack, EntityLivingBase caster, SpellRequirements requirements) {
@@ -692,7 +714,6 @@ public class SpellUtils implements ISpellUtils {
                 stage.shape,
                 stage.definition.getComponents(),
                 stage.definition.getModifiers());
-            ISkillTreeEntry entry = SkillManager.instance.getSkill(stage.shape);
         }
 
         // copy the other stages from the original to the new one

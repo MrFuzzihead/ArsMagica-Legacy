@@ -1,13 +1,13 @@
 package am2.bosses.ai;
 
-import java.lang.reflect.Constructor;
-
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.world.World;
 
+import am2.LogHelper;
 import am2.bosses.BossActions;
 import am2.bosses.EntityLifeGuardian;
 import am2.bosses.IArsMagicaBoss;
@@ -67,8 +67,13 @@ public class EntityAISummonAllies extends EntityAIBase {
             for (int i = 0; i < numAllies; ++i) {
                 Class summon = mobs[host.worldObj.rand.nextInt(mobs.length)];
                 try {
-                    Constructor ctor = summon.getConstructor(World.class);
-                    EntityCreature mob = (EntityCreature) ctor.newInstance(host.worldObj);
+                    String entityName = EntityList.classToStringMapping.get(summon);
+                    Entity entity = entityName == null ? null
+                        : EntityList.createEntityByName(entityName, host.worldObj);
+                    if (!(entity instanceof EntityCreature)) {
+                        continue;
+                    }
+                    EntityCreature mob = (EntityCreature) entity;
                     mob.setPosition(
                         host.posX + host.worldObj.rand.nextDouble() * 2 - 1,
                         host.posY,
@@ -86,8 +91,8 @@ public class EntityAISummonAllies extends EntityAIBase {
                     host.worldObj.spawnEntityInWorld(mob);
 
                     host.queued_minions.add(mob);
-                } catch (Throwable e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    LogHelper.error(e, "Failed to summon an ally");
                     return;
                 }
             }

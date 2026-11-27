@@ -1,12 +1,10 @@
 package am2.utility;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAIAttackOnCollide;
 import net.minecraft.entity.ai.EntityAIHurtByTarget;
@@ -33,6 +31,7 @@ import am2.entities.ai.EntityAISummonFollowOwner;
 import am2.entities.ai.selectors.SummonEntitySelector;
 import am2.items.ItemCrystalPhylactery;
 import am2.items.ItemsCommonProxy;
+import am2.mixins.early.EntityLivingInvoker;
 import am2.playerextensions.ExtendedProperties;
 
 public class EntityUtilities {
@@ -47,33 +46,8 @@ public class EntityUtilities {
     private static final String summonTileYKey = "AM2_Summon_Tile_Y";
     private static final String summonTileZKey = "AM2_Summon_Tile_Z";
 
-    private final static Method ptrSetSize = null;
-
     public static boolean isAIEnabled(EntityCreature ent) {
-        Method m = null;
-        try {
-            m = EntityLiving.class.getDeclaredMethod("func_70650_aV");
-        } catch (NoSuchMethodException nex) {
-            try {
-                m = EntityLiving.class.getDeclaredMethod("isAIEnabled");
-            } catch (Throwable t) {
-                t.printStackTrace();
-                return false;
-            }
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return false;
-        }
-        m.setAccessible(true);
-        boolean b;
-        try {
-            b = (Boolean) m.invoke(ent);
-        } catch (Throwable e) {
-            e.printStackTrace();
-            return false;
-        }
-        m.setAccessible(false);
-        return b;
+        return ((EntityLivingInvoker) ent).am2$isAIEnabled();
     }
 
     public static void handleCrystalPhialAdd(EntityCreature entityliving, EntityPlayer player) {

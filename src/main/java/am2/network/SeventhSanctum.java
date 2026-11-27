@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import am2.AMCore;
+import am2.LogHelper;
 import am2.utility.WebRequestUtils;
 
 public class SeventhSanctum {
@@ -56,8 +57,8 @@ public class SeventhSanctum {
             s = s.replace("\t", "");
             String[] suggestions = s.split("<div class=\"GeneratorResult");
             for (String suggestion : suggestions) parseAndAddSuggestion(suggestion);
-        } catch (Throwable t) {
-            t.printStackTrace();
+        } catch (Exception t) {
+            LogHelper.error(t, "Failed to parse spell-name suggestions");
             failed = true;
         }
     }

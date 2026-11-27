@@ -317,7 +317,7 @@ public class TileEntityMagiciansWorkbench extends TileEntity implements IKeyston
         NBTTagList nbttaglist = nbttagcompound.getTagList("ArcaneReconstructorInventory", Constants.NBT.TAG_COMPOUND);
         inventory = new ItemStack[getSizeInventory()];
         for (int i = 0; i < nbttaglist.tagCount(); i++) {
-            String tag = String.format("ArrayIndex", i);
+            String tag = "ArrayIndex";
             NBTTagCompound nbttagcompound1 = (NBTTagCompound) nbttaglist.getCompoundTagAt(i);
             byte byte0 = nbttagcompound1.getByte(tag);
             if (byte0 >= 0 && byte0 < inventory.length) {
@@ -357,7 +357,7 @@ public class TileEntityMagiciansWorkbench extends TileEntity implements IKeyston
         NBTTagList nbttaglist = new NBTTagList();
         for (int i = 0; i < inventory.length; i++) {
             if (inventory[i] != null) {
-                String tag = String.format("ArrayIndex", i);
+                String tag = "ArrayIndex";
                 NBTTagCompound nbttagcompound1 = new NBTTagCompound();
                 nbttagcompound1.setByte(tag, (byte) i);
                 inventory[i].writeToNBT(nbttagcompound1);
@@ -385,7 +385,7 @@ public class TileEntityMagiciansWorkbench extends TileEntity implements IKeyston
                 output.setTag("components", components);
                 output.setBoolean("isLocked", recipe.isLocked);
                 recall.appendTag(output);
-            } catch (Throwable t) {
+            } catch (Exception t) {
                 // no log, as this is likely due to a mod being removed and the recipe no longer exists.
             }
         }

@@ -42,6 +42,10 @@ public class AM2WorldDecorator implements IWorldGenerator {
     // pools
     private final AM2PoolGen pools;
 
+    // Tree generators are stateful but reseed/reset for each generation; reuse them instead of allocating per tree.
+    private final WitchwoodTreeHuge hugeTree = new WitchwoodTreeHuge(true);
+    private final WitchwoodTreeEvenMoreHuge evenMoreHugeTree = new WitchwoodTreeEvenMoreHuge(true);
+
     // config
     private final int witchChance = AMCore.config.getWitchwoodFrequency();
     private final int poolChance = AMCore.config.getPoolFrequency();
@@ -107,8 +111,6 @@ public class AM2WorldDecorator implements IWorldGenerator {
         tarmaRoot = new AM2FlowerGen(BlocksCommonProxy.tarmaRoot, 0);
 
         pools = new AM2PoolGen();
-
-        WorldGenEssenceLakes lakes = new WorldGenEssenceLakes(BlocksCommonProxy.liquidEssence);
     }
 
     @Override
@@ -167,10 +169,9 @@ public class AM2WorldDecorator implements IWorldGenerator {
             generateOre(sunstone, sunstoneFrequency, world, random, sunstoneMin, sunstoneMax, chunkX, chunkZ);
         }
         if (!(AMCore.config.BlacklistAffectTrees() && isDimensionBlacklisted)) {
-            if (random.nextInt(witchChance) == 0) {
+            if (WorldgenMath.chance(random, witchChance)) {
                 generateTree(
-                    random.nextInt(AMCore.config.spawnHugeTrees() ? 6 : 1) == 0 ? new WitchwoodTreeHuge(true)
-                        : new WitchwoodTreeEvenMoreHuge(true),
+                    random.nextInt(AMCore.config.spawnHugeTrees() ? 6 : 1) == 0 ? hugeTree : evenMoreHugeTree,
                     world,
                     random,
                     chunkX,
@@ -182,7 +183,7 @@ public class AM2WorldDecorator implements IWorldGenerator {
             generateFlowers(desertNova, world, random, chunkX, chunkZ);
             generateFlowers(tarmaRoot, world, random, chunkX, chunkZ);
 
-            if (biome != BiomeGenBase.ocean && typeValid && random.nextInt(wakeChance) < 7) {
+            if (biome != BiomeGenBase.ocean && typeValid && WorldgenMath.chanceBelow(random, wakeChance, 7)) {
                 generateFlowers(wakebloom, world, random, chunkX, chunkZ);
             }
         }
@@ -218,7 +219,7 @@ public class AM2WorldDecorator implements IWorldGenerator {
         int chunkX, int chunkZ) {
         for (int i = 0; i < amount; ++i) {
             int x = (chunkX << 4) + random.nextInt(16);
-            int y = random.nextInt(maxY - minY) + minY;
+            int y = WorldgenMath.oreHeight(random, minY, maxY);
             int z = (chunkZ << 4) + random.nextInt(16);
 
             mineable.generate(world, random, x, y, z);

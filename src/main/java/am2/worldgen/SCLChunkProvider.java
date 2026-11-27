@@ -431,9 +431,11 @@ public class SCLChunkProvider implements IChunkProvider {
         return "RandomLevelSource";
     }
 
-    public List getPossibleCreatures(EnumCreatureType par1EnumCreatureType, int par2, int par3, int par4) {
+    public List<BiomeGenBase.SpawnListEntry> getPossibleCreatures(EnumCreatureType par1EnumCreatureType, int par2,
+        int par3, int par4) {
         BiomeGenBase biome = this.worldObj.getBiomeGenForCoords(par2, par4);
-        return (List) (biome == null ? new ArrayList() : biome.getSpawnableList(par1EnumCreatureType));
+        return biome == null ? new ArrayList<BiomeGenBase.SpawnListEntry>()
+            : biome.getSpawnableList(par1EnumCreatureType);
     }
 
     public ChunkPosition func_147416_a(World par1World, String par2Str, int par3, int par4, int par5) {

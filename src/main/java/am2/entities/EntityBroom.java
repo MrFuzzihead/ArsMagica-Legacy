@@ -97,8 +97,7 @@ public class EntityBroom extends EntityCreature {
             moveCounter += 0.3f;
             moveRotation = (float) Math.sin(moveCounter) - (float) Math.sin((moveCounter - 1));
             if (((int) (moveCounter)) % 6 == 0) {
-                // TODO: worldObj.playSoundAtEntity(this, .soundGrassFootstep.stepSoundName, 10.6f,
-                // worldObj.rand.nextFloat());
+                worldObj.playSoundAtEntity(this, "step.grass", 0.15F, worldObj.rand.nextFloat());
             }
         } else {
             moveCounter = 3.14f / 2f;

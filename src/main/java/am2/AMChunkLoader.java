@@ -21,32 +21,21 @@ public class AMChunkLoader implements LoadingCallback {
         tickets = new HashMap<TicketIdentifier, ForgeChunkManager.Ticket>();
     }
 
-    private Ticket requestTicket(int x, int y, int z, World world) {
-        Ticket ticket = ForgeChunkManager.requestTicket(AMCore.instance, world, ForgeChunkManager.Type.NORMAL);
+    private Ticket getOrCreateTicket(TicketIdentifier identifier, World world) {
+        Ticket ticket = tickets.get(identifier);
         if (ticket != null) {
-            cacheTicket(new TicketIdentifier(x, y, z, world.provider.dimensionId), ticket);
             return ticket;
         }
-        return null;
+        ticket = ForgeChunkManager.requestTicket(AMCore.instance, world, ForgeChunkManager.Type.NORMAL);
+        if (ticket != null) {
+            tickets.put(identifier, ticket);
+        }
+        return ticket;
     }
 
-    private void cacheTicket(TicketIdentifier identifier, Ticket ticket) {
-        if (tickets.containsKey(identifier)) {
-            LogHelper
-                .warn("Attempted to register duplicate tickets for the same world - this shouldn't really happen.");
-            return;
-        }
-        tickets.put(identifier, ticket);
-    }
-
-    private Ticket getTicket(TicketIdentifier identifier) {
-        for (TicketIdentifier ticket : tickets.keySet()) {
-            int comp = identifier.compareTo(ticket);
-            if (comp == 0) {
-                return tickets.get(ticket);
-            }
-        }
-        return null;
+    /** Package-private test hook: number of tickets currently tracked for release. */
+    public int cachedTicketCount() {
+        return tickets.size();
     }
 
     /**
@@ -60,7 +49,8 @@ public class AMChunkLoader implements LoadingCallback {
      * @param world The world object of the tile entity
      */
     public void requestStaticChunkLoad(Class clazz, int x, int y, int z, World world) {
-        Ticket ticket = requestTicket(x, y, z, world);
+        TicketIdentifier identifier = new TicketIdentifier(x, y, z, world.provider.dimensionId);
+        Ticket ticket = getOrCreateTicket(identifier, world);
         if (ticket == null) {
             LogHelper.warn(
                 "Unable to get a ticket for chunk loading!  The chunk identified by %d, %d is *not* loaded!",
@@ -78,7 +68,8 @@ public class AMChunkLoader implements LoadingCallback {
     }
 
     public void releaseStaticChunkLoad(Class clazz, int x, int y, int z, World world) {
-        Ticket ticket = getTicket(new TicketIdentifier(x, y, z, world.provider.dimensionId));
+        TicketIdentifier identifier = new TicketIdentifier(x, y, z, world.provider.dimensionId);
+        Ticket ticket = tickets.remove(identifier);
         if (ticket == null) {
             LogHelper.warn("No ticket for specified location.  No chunk to unload!");
             return;
@@ -86,6 +77,7 @@ public class AMChunkLoader implements LoadingCallback {
 
         ChunkCoordIntPair pair = new ChunkCoordIntPair(x >> 4, z >> 4);
         ForgeChunkManager.unforceChunk(ticket, pair);
+        ForgeChunkManager.releaseTicket(ticket);
         LogHelper.trace("Unloaded chunk at: %d, %d", pair.chunkXPos, pair.chunkZPos);
     }
 
@@ -94,6 +86,11 @@ public class AMChunkLoader implements LoadingCallback {
         for (Ticket ticket : tickets) {
             NBTTagCompound compound = ticket.getModData();
             int[] coords = compound.getIntArray("StaticLoadCoords");
+            if (coords == null || coords.length < 3) {
+                LogHelper.info("Discarding a chunk loading ticket with malformed coordinates.");
+                ForgeChunkManager.releaseTicket(ticket);
+                continue;
+            }
             String clazzName = compound.getString("ChunkLoadClass");
             Class clazz = null;
             try {
@@ -107,11 +104,21 @@ public class AMChunkLoader implements LoadingCallback {
                 ForgeChunkManager.releaseTicket(ticket);
                 continue;
             }
+            if (!TileEntity.class.isAssignableFrom(clazz)) {
+                LogHelper.info(
+                    "Cached class %s is not a TileEntity when loading a chunk loading ticket.  This ticket will be discarded.  Block Coords: %d, %d",
+                    clazzName,
+                    coords[0],
+                    coords[2]);
+                ForgeChunkManager.releaseTicket(ticket);
+                continue;
+            }
             TileEntity te = world.getTileEntity(coords[0], coords[1], coords[2]);
-            if (te != null && te.getClass()
-                .isAssignableFrom(clazz)) {
+            if (te != null && clazz.isAssignableFrom(te.getClass())) {
                 ChunkCoordIntPair pair = new ChunkCoordIntPair(coords[0] >> 4, coords[2] >> 4);
                 ForgeChunkManager.forceChunk(ticket, pair);
+                this.tickets
+                    .put(new TicketIdentifier(coords[0], coords[1], coords[2], world.provider.dimensionId), ticket);
             } else {
                 LogHelper.info(
                     "Either no tile entity was found or it did not match the cached class.  This chunk loading ticket will be discarded, and the chunk may not be loaded.  Block Coords: %d, %d",
@@ -122,7 +129,7 @@ public class AMChunkLoader implements LoadingCallback {
         }
     }
 
-    private static class TicketIdentifier implements Comparable<TicketIdentifier> {
+    static class TicketIdentifier {
 
         public final int dimension;
         public final int x;
@@ -137,9 +144,20 @@ public class AMChunkLoader implements LoadingCallback {
         }
 
         @Override
-        public int compareTo(TicketIdentifier o) {
-            if (o.x == this.x && o.y == this.y && o.z == this.z && o.dimension == this.dimension) return 0;
-            return -1;
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (!(obj instanceof TicketIdentifier)) return false;
+            TicketIdentifier other = (TicketIdentifier) obj;
+            return x == other.x && y == other.y && z == other.z && dimension == other.dimension;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = dimension;
+            result = 31 * result + x;
+            result = 31 * result + y;
+            result = 31 * result + z;
+            return result;
         }
     }
 }

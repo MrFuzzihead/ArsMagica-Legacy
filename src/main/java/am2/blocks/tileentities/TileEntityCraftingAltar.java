@@ -79,7 +79,6 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 
     private final ArrayList<KeyValuePair<ISpellPart, byte[]>> spellDef;
     private final ArrayList<ArrayList<KeyValuePair<ISpellPart, byte[]>>> shapeGroups;
-    private final boolean allShapeGroupsAdded = false;
 
     private int currentKey = -1;
     private int checkCounter;
@@ -111,11 +110,107 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
     private StructureGroup tier3_primary;
 
     private String currentSpellName = "";
-    final BlockDec[] augMaterials = new BlockDec[] { new BlockDec(Blocks.glass, 0), new BlockDec(Blocks.coal_block, 0),
-        new BlockDec(Blocks.redstone_block, 0), new BlockDec(Blocks.iron_block, 0), new BlockDec(Blocks.lapis_block, 0),
-        new BlockDec(Blocks.gold_block, 0), new BlockDec(Blocks.diamond_block, 0),
+    private static final BlockDec[] augMaterials = new BlockDec[] { new BlockDec(Blocks.glass, 0),
+        new BlockDec(Blocks.coal_block, 0), new BlockDec(Blocks.redstone_block, 0), new BlockDec(Blocks.iron_block, 0),
+        new BlockDec(Blocks.lapis_block, 0), new BlockDec(Blocks.gold_block, 0), new BlockDec(Blocks.diamond_block, 0),
         new BlockDec(Blocks.emerald_block, 0), new BlockDec(BlocksCommonProxy.AMOres, META_MOONSTONE_BLOCK),
         new BlockDec(BlocksCommonProxy.AMOres, META_SUNSTONE_BLOCK), };
+
+    /**
+     * The altar's multiblock layout is static, but was previously rebuilt (including ore-dictionary lookups) for every
+     * altar tile entity. Build it once and share the immutable-after-construction definition across all altars.
+     */
+    private static final class SharedStructure {
+
+        static final SharedStructure INSTANCE = new SharedStructure();
+
+        final MultiblockStructureDefinition primary;
+        final StructureGroup tier1;
+        final StructureGroup tier2;
+        final StructureGroup tier3;
+        final StructureGroup[] augMatl;
+        final MultiblockStructureDefinition fake;
+
+        private SharedStructure() {
+            MultiblockStructureDefinition primary = new MultiblockStructureDefinition("craftingAltar");
+            primary.addAllowedBlock(0, 0, 0, BlocksCommonProxy.craftingAltar);
+            for (int z : new int[] { -2, 2 }) {
+                primary.addAllowedBlock(0, -1, z, BlocksCommonProxy.magicWall);
+            }
+            for (int y = -2; y >= -3; y--) {
+                primary.addAllowedBlock(0, y, -2, BlocksCommonProxy.magicWall);
+                primary.addAllowedBlock(0, y, 2, BlocksCommonProxy.magicWall);
+            }
+            generateDefaultLectern(primary);
+            StructureGroup[] augMatl = generateDefaultAugments(primary);
+
+            // wood, sandstone, cobble,
+            StructureGroup tier1 = primary.copyGroup("main", "tier1");
+            List<BlockDec> tier1_decs = new ArrayList<>();
+            List<BlockDec> tier1_decstairs = new ArrayList<>();
+            for (ItemStack stack : OreDictionary.getOres("plankWood")) {
+                BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()), WILDCARD_VALUE);
+                tier1_decs.add(dec);
+            }
+            for (ItemStack stack : OreDictionary.getOres("sandstone")) {
+                BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()), WILDCARD_VALUE);
+                tier1_decs.add(dec);
+            }
+            for (ItemStack stack : OreDictionary.getOres("cobblestone")) {
+                BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()), WILDCARD_VALUE);
+                tier1_decs.add(dec);
+            }
+            for (ItemStack stack : OreDictionary.getOres("stairWood")) {
+                BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()), WILDCARD_VALUE);
+                tier1_decstairs.add(dec);
+            }
+            tier1_decstairs.add(new BlockDec(Blocks.sandstone_stairs, WILDCARD_VALUE));
+            tier1_decstairs.add(new BlockDec(Blocks.stone_stairs, WILDCARD_VALUE));
+            generateStructure(primary, tier1, tier1_decs);
+            generateStairs(primary, tier1, tier1_decstairs);
+
+            // brick & magical wood & stonebrick
+            List<BlockDec> tier2_decs = new ArrayList<>();
+            List<BlockDec> tier2_decstairs = new ArrayList<>();
+            StructureGroup tier2 = primary.copyGroup("main", "tier2");
+            for (ItemStack stack : OreDictionary.getOres("stairMagical")) {
+                BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()), WILDCARD_VALUE);
+                tier2_decstairs.add(dec);
+            }
+            for (ItemStack stack : OreDictionary.getOres("plankMagical")) {
+                BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()), WILDCARD_VALUE);
+                tier2_decs.add(dec);
+            }
+            tier2_decstairs.add(new BlockDec(Blocks.brick_stairs, WILDCARD_VALUE));
+            tier2_decstairs.add(new BlockDec(Blocks.stone_brick_stairs, WILDCARD_VALUE));
+            tier2_decs.add(new BlockDec(Blocks.stonebrick, WILDCARD_VALUE));
+            tier2_decs.add(new BlockDec(Blocks.brick_block, WILDCARD_VALUE));
+            generateStructure(primary, tier2, tier2_decs);
+            generateStairs(primary, tier2, tier2_decstairs);
+
+            // quartz & nether bricks
+            List<BlockDec> tier3_decs = new ArrayList<>();
+            List<BlockDec> tier3_decstairs = new ArrayList<>();
+            StructureGroup tier3 = primary.copyGroup("main", "tier3");
+            for (ItemStack stack : OreDictionary.getOres("blockQuartz")) {
+                BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()), WILDCARD_VALUE);
+                tier3_decs.add(dec);
+            }
+            tier3_decs.add(new BlockDec(Blocks.nether_brick, WILDCARD_VALUE));
+            tier3_decstairs.add(new BlockDec(Blocks.quartz_stairs, WILDCARD_VALUE));
+            tier3_decstairs.add(new BlockDec(Blocks.nether_brick_stairs, WILDCARD_VALUE));
+
+            generateStructure(primary, tier3, tier3_decs);
+            generateStairs(primary, tier3, tier3_decstairs);
+
+            this.primary = primary;
+            this.tier1 = tier1;
+            this.tier2 = tier2;
+            this.tier3 = tier3;
+            this.augMatl = augMatl;
+            this.fake = buildFakeMultiblock();
+        }
+    }
 
     public TileEntityCraftingAltar() {
         super(500);
@@ -139,83 +234,16 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
     }
 
     private void setupMultiblock() {
-
-        primary = new MultiblockStructureDefinition("craftingAltar");
-        primary.addAllowedBlock(0, 0, 0, BlocksCommonProxy.craftingAltar);
-        for (int z : new int[] { -2, 2 }) {
-            primary.addAllowedBlock(0, -1, z, BlocksCommonProxy.magicWall);
-        }
-        for (int y = -2; y >= -3; y--) {
-            primary.addAllowedBlock(0, y, -2, BlocksCommonProxy.magicWall);
-            primary.addAllowedBlock(0, y, 2, BlocksCommonProxy.magicWall);
-
-        }
-        generateDefaultLectern(primary);
-        generateDefaultAugments(primary);
-
-        // wood, sandstone, cobble,
-        tier1_primary = primary.copyGroup("main", "tier1");
-        List<BlockDec> tier1_decs = new ArrayList<>();
-        List<BlockDec> tier1_decstairs = new ArrayList<>();
-        for (ItemStack stack : OreDictionary.getOres("plankWood")) {
-            BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()), WILDCARD_VALUE);
-            tier1_decs.add(dec);
-        }
-        for (ItemStack stack : OreDictionary.getOres("sandstone")) {
-            BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()), WILDCARD_VALUE);
-            tier1_decs.add(dec);
-        }
-        for (ItemStack stack : OreDictionary.getOres("cobblestone")) {
-            BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()), WILDCARD_VALUE);
-            tier1_decs.add(dec);
-        }
-        for (ItemStack stack : OreDictionary.getOres("stairWood")) {
-            BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()), WILDCARD_VALUE);
-            tier1_decstairs.add(dec);
-        }
-        tier1_decstairs.add(new BlockDec(Blocks.sandstone_stairs, WILDCARD_VALUE));
-        tier1_decstairs.add(new BlockDec(Blocks.stone_stairs, WILDCARD_VALUE));
-        generateStructure(primary, tier1_primary, tier1_decs);
-        generateStairs(primary, tier1_primary, tier1_decstairs);
-
-        // brick & magical wood & stonebrick
-        List<BlockDec> tier2_decs = new ArrayList<>();
-        List<BlockDec> tier2_decstairs = new ArrayList<>();
-        tier2_primary = primary.copyGroup("main", "tier2");
-        for (ItemStack stack : OreDictionary.getOres("stairMagical")) {
-            BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()), WILDCARD_VALUE);
-            tier2_decstairs.add(dec);
-        }
-        for (ItemStack stack : OreDictionary.getOres("plankMagical")) {
-            BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()), WILDCARD_VALUE);
-            tier2_decs.add(dec);
-        }
-        tier2_decstairs.add(new BlockDec(Blocks.brick_stairs, WILDCARD_VALUE));
-        tier2_decstairs.add(new BlockDec(Blocks.stone_brick_stairs, WILDCARD_VALUE));
-        tier2_decs.add(new BlockDec(Blocks.stonebrick, WILDCARD_VALUE));
-        tier2_decs.add(new BlockDec(Blocks.brick_block, WILDCARD_VALUE));
-        generateStructure(primary, tier2_primary, tier2_decs);
-        generateStairs(primary, tier2_primary, tier2_decstairs);
-
-        // quartz & nether bricks
-
-        List<BlockDec> tier3_decs = new ArrayList<>();
-        List<BlockDec> tier3_decstairs = new ArrayList<>();
-        tier3_primary = primary.copyGroup("main", "tier3");
-        for (ItemStack stack : OreDictionary.getOres("blockQuartz")) {
-            BlockDec dec = new BlockDec(Block.getBlockFromItem(stack.getItem()), WILDCARD_VALUE);
-            tier3_decs.add(dec);
-        }
-        tier3_decs.add(new BlockDec(Blocks.nether_brick, WILDCARD_VALUE));
-        tier3_decstairs.add(new BlockDec(Blocks.quartz_stairs, WILDCARD_VALUE));
-        tier3_decstairs.add(new BlockDec(Blocks.nether_brick_stairs, WILDCARD_VALUE));
-
-        generateStructure(primary, tier3_primary, tier3_decs);
-        generateStairs(primary, tier3_primary, tier3_decstairs);
-
+        SharedStructure shared = SharedStructure.INSTANCE;
+        primary = shared.primary;
+        tier1_primary = shared.tier1;
+        tier2_primary = shared.tier2;
+        tier3_primary = shared.tier3;
+        augMatl_primary = shared.augMatl;
     }
 
-    void generateStructure(MultiblockStructureDefinition definition, StructureGroup group, List<BlockDec> block) {
+    static void generateStructure(MultiblockStructureDefinition definition, StructureGroup group,
+        List<BlockDec> block) {
         // center column
         definition.addAllowedBlock(group, 0, 0, -1, block);
         definition.addAllowedBlock(group, 0, 0, 1, block);
@@ -237,7 +265,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
         }
     }
 
-    void generateStairs(MultiblockStructureDefinition definition, StructureGroup group, List<BlockDec> block) {
+    static void generateStairs(MultiblockStructureDefinition definition, StructureGroup group, List<BlockDec> block) {
         /* 0,1 2,3 7,6 */
         // side stairs
         for (int z = -1; z <= 1; z++) {
@@ -252,27 +280,21 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
         }
     }
 
-    void generateDefaultAugments(MultiblockStructureDefinition definition) {
-        augMatl_primary = new StructureGroup[augMaterials.length];
-        for (int i = 0; i < augMaterials.length; ++i)
-            augMatl_primary[i] = definition.createGroup("augmatl" + i, augmatl_mutex);
+    static StructureGroup[] generateDefaultAugments(MultiblockStructureDefinition definition) {
+        StructureGroup[] augMatl = new StructureGroup[augMaterials.length];
+        for (int i = 0; i < augMaterials.length; ++i) augMatl[i] = definition.createGroup("augmatl" + i, augmatl_mutex);
         // aug materials at z = -2 and z = 2 for x = -1 and x = 1
         for (int i = 0; i < augMaterials.length; i++) {
-            definition
-                .addAllowedBlock(augMatl_primary[i], -1, 0, -2, augMaterials[i].getBlock(), augMaterials[i].getMeta());
-            definition
-                .addAllowedBlock(augMatl_primary[i], -1, 0, 2, augMaterials[i].getBlock(), augMaterials[i].getMeta());
-            definition
-                .addAllowedBlock(augMatl_primary[i], 1, 0, -2, augMaterials[i].getBlock(), augMaterials[i].getMeta());
-            definition
-                .addAllowedBlock(augMatl_primary[i], 1, 0, 2, augMaterials[i].getBlock(), augMaterials[i].getMeta());
-            definition
-                .addAllowedBlock(augMatl_primary[i], 0, -4, 0, augMaterials[i].getBlock(), augMaterials[i].getMeta());
+            definition.addAllowedBlock(augMatl[i], -1, 0, -2, augMaterials[i].getBlock(), augMaterials[i].getMeta());
+            definition.addAllowedBlock(augMatl[i], -1, 0, 2, augMaterials[i].getBlock(), augMaterials[i].getMeta());
+            definition.addAllowedBlock(augMatl[i], 1, 0, -2, augMaterials[i].getBlock(), augMaterials[i].getMeta());
+            definition.addAllowedBlock(augMatl[i], 1, 0, 2, augMaterials[i].getBlock(), augMaterials[i].getMeta());
+            definition.addAllowedBlock(augMatl[i], 0, -4, 0, augMaterials[i].getBlock(), augMaterials[i].getMeta());
         }
-
+        return augMatl;
     }
 
-    void generateDefaultLectern(MultiblockStructureDefinition definition) {
+    static void generateDefaultLectern(MultiblockStructureDefinition definition) {
         StructureGroup[] lecternGroup_primary = new StructureGroup[4];
         for (int i = 0; i < lecternGroup_primary.length; ++i) {
             lecternGroup_primary[i] = definition.createGroup("lectern" + i, lectern_mutex);
@@ -292,7 +314,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
 
     @Override
     public MultiblockStructureDefinition getDefinition() {
-        return getFakeMultiblock();
+        return SharedStructure.INSTANCE.fake;
     }
 
     public ItemStack getNextPlannedItem() {
@@ -367,19 +389,8 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
             checkForEndCondition();
             updatePowerRequestData();
             if (!worldObj.isRemote && !currentDefinitionIsWithinStructurePower() && this.ticksExisted > 100) {
-                worldObj.newExplosion(null, xCoord + 0.5, yCoord - 1.5, zCoord + 0.5, this.maxEffects, false, true); // the
-                                                                                                                     // better
-                                                                                                                     // the
-                                                                                                                     // altar,
-                                                                                                                     // the
-                                                                                                                     // mode
-                                                                                                                     // devastating
-                                                                                                                     // the
-                                                                                                                     // explosion
-                                                                                                                     // in
-                                                                                                                     // case
-                                                                                                                     // of
-                                                                                                                     // overload
+                // Better altars cause a larger overload explosion.
+                worldObj.newExplosion(null, xCoord + 0.5, yCoord - 1.5, zCoord + 0.5, this.maxEffects, false, true);
                 setCrafting(false);
                 return;
             }
@@ -1294,7 +1305,7 @@ public class TileEntityCraftingAltar extends TileEntityAMPower implements IMulti
         this.readFromNBT(pkt.func_148857_g());
     }
 
-    private MultiblockStructureDefinition getFakeMultiblock() {
+    private static MultiblockStructureDefinition buildFakeMultiblock() {
         MultiblockStructureDefinition fakemulti = new MultiblockStructureDefinition("fakeAltar");
         // augments
         StructureGroup augMatl_secondary = fakemulti.createGroup("augmatl", augmatl_mutex);

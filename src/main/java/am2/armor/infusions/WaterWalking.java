@@ -1,11 +1,9 @@
 package am2.armor.infusions;
 
-import java.lang.reflect.Method;
 import java.util.EnumSet;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
@@ -15,7 +13,7 @@ import am2.api.items.armor.IArmorImbuement;
 import am2.api.items.armor.ImbuementApplicationTypes;
 import am2.api.items.armor.ImbuementTiers;
 import am2.api.math.AMVector3;
-import cpw.mods.fml.relauncher.ReflectionHelper;
+import am2.mixins.early.EntityInvoker;
 
 public class WaterWalking implements IArmorImbuement {
 
@@ -106,15 +104,7 @@ public class WaterWalking implements IArmorImbuement {
     }
 
     private void callFall(EntityPlayer player) {
-        try {
-            Method m = ReflectionHelper.findMethod(Entity.class, player, new String[] { "fall" }, float.class);
-            if (m != null) {
-                m.setAccessible(true);
-                m.invoke(player, player.fallDistance);
-            }
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
+        ((EntityInvoker) player).am2$invokeFall(player.fallDistance);
     }
 
     @Override

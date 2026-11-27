@@ -118,7 +118,7 @@ public class ItemKeystoneDoor extends Item {
     }
 
     @Override
-    public void getSubItems(Item item, CreativeTabs tab, List list) {
+    public void getSubItems(Item item, CreativeTabs tab, List<ItemStack> list) {
         list.add(new ItemStack(this, 1, KEYSTONE_DOOR));
         list.add(new ItemStack(this, 1, SPELL_SEALED_DOOR));
     }

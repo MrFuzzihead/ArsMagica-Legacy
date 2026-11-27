@@ -122,7 +122,7 @@ public class GuiButtonCompendiumTab extends GuiButton {
             GL11.glEnable(GL11.GL_LIGHTING);
 
             if (isMousedOver) {
-                List list = new ArrayList<String>();
+                List<String> list = new ArrayList<String>();
                 list.add(this.displayString);
 
                 drawHoveringText(list, par2, par3, Minecraft.getMinecraft().fontRenderer);
@@ -160,13 +160,13 @@ public class GuiButtonCompendiumTab extends GuiButton {
         GL11.glDisable(GL11.GL_BLEND);
     }
 
-    protected void drawHoveringText(List par1List, int par2, int par3, FontRenderer font) {
+    protected void drawHoveringText(List<String> par1List, int par2, int par3, FontRenderer font) {
         if (!par1List.isEmpty()) {
             GL11.glDisable(GL12.GL_RESCALE_NORMAL);
             GL11.glDisable(GL11.GL_LIGHTING);
             GL11.glDisable(GL11.GL_DEPTH_TEST);
             int k = 0;
-            Iterator iterator = par1List.iterator();
+            Iterator<String> iterator = par1List.iterator();
 
             while (iterator.hasNext()) {
                 String s = (String) iterator.next();

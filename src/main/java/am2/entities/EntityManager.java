@@ -53,6 +53,7 @@ import am2.entities.renderers.RenderDarkling;
 import am2.entities.renderers.RenderDryad;
 import am2.entities.renderers.RenderEarthElemental;
 import am2.entities.renderers.RenderFireElemental;
+import am2.entities.renderers.RenderFishingHook;
 import am2.entities.renderers.RenderFlicker;
 import am2.entities.renderers.RenderHallucination;
 import am2.entities.renderers.RenderHecate;
@@ -508,6 +509,15 @@ public class EntityManager implements IEntityManager {
         RenderingRegistry.registerEntityRenderingHandler(EntitySpellProjectile.class, new RenderSpellProjectile());
         RenderingRegistry.registerEntityRenderingHandler(EntitySpellEffect.class, new RenderHidden());
         RenderingRegistry.registerEntityRenderingHandler(EntityDryad.class, new RenderDryad());
+
+        RenderingRegistry.registerEntityRenderingHandler(
+            EntityFishHookArcane.class,
+            new RenderFishingHook(
+                new ResourceLocation("arsmagica2", "textures/items/particles/particleswitharcanerod.png")));
+        RenderingRegistry.registerEntityRenderingHandler(
+            EntityFishHookInfernal.class,
+            new RenderFishingHook(
+                new ResourceLocation("arsmagica2", "textures/items/particles/particleswithinfernalrod.png")));
 
         RenderingRegistry.registerEntityRenderingHandler(
             EntitySpecificHallucinations.EntityHallucinationCreeper.class,

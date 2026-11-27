@@ -251,7 +251,7 @@ public class EntityThrownRock extends EntityLiving {
                 movingobjectposition.hitVec.zCoord);
         }
         Entity entity = null;
-        List list = worldObj.getEntitiesWithinAABBExcludingEntity(
+        List<Entity> list = worldObj.getEntitiesWithinAABBExcludingEntity(
             this,
             boundingBox.addCoord(motionX, motionY, motionZ)
                 .expand(1.0D, 1.0D, 1.0D));

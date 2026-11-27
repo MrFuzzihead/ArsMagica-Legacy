@@ -2,7 +2,6 @@ package am2;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -30,7 +29,6 @@ import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixesMagicka;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
@@ -49,6 +47,7 @@ import am2.blocks.tileentities.TileEntityCrystalMarker;
 import am2.blocks.tileentities.TileEntityParticleEmitter;
 import am2.buffs.BuffList;
 import am2.entities.EntityShadowHelper;
+import am2.entities.renderers.ClientPlayerModelMap;
 import am2.guis.AMGuiHelper;
 import am2.items.ItemArcaneCompendium;
 import am2.items.ItemsCommonProxy;
@@ -242,11 +241,10 @@ public class AMClientEventHandler {
                     PowerTypes powerType = PowerTypes
                         .getByID(stack.stackTagCompound.getInteger("mana_battery_powertype"));
                     if (batteryCharge != 0) {
-                        // TODO localize this tooltip
                         event.toolTip.add(
-                            String.format(
-                                "§r§9Contains §5%.2f %s%s §9etherium",
-                                batteryCharge,
+                            StatCollector.translateToLocalFormatted(
+                                "am2.tooltip.manaBatteryContains",
+                                String.format("%.2f", batteryCharge),
                                 powerType.chatColor(),
                                 powerType.name()));
                     }
@@ -453,8 +451,11 @@ public class AMClientEventHandler {
         if (event.entity instanceof EntityPlayer) {
             if (event.entity != Minecraft.getMinecraft().thePlayer) {
                 AMDataWriter writer = new AMDataWriter();
-                writer.add(MysteriumPatchesFixesMagicka.playerModelMap.size());
-                for (Map.Entry<String, String> entry : MysteriumPatchesFixesMagicka.playerModelMap.entrySet()) {
+                writer.add(
+                    ClientPlayerModelMap.map()
+                        .size());
+                for (Map.Entry<String, String> entry : ClientPlayerModelMap.map()
+                    .entrySet()) {
                     writer.add(entry.getKey());
                     writer.add(entry.getValue());
                 }
@@ -465,19 +466,19 @@ public class AMClientEventHandler {
             ServerData serverData = Minecraft.getMinecraft()
                 .func_147104_D();
             if (serverData == null) {
-                MysteriumPatchesFixesMagicka.playerModelMap.clear();
+                ClientPlayerModelMap.map()
+                    .clear();
                 return; // singleplayer
             }
 
-            List<String> tablist = ((List<GuiPlayerInfo>) Minecraft.getMinecraft().thePlayer.sendQueue.playerInfoList)
-                .stream()
-                .map(r -> r.name)
-                .collect(Collectors.toList());
-            tablist.remove(Minecraft.getMinecraft().thePlayer.getDisplayName());
-            tablist.remove(Minecraft.getMinecraft().thePlayer.getCommandSenderName());
-            if (event.entity == Minecraft.getMinecraft().thePlayer && tablist.isEmpty()) { // no players to sync the map
-                                                                                           // from, clear it instead
-                MysteriumPatchesFixesMagicka.playerModelMap.clear();
+            List<GuiPlayerInfo> players = Minecraft.getMinecraft().thePlayer.sendQueue.playerInfoList;
+            boolean onlyLocalPlayer = !hasOtherPlayers(
+                players,
+                Minecraft.getMinecraft().thePlayer.getDisplayName(),
+                Minecraft.getMinecraft().thePlayer.getCommandSenderName());
+            if (event.entity == Minecraft.getMinecraft().thePlayer && onlyLocalPlayer) {
+                ClientPlayerModelMap.map()
+                    .clear();
             }
         }
     }
@@ -504,4 +505,16 @@ public class AMClientEventHandler {
             }
         }
     }
+
+    static boolean hasOtherPlayers(List<GuiPlayerInfo> players, String... localNames) {
+        if (players == null) return false;
+        outer: for (GuiPlayerInfo player : players) {
+            for (String localName : localNames) {
+                if (player.name.equals(localName)) continue outer;
+            }
+            return true;
+        }
+        return false;
+    }
+
 }

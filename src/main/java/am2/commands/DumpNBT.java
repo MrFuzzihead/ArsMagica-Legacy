@@ -24,7 +24,7 @@ public class DumpNBT extends CommandBase {
     }
 
     @Override
-    public List getCommandAliases() {
+    public List<String> getCommandAliases() {
         ArrayList<String> aliases = new ArrayList<String>();
         aliases.add("dumpnbt");
         return aliases;

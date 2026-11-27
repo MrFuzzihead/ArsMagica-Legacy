@@ -54,6 +54,15 @@ public class ItemSpellStaff extends ArsMagicaItem {
         this.castingMode = castingMode;
     }
 
+    /**
+     * Staff "damage" is charge, not durability. Disabling grid repair lets the dynamic
+     * {@link am2.crafting.SpellCraftingRecipe} handle two-staff combinations instead of vanilla's durability merge.
+     */
+    @Override
+    public boolean isRepairable() {
+        return false;
+    }
+
     @Override
     @SideOnly(Side.CLIENT)
     public void registerIcons(IIconRegister par1IconRegister) {
@@ -153,7 +162,7 @@ public class ItemSpellStaff extends ArsMagicaItem {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, EntityPlayer par2EntityPlayer, List par3List, boolean par4) {
+    public void addInformation(ItemStack stack, EntityPlayer par2EntityPlayer, List<String> par3List, boolean par4) {
         if (stack.stackTagCompound == null || isMagiTechStaff()) return;
         float chargeCost = 1;
 

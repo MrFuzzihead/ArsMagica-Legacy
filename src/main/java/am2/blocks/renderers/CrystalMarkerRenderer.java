@@ -112,7 +112,7 @@ public class CrystalMarkerRenderer extends TileEntitySpecialRenderer {
 
         try {
             model.renderAll();
-        } catch (Throwable t) {
+        } catch (Exception t) {
 
         }
 

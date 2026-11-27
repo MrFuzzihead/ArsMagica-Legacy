@@ -1,11 +1,14 @@
 package am2.playerextensions;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
@@ -52,6 +55,10 @@ import am2.network.AMDataWriter;
 import am2.network.AMNetHandler;
 import am2.network.AMPacketIDs;
 import am2.particles.AMLineArc;
+import am2.playerextensions.effects.SpatialVortexEffect;
+import am2.playerextensions.effects.TimedBlockEffect;
+import am2.playerextensions.effects.TimedEffectCodec;
+import am2.playerextensions.effects.TimedEntityEffect;
 import am2.spell.SkillManager;
 import am2.spell.SkillTreeManager;
 import am2.spell.SpellHelper;
@@ -72,14 +79,24 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
     private final ArrayList<Integer> summon_ent_ids = new ArrayList<Integer>();
 
-    // I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
-    // I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
-    // I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
-    // I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
-    // I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
-    // I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!!
-    /** I AM SO BLOODY TIRED OF MAKING NEW VARIABLES FOR EEEP!!!!!!! */
+    /** Legacy encoded prefixes retained for NBT/sync compatibility while typed maps are authoritative. */
+    private static final String[] TIMED_EFFECT_PREFIXES = { "accelerated_fast_tile_", "accelerated_fast_entity_",
+        "accelerated_slow_tile_", "accelerated_slow_entity_", "spatialvortex_", "timefortified_tile_",
+        "shielded_tile_" };
+
     private final Map<String, String> extra_properties = new HashMap<String, String>();
+    /**
+     * Tracks whether any timed-effect keys are present so onEntityLiving can skip the per-entity timed bookkeeping
+     * entirely for the common case.
+     */
+    private final transient Set<String> timedEffectKeys = new HashSet<String>();
+    private final transient Map<TimedBlockEffect, Integer> acceleratedTiles = new HashMap<TimedBlockEffect, Integer>();
+    private final transient Map<TimedEntityEffect, Integer> acceleratedEntities = new HashMap<TimedEntityEffect, Integer>();
+    private final transient Map<TimedEntityEffect, Integer> slowedEntities = new HashMap<TimedEntityEffect, Integer>();
+    private final transient Map<TimedBlockEffect, Integer> slowedTiles = new HashMap<TimedBlockEffect, Integer>();
+    private final transient Map<TimedBlockEffect, Integer> fortifiedTiles = new HashMap<TimedBlockEffect, Integer>();
+    private final transient Map<TimedBlockEffect, Integer> shieldedTiles = new HashMap<TimedBlockEffect, Integer>();
+    private final transient Map<SpatialVortexEffect, String> spatialVortices = new HashMap<SpatialVortexEffect, String>();
 
     private final Map<String, String> compendium_entries = new HashMap<String, String>();
 
@@ -154,7 +171,6 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
     private boolean hasInitialized = false;
     public boolean astralBarrierBlocked = false;
-    private boolean forcingSync = false;
     private boolean isCritical;
     public boolean isRecoveringKeystone = false;
     public boolean hadFlight = false;
@@ -190,7 +206,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
     private int updateFlags;
     private static final int syncTickDelay = 50; // 2.5 seconds
-    private int ticksToSync;
+    private final SyncWindow syncWindow = new SyncWindow(syncTickDelay);
     public int redGlint = 0;
     private int lightningsLeft = 0;
     private int ticksLeft = 0;
@@ -286,7 +302,12 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     }
 
     public ItemStack getContingencyEffect(int num) {
-        return this.contingencyStacks[num];
+        ItemStack effect = this.contingencyStacks[num];
+        if (effect == null) {
+            effect = new ItemStack(Items.snowball);
+            this.contingencyStacks[num] = effect;
+        }
+        return effect;
     }
 
     public int getFallProtection() {
@@ -475,18 +496,16 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         }
 
         NBTTagCompound extra_data = new NBTTagCompound();
-        int c = 0;
-        for (String o : extra_properties.keySet()) {
-            String iValue = extra_properties.get(o);
-            extra_data.setString("persistentobj" + c, iValue);
-            extra_data.setString("persistentobjname" + c, o);
-            c++;
-        }
-        extra_data.setInteger("persistentobjsize", extra_properties.size());
+        writeStringMap(
+            extra_data,
+            "persistentobj",
+            "persistentobjname",
+            "persistentobjsize",
+            buildSerializableExtraProperties());
         writer.add(extra_data);
 
         this.updateFlags = 0;
-        this.forcingSync = false;
+        this.syncWindow.clearForcing();
         return writer.generate();
     }
 
@@ -508,12 +527,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     }
 
     public boolean getHasUpdate() {
-        if (!(this.entity instanceof EntityPlayer) && !forcingSync) {
-            return false;
-        }
-        this.ticksToSync--;
-        if (this.ticksToSync <= 0) this.ticksToSync = syncTickDelay;
-        return this.updateFlags != 0 && this.ticksToSync == syncTickDelay;
+        return this.syncWindow.shouldSend(this.entity instanceof EntityPlayer, this.updateFlags != 0);
     }
 
     public boolean getCanHaveMoreSummons() {
@@ -804,7 +818,6 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     }
 
     public void setFullSync() {
-        this.ticksToSync = 0;
         this.setUpdateFlag(UPD_CONTINGENCY);
         this.setUpdateFlag(UPD_BITFLAG);
         this.setUpdateFlag(UPD_CURRENT_MANA_FATIGUE);
@@ -814,7 +827,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         this.setUpdateFlag(UPD_NUM_SUMMONS);
         this.setUpdateFlag(UPD_BETA_PARTICLES);
         this.hasDoneFullSync = true;
-        this.forcingSync = true;
+        this.syncWindow.fullSync();
     }
 
     public void updateManaLink(EntityLivingBase entity) {
@@ -1092,21 +1105,19 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
         extra_properties.clear();
         NBTTagCompound nbt = rdr.getNBTTagCompound();
-        for (int j = 0; j < nbt.getInteger("persistentobjsize"); j++) {
-            extra_properties.put(nbt.getString("persistentobjname" + j), nbt.getString("persistentobj" + j));
-        }
+        readStringMap(nbt, "persistentobj", "persistentobjname", "persistentobjsize", extra_properties);
+        rebuildTimedEffectKeys();
 
         return true;
     }
 
     public void setDelayedSync(int delay) {
         setFullSync();
-        this.ticksToSync = delay;
+        this.syncWindow.setTicks(delay);
     }
 
     public void forceSync() {
-        this.ticksToSync = 0;
-        this.forcingSync = true;
+        this.syncWindow.force();
     }
 
     public void updateAuraData(int index, int behaviour, float scale, float alpha, boolean colorRandom,
@@ -1163,8 +1174,50 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         }
     }
 
-    public boolean detectPossibleDesync() {
-        return false;
+    private Map<String, String> buildSerializableExtraProperties() {
+        Map<String, String> serializable = new HashMap<String, String>(extra_properties);
+        for (Map.Entry<TimedBlockEffect, Integer> entry : acceleratedTiles.entrySet()) {
+            serializable.put(TimedEffectCodec.encodeAcceleratedTile(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        for (Map.Entry<TimedBlockEffect, Integer> entry : slowedTiles.entrySet()) {
+            serializable.put(TimedEffectCodec.encodeSlowedTile(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        for (Map.Entry<TimedBlockEffect, Integer> entry : fortifiedTiles.entrySet()) {
+            serializable.put(TimedEffectCodec.encodeFortifiedTile(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        for (Map.Entry<TimedBlockEffect, Integer> entry : shieldedTiles.entrySet()) {
+            serializable.put(TimedEffectCodec.encodeShieldedTile(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        for (Map.Entry<TimedEntityEffect, Integer> entry : acceleratedEntities.entrySet()) {
+            serializable
+                .put(TimedEffectCodec.encodeAcceleratedEntity(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        for (Map.Entry<TimedEntityEffect, Integer> entry : slowedEntities.entrySet()) {
+            serializable.put(TimedEffectCodec.encodeSlowedEntity(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        for (Map.Entry<SpatialVortexEffect, String> entry : spatialVortices.entrySet()) {
+            serializable.put(TimedEffectCodec.encodeSpatialVortex(entry.getKey()), entry.getValue());
+        }
+        return serializable;
+    }
+
+    static void writeStringMap(NBTTagCompound compound, String valuePrefix, String namePrefix, String sizeKey,
+        Map<String, String> values) {
+        int index = 0;
+        for (Map.Entry<String, String> entry : values.entrySet()) {
+            compound.setString(valuePrefix + index, entry.getValue());
+            compound.setString(namePrefix + index, entry.getKey());
+            index++;
+        }
+        compound.setInteger(sizeKey, values.size());
+    }
+
+    static void readStringMap(NBTTagCompound compound, String valuePrefix, String namePrefix, String sizeKey,
+        Map<String, String> target) {
+        int size = compound.getInteger(sizeKey);
+        for (int i = 0; i < size; i++) {
+            target.put(compound.getString(namePrefix + i), compound.getString(valuePrefix + i));
+        }
     }
 
     @Override
@@ -1196,8 +1249,10 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         compound.setFloat("magicXP", magicXP);
 
         for (int i = 0; i < 5; i++) {
-            NBTTagCompound effectSave = contingencyStacks[i].writeToNBT(new NBTTagCompound());
-            compound.setTag("contingency_effect" + i, effectSave);
+            if (contingencyStacks[i] != null) {
+                NBTTagCompound effectSave = contingencyStacks[i].writeToNBT(new NBTTagCompound());
+                compound.setTag("contingency_effect" + i, effectSave);
+            }
         }
 
         // mark location
@@ -1207,22 +1262,13 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
             compound.setDouble("marklocationz", this.getMarkZ());
             compound.setInteger("markdimension", this.getMarkDimension());
         }
-        int c = 0;
-        for (String o : extra_properties.keySet()) {
-            String iValue = extra_properties.get(o);
-            compound.setString("persistentobj" + c, iValue);
-            compound.setString("persistentobjname" + c, o);
-            c++;
-        }
-        compound.setInteger("persistentobjsize", extra_properties.size());
-
-        for (String o : compendium_entries.keySet()) {
-            String iValue = compendium_entries.get(o);
-            compound.setString("compentry" + c, iValue);
-            compound.setString("compentryname" + c, o);
-            c++;
-        }
-        compound.setInteger("compendiumsize", compendium_entries.size());
+        writeStringMap(
+            compound,
+            "persistentobj",
+            "persistentobjname",
+            "persistentobjsize",
+            buildSerializableExtraProperties());
+        writeStringMap(compound, "compentry", "compentryname", "compendiumsize", compendium_entries);
     }
 
     @Override
@@ -1284,18 +1330,71 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
             }
         }
 
-        for (int j = 0; j < compound.getInteger("persistentobjsize"); j++) {
-            extra_properties.put(compound.getString("persistentobjname" + j), compound.getString("persistentobj" + j));
-        }
-
-        for (int j = 0; j < compound.getInteger("compendiumsize"); j++) {
-            compendium_entries.put(compound.getString("compentryname" + j), compound.getString("compentry" + j));
-        }
+        readStringMap(compound, "persistentobj", "persistentobjname", "persistentobjsize", extra_properties);
+        readStringMap(compound, "compentry", "compentryname", "compendiumsize", compendium_entries);
+        rebuildTimedEffectKeys();
     }
 
     public void addToExtraVariables(String name, String value) {
+        if (storeTimedEffect(name, value)) {
+            setFullSync();
+            return;
+        }
         extra_properties.put(name, value);
+        trackTimedEffectKey(name, value);
         setFullSync();
+    }
+
+    private boolean storeTimedEffect(String name, String value) {
+        if (!isTimedEffectKey(name)) return false;
+        timedEffectKeys.add(name);
+        try {
+            if (name.startsWith("accelerated_fast_tile_")) {
+                TimedBlockEffect effect = TimedEffectCodec.parseAcceleratedTile(name);
+                if (effect == null) return false;
+                acceleratedTiles.put(effect, Integer.parseInt(value));
+                return true;
+            }
+            if (name.startsWith("accelerated_slow_tile_")) {
+                TimedBlockEffect effect = TimedEffectCodec.parseSlowedTile(name);
+                if (effect == null) return false;
+                slowedTiles.put(effect, Integer.parseInt(value));
+                return true;
+            }
+            if (name.startsWith("accelerated_fast_entity_")) {
+                TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
+                if (effect == null) return false;
+                acceleratedEntities.put(effect, Integer.parseInt(value));
+                return true;
+            }
+            if (name.startsWith("accelerated_slow_entity_")) {
+                TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
+                if (effect == null) return false;
+                slowedEntities.put(effect, Integer.parseInt(value));
+                return true;
+            }
+            if (name.startsWith("timefortified_tile_")) {
+                TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
+                if (effect == null) return false;
+                fortifiedTiles.put(effect, Integer.parseInt(value));
+                return true;
+            }
+            if (name.startsWith("shielded_tile_")) {
+                TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
+                if (effect == null) return false;
+                shieldedTiles.put(effect, Integer.parseInt(value));
+                return true;
+            }
+            if (name.startsWith("spatialvortex_")) {
+                SpatialVortexEffect effect = TimedEffectCodec.parseSpatialVortex(name);
+                if (effect == null) return false;
+                spatialVortices.put(effect, value);
+                return true;
+            }
+        } catch (NumberFormatException ignored) {
+            return false;
+        }
+        return false;
     }
 
     public void setCompendiumEntry(String name, String value) {
@@ -1313,14 +1412,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
         AMDataWriter writer = new AMDataWriter();
         NBTTagCompound compendium_data = new NBTTagCompound();
         if (name == null && value == null) {
-            int c = 0;
-            for (String o : compendium_entries.keySet()) {
-                String iValue = compendium_entries.get(o);
-                compendium_data.setString("compentry" + c, iValue);
-                compendium_data.setString("compentryname" + c, o);
-                c++;
-            }
-            compendium_data.setInteger("compendiumsize", compendium_entries.size());
+            writeStringMap(compendium_data, "compentry", "compentryname", "compendiumsize", compendium_entries);
             writer.add(compendium_data);
             AMNetHandler.INSTANCE.sendPacketToServer(AMPacketIDs.SYNCCOMPENDIUM, writer.generate());
         } else {
@@ -1355,9 +1447,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
             setDefaultCompendiumEntryValues();
         }
         if (nbt.getInteger("compendiumsize") > 1) compendium_entries.clear(); // full sync
-        for (int j = 0; j < nbt.getInteger("compendiumsize"); j++) {
-            compendium_entries.put(nbt.getString("compentryname" + j), nbt.getString("compentry" + j));
-        }
+        readStringMap(nbt, "compentry", "compentryname", "compendiumsize", compendium_entries);
     }
 
     private void setDefaultCompendiumEntryValues() {
@@ -1375,21 +1465,333 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     }
 
     public void removeFromExtraVariables(String name) {
-        extra_properties.remove(name);
+        if (isTimedEffectKey(name)) {
+            removeTimedEffect(name);
+            extra_properties.remove(name);
+            timedEffectKeys.remove(name);
+        } else {
+            extra_properties.remove(name);
+            untrackTimedEffectKey(name);
+        }
         setFullSync();
+    }
+
+    private void removeTimedEffect(String name) {
+        if (name.startsWith("accelerated_fast_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseAcceleratedTile(name);
+            if (effect != null) acceleratedTiles.remove(effect);
+        } else if (name.startsWith("accelerated_slow_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseSlowedTile(name);
+            if (effect != null) slowedTiles.remove(effect);
+        } else if (name.startsWith("accelerated_fast_entity_")) {
+            TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
+            if (effect != null) acceleratedEntities.remove(effect);
+        } else if (name.startsWith("accelerated_slow_entity_")) {
+            TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
+            if (effect != null) slowedEntities.remove(effect);
+        } else if (name.startsWith("timefortified_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
+            if (effect != null) fortifiedTiles.remove(effect);
+        } else if (name.startsWith("shielded_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
+            if (effect != null) shieldedTiles.remove(effect);
+        } else if (name.startsWith("spatialvortex_")) {
+            SpatialVortexEffect effect = TimedEffectCodec.parseSpatialVortex(name);
+            if (effect != null) spatialVortices.remove(effect);
+        }
     }
 
     public void clearExtraVariables() {
         extra_properties.clear();
+        timedEffectKeys.clear();
+        acceleratedTiles.clear();
+        acceleratedEntities.clear();
+        slowedEntities.clear();
+        slowedTiles.clear();
+        fortifiedTiles.clear();
+        shieldedTiles.clear();
+        spatialVortices.clear();
+        setFullSync();
+    }
+
+    /** Removes every extra property whose key contains {@code contains}. */
+    public void removeExtraVariablesContaining(String contains) {
+        extra_properties.keySet()
+            .removeIf(key -> key != null && key.contains(contains));
+        timedEffectKeys.removeIf(key -> key.contains(contains));
+        acceleratedTiles.keySet()
+            .removeIf(
+                effect -> TimedEffectCodec.encodeAcceleratedTile(effect)
+                    .contains(contains));
+        acceleratedEntities.keySet()
+            .removeIf(
+                effect -> TimedEffectCodec.encodeAcceleratedEntity(effect)
+                    .contains(contains));
+        slowedEntities.keySet()
+            .removeIf(
+                effect -> TimedEffectCodec.encodeSlowedEntity(effect)
+                    .contains(contains));
+        slowedTiles.keySet()
+            .removeIf(
+                effect -> TimedEffectCodec.encodeSlowedTile(effect)
+                    .contains(contains));
+        fortifiedTiles.keySet()
+            .removeIf(
+                effect -> TimedEffectCodec.encodeFortifiedTile(effect)
+                    .contains(contains));
+        shieldedTiles.keySet()
+            .removeIf(
+                effect -> TimedEffectCodec.encodeShieldedTile(effect)
+                    .contains(contains));
+        spatialVortices.keySet()
+            .removeIf(
+                effect -> TimedEffectCodec.encodeSpatialVortex(effect)
+                    .contains(contains));
+        setFullSync();
+    }
+
+    public boolean hasTimedEffects() {
+        return !timedEffectKeys.isEmpty();
+    }
+
+    private static boolean isTimedEffectKey(String name) {
+        if (name == null) return false;
+        for (String prefix : TIMED_EFFECT_PREFIXES) {
+            if (name.startsWith(prefix)) return true;
+        }
+        return false;
+    }
+
+    private void trackTimedEffectKey(String name, String value) {
+        if (!isTimedEffectKey(name)) return;
+        timedEffectKeys.add(name);
+        if (name.startsWith("accelerated_fast_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseAcceleratedTile(name);
+            if (effect != null) {
+                try {
+                    acceleratedTiles.put(effect, Integer.parseInt(value));
+                } catch (NumberFormatException ignored) {
+                    // Keep the legacy string; malformed durations must not break loading.
+                }
+            }
+        } else if (name.startsWith("accelerated_fast_entity_")) {
+            TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
+            if (effect != null) {
+                try {
+                    acceleratedEntities.put(effect, Integer.parseInt(value));
+                } catch (NumberFormatException ignored) {
+                    // Keep the legacy string; malformed durations must not break loading.
+                }
+            }
+        } else if (name.startsWith("accelerated_slow_entity_")) {
+            TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
+            if (effect != null) {
+                try {
+                    slowedEntities.put(effect, Integer.parseInt(value));
+                } catch (NumberFormatException ignored) {
+                    // Keep the legacy string; malformed durations must not break loading.
+                }
+            }
+        } else if (name.startsWith("accelerated_slow_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseSlowedTile(name);
+            if (effect != null) {
+                try {
+                    slowedTiles.put(effect, Integer.parseInt(value));
+                } catch (NumberFormatException ignored) {
+                    // Keep the legacy string; malformed durations must not break loading.
+                }
+            }
+        } else if (name.startsWith("timefortified_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
+            if (effect != null) {
+                try {
+                    fortifiedTiles.put(effect, Integer.parseInt(value));
+                } catch (NumberFormatException ignored) {
+                    // Keep the legacy string; malformed durations must not break loading.
+                }
+            }
+        } else if (name.startsWith("shielded_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
+            if (effect != null) {
+                try {
+                    shieldedTiles.put(effect, Integer.parseInt(value));
+                } catch (NumberFormatException ignored) {
+                    // Keep the legacy string; malformed durations must not break loading.
+                }
+            }
+        } else if (name.startsWith("spatialvortex_")) {
+            SpatialVortexEffect effect = TimedEffectCodec.parseSpatialVortex(name);
+            if (effect != null) spatialVortices.put(effect, value);
+        }
+    }
+
+    private void untrackTimedEffectKey(String name) {
+        if (!isTimedEffectKey(name)) return;
+        timedEffectKeys.remove(name);
+        if (name.startsWith("accelerated_fast_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseAcceleratedTile(name);
+            if (effect != null) acceleratedTiles.remove(effect);
+        } else if (name.startsWith("accelerated_fast_entity_")) {
+            TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
+            if (effect != null) acceleratedEntities.remove(effect);
+        } else if (name.startsWith("accelerated_slow_entity_")) {
+            TimedEntityEffect effect = TimedEffectCodec.parseEntity(name);
+            if (effect != null) slowedEntities.remove(effect);
+        } else if (name.startsWith("accelerated_slow_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseSlowedTile(name);
+            if (effect != null) slowedTiles.remove(effect);
+        } else if (name.startsWith("timefortified_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
+            if (effect != null) fortifiedTiles.remove(effect);
+        } else if (name.startsWith("shielded_tile_")) {
+            TimedBlockEffect effect = TimedEffectCodec.parseTimedBlock(name);
+            if (effect != null) shieldedTiles.remove(effect);
+        } else if (name.startsWith("spatialvortex_")) {
+            SpatialVortexEffect effect = TimedEffectCodec.parseSpatialVortex(name);
+            if (effect != null) spatialVortices.remove(effect);
+        }
+    }
+
+    private void rebuildTimedEffectKeys() {
+        timedEffectKeys.clear();
+        acceleratedTiles.clear();
+        acceleratedEntities.clear();
+        slowedEntities.clear();
+        slowedTiles.clear();
+        fortifiedTiles.clear();
+        shieldedTiles.clear();
+        spatialVortices.clear();
+        for (Map.Entry<String, String> entry : extra_properties.entrySet()) {
+            trackTimedEffectKey(entry.getKey(), entry.getValue());
+        }
+        extra_properties.keySet()
+            .removeIf(ExtendedProperties::isTimedEffectKey);
+    }
+
+    public Map<TimedBlockEffect, Integer> getAcceleratedTiles() {
+        return acceleratedTiles;
+    }
+
+    public Map<TimedEntityEffect, Integer> getAcceleratedEntities() {
+        return acceleratedEntities;
+    }
+
+    public Map<TimedEntityEffect, Integer> getSlowedEntities() {
+        return slowedEntities;
+    }
+
+    public Map<SpatialVortexEffect, String> getSpatialVortices() {
+        return spatialVortices;
+    }
+
+    public Map<TimedBlockEffect, Integer> getFortifiedTiles() {
+        return fortifiedTiles;
+    }
+
+    public Map<TimedBlockEffect, Integer> getShieldedTiles() {
+        return shieldedTiles;
+    }
+
+    public void setFortifiedTileDuration(TimedBlockEffect effect, int duration) {
+        fortifiedTiles.put(effect, duration);
+        extra_properties.put(TimedEffectCodec.encodeFortifiedTile(effect), String.valueOf(duration));
+        setFullSync();
+    }
+
+    public void setShieldedTileDuration(TimedBlockEffect effect, int duration) {
+        shieldedTiles.put(effect, duration);
+        extra_properties.put(TimedEffectCodec.encodeShieldedTile(effect), String.valueOf(duration));
+        setFullSync();
+    }
+
+    public void removeFortifiedTile(TimedBlockEffect effect) {
+        fortifiedTiles.remove(effect);
+        String key = TimedEffectCodec.encodeFortifiedTile(effect);
+        extra_properties.remove(key);
+        timedEffectKeys.remove(key);
+        setFullSync();
+    }
+
+    public void removeShieldedTile(TimedBlockEffect effect) {
+        shieldedTiles.remove(effect);
+        String key = TimedEffectCodec.encodeShieldedTile(effect);
+        extra_properties.remove(key);
+        timedEffectKeys.remove(key);
+        setFullSync();
+    }
+
+    public Map<TimedBlockEffect, Integer> getSlowedTiles() {
+        return slowedTiles;
+    }
+
+    public void setSlowedTileDuration(TimedBlockEffect effect, int duration) {
+        slowedTiles.put(effect, duration);
+        extra_properties.put(TimedEffectCodec.encodeSlowedTile(effect), String.valueOf(duration));
+        setFullSync();
+    }
+
+    public void removeSlowedTile(TimedBlockEffect effect) {
+        slowedTiles.remove(effect);
+        String key = TimedEffectCodec.encodeSlowedTile(effect);
+        extra_properties.remove(key);
+        timedEffectKeys.remove(key);
+        setFullSync();
+    }
+
+    public void setAcceleratedEntityDuration(TimedEntityEffect effect, int duration) {
+        acceleratedEntities.put(effect, duration);
+        extra_properties.put(TimedEffectCodec.encodeAcceleratedEntity(effect), String.valueOf(duration));
+        setFullSync();
+    }
+
+    public void setSlowedEntityDuration(TimedEntityEffect effect, int duration) {
+        slowedEntities.put(effect, duration);
+        extra_properties.put(TimedEffectCodec.encodeSlowedEntity(effect), String.valueOf(duration));
+        setFullSync();
+    }
+
+    public void removeAcceleratedEntity(TimedEntityEffect effect) {
+        acceleratedEntities.remove(effect);
+        String key = TimedEffectCodec.encodeAcceleratedEntity(effect);
+        extra_properties.remove(key);
+        timedEffectKeys.remove(key);
+        setFullSync();
+    }
+
+    public void removeSlowedEntity(TimedEntityEffect effect) {
+        slowedEntities.remove(effect);
+        String key = TimedEffectCodec.encodeSlowedEntity(effect);
+        extra_properties.remove(key);
+        timedEffectKeys.remove(key);
+        setFullSync();
+    }
+
+    public void setAcceleratedTileDuration(TimedBlockEffect effect, int duration) {
+        acceleratedTiles.put(effect, duration);
+        extra_properties.put(TimedEffectCodec.encodeAcceleratedTile(effect), String.valueOf(duration));
+        setFullSync();
+    }
+
+    public void removeAcceleratedTile(TimedBlockEffect effect) {
+        acceleratedTiles.remove(effect);
+        String key = TimedEffectCodec.encodeAcceleratedTile(effect);
+        extra_properties.remove(key);
+        timedEffectKeys.remove(key);
         setFullSync();
     }
 
     public Map<String, String> getExtraVariablesContains(String contains) {
-        Map<String, String> toReturn = new HashMap<>();
-        for (String key : extra_properties.keySet()) {
-            if (key.contains(contains)) toReturn.put(key, extra_properties.get(key));
+        if (contains == null || extra_properties.isEmpty()) return Collections.emptyMap();
+
+        Map<String, String> toReturn = null;
+        for (Map.Entry<String, String> entry : extra_properties.entrySet()) {
+            String key = entry.getKey();
+            if (key != null && key.contains(contains)) {
+                if (toReturn == null) toReturn = new HashMap<>();
+                toReturn.put(key, entry.getValue());
+            }
         }
-        return toReturn;
+        return toReturn == null ? Collections.emptyMap() : toReturn;
     }
 
     public String getExtraVariable(String name) {
@@ -1409,13 +1811,13 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
     }
 
     public boolean isEntryLocked(String name) {
-        return compendium_entries.get(name)
-            .contains("L");
+        String value = compendium_entries.get(name);
+        return value != null && value.contains("L");
     }
 
     public boolean isEntryNew(String name) {
-        return compendium_entries.get(name)
-            .contains("N");
+        String value = compendium_entries.get(name);
+        return value != null && value.contains("N");
     }
 
     public Iterator<Map.Entry<String, String>> getCompendiumIterator() {
@@ -1450,7 +1852,7 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
 
         updateFlags = 0;
 
-        ticksToSync = world.rand.nextInt(syncTickDelay);
+        syncWindow.setTicks(world.rand.nextInt(syncTickDelay));
 
         hasInitialized = true;
 
@@ -1552,14 +1954,6 @@ public class ExtendedProperties implements IExtendedProperties, IExtendedEntityP
                 data);
         }
 
-        if (entity.worldObj.isRemote) {
-            if (this.detectPossibleDesync()) {
-                AMNetHandler.INSTANCE.sendPacketToServer(
-                    AMPacketIDs.POSSIBLE_CLIENT_EXPROP_DESYNC,
-                    new AMDataWriter().add(entity.getEntityId())
-                        .generate());
-            }
-        }
     }
 
     public void syncTKDistance() {

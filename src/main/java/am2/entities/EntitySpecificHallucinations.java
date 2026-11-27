@@ -11,6 +11,18 @@ import am2.items.ItemsCommonProxy;
 
 public class EntitySpecificHallucinations {
 
+    /** Explicit factory for the unregistered hallucination entity classes. */
+    public static EntityHallucination create(Class<? extends EntityHallucination> clazz, World world) {
+        if (clazz == EntityHallucinationCreeper.class) return new EntityHallucinationCreeper(world);
+        if (clazz == EntityHallucinationSpider.class) return new EntityHallucinationSpider(world);
+        if (clazz == EntityHallucinationZombie.class) return new EntityHallucinationZombie(world);
+        if (clazz == EntityHallucinationWitherSkeleton.class) return new EntityHallucinationWitherSkeleton(world);
+        if (clazz == EntityHallucinationMagmacube.class) return new EntityHallucinationMagmacube(world);
+        if (clazz == EntityHallucinationEnderman.class) return new EntityHallucinationEnderman(world);
+        if (clazz == EntityHallucinationEndermite.class) return new EntityHallucinationEndermite(world);
+        return null;
+    }
+
     public static class EntityHallucinationCreeper extends EntityHallucination {
 
         public EntityHallucinationCreeper(World world) {

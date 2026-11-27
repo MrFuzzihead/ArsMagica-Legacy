@@ -15,7 +15,7 @@ public class EnervatorRecipeHelper {
     }
 
     public void registerRecipe(ItemStack from, ItemStack to) {
-        recipes.put(from.copy(), to);
+        recipes.put(from.copy(), to.copy());
     }
 
     public HashMap getRecipes() {
@@ -42,6 +42,7 @@ public class EnervatorRecipeHelper {
         }
 
         if (toReturn != null) {
+            toReturn = toReturn.copy();
             toReturn.stackSize = 1;
         }
         return toReturn;

@@ -35,8 +35,19 @@ public class ItemSoulspike extends ItemSword {
         return false;
     }
 
+    /**
+     * Soulspikes store their power in NBT, not durability. The old coremod patch suppressed {@code Item.setDamage}
+     * for them except for the two sentinel values other code relies on: 0 (clear) and 66.
+     */
     @Override
-    public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean par4) {
+    public void setDamage(ItemStack stack, int damage) {
+        if (damage == 0 || damage == 66) {
+            super.setDamage(stack, damage);
+        }
+    }
+
+    @Override
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean par4) {
         list.add(String.format(StatCollector.translateToLocal("am2.tooltip.containedMana"), getManaInSpike(stack)));
     }
 
@@ -90,6 +101,21 @@ public class ItemSoulspike extends ItemSword {
         nbttagcompound.setBoolean("ethereal", true); // why are we storing this in display? Not sure.
     }
 
+    /** Clears any persisted ethereal-form side effects after login or a malformed duration. */
+    public static void clearEtherealForm(EntityPlayer player, ExtendedProperties properties) {
+        if (player.inventory != null && player.inventory.armorInventory != null) {
+            removeTagFromBoots(player.inventory.armorInventory[0]);
+        }
+        if (player.capabilities != null) {
+            player.capabilities.disableDamage = false;
+            player.capabilities.allowEdit = true;
+            player.capabilities.isFlying = false;
+        }
+        player.noClip = false;
+        player.setInvisible(false);
+        properties.removeFromExtraVariables("ethereal");
+    }
+
     public static void removeTagFromBoots(ItemStack boots) {
         if (boots == null) return;
         if (boots.stackTagCompound == null) {
@@ -131,7 +157,7 @@ public class ItemSoulspike extends ItemSword {
 
     public static void addManaToSpike(ItemStack spike, int amount) {
         if (!spike.hasTagCompound()) spike.stackTagCompound = new NBTTagCompound();
-        int value = Math.min(spike.stackTagCompound.getInteger(KEY_NBT_MANA) + amount, 150000);
+        int value = Math.max(0, Math.min(getManaInSpike(spike) + amount, 150000));
         spike.stackTagCompound.setInteger(KEY_NBT_MANA, value);
     }
 
@@ -141,7 +167,7 @@ public class ItemSoulspike extends ItemSword {
 
     public static int getManaInSpike(ItemStack spike) {
         if (!spike.hasTagCompound()) return 0;
-        return spike.stackTagCompound.getInteger(KEY_NBT_MANA);
+        return Math.max(0, spike.stackTagCompound.getInteger(KEY_NBT_MANA));
     }
 
     public static boolean isFull(ItemStack spike) {

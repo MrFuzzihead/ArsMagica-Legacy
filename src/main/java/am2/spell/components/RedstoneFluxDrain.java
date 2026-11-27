@@ -29,7 +29,7 @@ public class RedstoneFluxDrain implements ISpellComponent {
     @Override
     public boolean applyEffectBlock(ItemStack stack, World world, int blockx, int blocky, int blockz, int blockFace,
         double impactX, double impactY, double impactZ, EntityLivingBase caster) {
-        if (!(caster instanceof EntityPlayer)) return false;
+        if (!AMCore.cofh || !(caster instanceof EntityPlayer)) return false;
         TileEntity te = world.getTileEntity(blockx, blocky, blockz);
         if (te != null && te instanceof IEnergyHandler) {
             int rfToSteal = SpellUtils.instance
@@ -42,6 +42,9 @@ public class RedstoneFluxDrain implements ISpellComponent {
     }
 
     private void giveBackEnergy(EntityPlayer caster, int rfToGiveBack) {
+        if (!AMCore.cofh) {
+            return;
+        }
         EntityPlayer cPlayer = caster;
         for (int i = 0; i < cPlayer.inventory.mainInventory.length; i++) {
             if (rfToGiveBack <= 0) {
@@ -70,7 +73,7 @@ public class RedstoneFluxDrain implements ISpellComponent {
 
     @Override
     public boolean applyEffectEntity(ItemStack stack, World world, EntityLivingBase caster, Entity target) {
-        if (!(target instanceof EntityPlayer) || !(caster instanceof EntityPlayer)) return false;
+        if (!AMCore.cofh || !(target instanceof EntityPlayer) || !(caster instanceof EntityPlayer)) return false;
 
         int rfToSteal = SpellUtils.instance
             .getModifiedInt_Add(1000, stack, caster, target, world, 0, SpellModifiers.DAMAGE);

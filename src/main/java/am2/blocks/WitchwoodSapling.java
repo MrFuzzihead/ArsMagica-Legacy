@@ -80,7 +80,7 @@ public class WitchwoodSapling extends BlockFlower {
     }
 
     @Override
-    public void getSubBlocks(Item item, CreativeTabs tab, List list) {
+    public void getSubBlocks(Item item, CreativeTabs tab, List<ItemStack> list) {
         list.add(new ItemStack(this));
     }
 }

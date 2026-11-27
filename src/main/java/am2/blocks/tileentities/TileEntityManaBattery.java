@@ -53,12 +53,10 @@ public class TileEntityManaBattery extends TileEntityAMPower {
                 .getPower(this, highest);
             if (amt > 0) {
                 this.outputPowerType = highest;
-                worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, highest.ID(), 2);
-                worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+                updatePowerMetadata(highest.ID());
             } else {
                 this.outputPowerType = PowerTypes.NONE;
-                worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, 0, 2);
-                worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+                updatePowerMetadata(0);
             }
         }
 
@@ -69,6 +67,16 @@ public class TileEntityManaBattery extends TileEntityAMPower {
         }
 
         super.updateEntity();
+    }
+
+    /** Only send metadata/TE updates when the displayed power type actually changes. */
+    void updatePowerMetadata(int newMeta) {
+        int currentMeta = worldObj.getBlockMetadata(xCoord, yCoord, zCoord);
+        if (currentMeta == newMeta) {
+            return;
+        }
+        worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, newMeta, 2);
+        worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
     }
 
     @Override
@@ -82,8 +90,10 @@ public class TileEntityManaBattery extends TileEntityAMPower {
     public void readFromNBT(NBTTagCompound nbttagcompound) {
         super.readFromNBT(nbttagcompound);
         active = nbttagcompound.getBoolean("isActive");
-        if (nbttagcompound.hasKey("outputType"))
-            outputPowerType = PowerTypes.getByID(nbttagcompound.getInteger("outputType"));
+        if (nbttagcompound.hasKey("outputType")) {
+            PowerTypes type = PowerTypes.getByID(nbttagcompound.getInteger("outputType"));
+            outputPowerType = type == null ? PowerTypes.NONE : type;
+        }
     }
 
     @Override

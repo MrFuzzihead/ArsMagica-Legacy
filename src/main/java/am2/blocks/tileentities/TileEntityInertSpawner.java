@@ -1,5 +1,6 @@
 package am2.blocks.tileentities;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,7 +11,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
-import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import am2.api.power.PowerTypes;
@@ -190,20 +190,13 @@ public class TileEntityInertSpawner extends TileEntityAMPower implements IInvent
                 if (item.isFull(phylactery)) {
                     String clazzName = item.getSpawnClass(phylactery);
                     if (clazzName != null) {
-                        Class clazz = (Class) EntityList.stringToClassMapping.get(clazzName);
-                        if (clazz != null) {
-                            EntityLiving entity = null;
-                            try {
-                                entity = (EntityLiving) clazz.getConstructor(World.class)
-                                    .newInstance(worldObj);
-                            } catch (Throwable t) {
-                                t.printStackTrace();
-                                return;
-                            }
-                            if (entity == null) return;
-                            setEntityPosition(entity);
-                            worldObj.spawnEntityInWorld(entity);
+                        Entity created = EntityList.createEntityByName(clazzName, worldObj);
+                        if (!(created instanceof EntityLiving)) {
+                            return;
                         }
+                        EntityLiving entity = (EntityLiving) created;
+                        setEntityPosition(entity);
+                        worldObj.spawnEntityInWorld(entity);
                     }
                 }
             }

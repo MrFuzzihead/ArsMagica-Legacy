@@ -11,6 +11,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
+import org.apache.logging.log4j.Level;
+
 import am2.AMCore;
 import am2.LogHelper;
 import am2.PlayerTracker;
@@ -42,6 +44,68 @@ import io.netty.buffer.ByteBufInputStream;
 
 public class AMPacketProcessorServer {
 
+    private final PacketRegistry<EntityPlayerMP> packetHandlers = new PacketRegistry<EntityPlayerMP>();
+
+    public AMPacketProcessorServer() {
+        registerPacketHandlers();
+    }
+
+    private void registerPacketHandlers() {
+        packetHandlers.register(
+            AMPacketIDs.SPELL_SHAPE_GROUP_CHANGE,
+            (player, payload) -> handleCastingModeChange(payload, player));
+        packetHandlers.register(AMPacketIDs.SYNCMAPTOSERVER, (player, payload) -> handleSyncMapServer(payload));
+        packetHandlers.register(AMPacketIDs.SYNCCOMPENDIUM, (player, payload) -> handleSyncCompendium(payload, player));
+        packetHandlers.register(
+            AMPacketIDs.SYNCCOMPENDIUMREQUEST,
+            (player, payload) -> handleSyncCompendiumRequest(payload, player));
+        packetHandlers.register(
+            AMPacketIDs.REQUESTWORLDDATACHANGE,
+            (player, payload) -> handleRequestWorldDataChange(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.SYNC_BETA_PARTICLES, (player, payload) -> handleSyncBetaParticles(payload, player));
+        packetHandlers.register(
+            AMPacketIDs.REQUEST_BETA_PARTICLES,
+            (player, payload) -> handleRequestBetaParticles(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.SPELL_CUSTOMIZE, (player, payload) -> handleSpellCustomize(payload, player));
+        packetHandlers.register(
+            AMPacketIDs.SPELLBOOK_CHANGE_ACTIVE_SLOT,
+            (player, payload) -> handleSpellBookChangeActiveSlot(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.SYNC_SPELL_KNOWLEDGE, (player, payload) -> handleSyncSpellKnowledge(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.DECO_BLOCK_UPDATE, (player, payload) -> handleDecoBlockUpdate(payload, player));
+        packetHandlers.register(
+            AMPacketIDs.INSCRIPTION_TABLE_UPDATE,
+            (player, payload) -> handleInscriptionTableUpdate(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.CASTER_BLOCK_UPDATE, (player, payload) -> handleCasterUpdate(payload, player));
+        packetHandlers.register(AMPacketIDs.TK_DISTANCE_SYNC, (player, payload) -> handleTkDistance(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.SAVE_KEYSTONE_COMBO, (player, payload) -> handleSaveKeystoneCombo(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.SET_KEYSTONE_COMBO, (player, payload) -> handleSetKeystoneCombo(payload, player));
+        packetHandlers.register(
+            AMPacketIDs.SET_MAG_WORK_REC,
+            (player, payload) -> handleSetMagiciansWorkbenchRecipe(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.RUNE_BAG_GUI_OPEN, (player, payload) -> handleRuneBagGUIOpen(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.M_BENCH_LOCK_RECIPE, (player, payload) -> handleMBenchLockRecipe(payload, player));
+        packetHandlers.register(AMPacketIDs.IMBUE_ARMOR, (player, payload) -> handleImbueArmor(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.REQUEST_PWR_PATHS, (player, payload) -> handlePowerPathSync(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.SYNC_EXTENDED_PROPS, (player, payload) -> handleExpropOperation(payload, player));
+        packetHandlers
+            .register(AMPacketIDs.AFFINITY_ACTIVATE, (player, payload) -> handleAffinityActivate(payload, player));
+    }
+
+    int handlerCount() {
+        return packetHandlers.size();
+    }
+
     @SubscribeEvent
     public void onServerPacketData(ServerCustomPacketEvent event) {
         ByteBufInputStream bbis = new ByteBufInputStream(event.packet.payload());
@@ -52,98 +116,26 @@ public class AMPacketProcessorServer {
             }
 
             // constant details all packets share: ID, player, and remaining data
-            packetID = bbis.readByte();
+            PacketEnvelope envelope = PacketEnvelope.read(bbis, Side.SERVER);
+            if (envelope == null) {
+                LogHelper.warn("Rejected invalid packet envelope");
+                return;
+            }
+            packetID = envelope.id();
             NetHandlerPlayServer srv = (NetHandlerPlayServer) event.packet.handler();
             EntityPlayerMP player = srv.playerEntity;
-            byte[] remaining = new byte[bbis.available()];
-            bbis.readFully(remaining);
+            byte[] remaining = envelope.payload();
 
-            switch (packetID) {
-                case AMPacketIDs.SPELL_SHAPE_GROUP_CHANGE:
-                    handleCastingModeChange(remaining, player);
-                    break;
-                case AMPacketIDs.MAGIC_LEVEL_UP:
-                    handleMagicLevelUp(remaining, player);
-                    break;
-                case AMPacketIDs.SYNCMAPTOSERVER:
-                    handleSyncMapServer(remaining);
-                    break;
-                case AMPacketIDs.SYNCCOMPENDIUM:
-                    handleSyncCompendium(remaining, player);
-                    break;
-                case AMPacketIDs.SYNCCOMPENDIUMREQUEST:
-                    handleSyncCompendiumRequest(remaining, player);
-                    break;
-                case AMPacketIDs.REQUESTWORLDDATACHANGE:
-                    handleRequestWorldDataChange(remaining, player);
-                    break;
-                case AMPacketIDs.SYNC_BETA_PARTICLES:
-                    handleSyncBetaParticles(remaining, player);
-                    break;
-                case AMPacketIDs.POSSIBLE_CLIENT_EXPROP_DESYNC:
-                    handlePossibleClientExpropDesync(remaining);
-                    break;
-                case AMPacketIDs.REQUEST_BETA_PARTICLES:
-                    handleRequestBetaParticles(remaining, player);
-                    break;
-                case AMPacketIDs.SPELL_CUSTOMIZE:
-                    handleSpellCustomize(remaining, player);
-                    break;
-                case AMPacketIDs.SPELLBOOK_CHANGE_ACTIVE_SLOT:
-                    handleSpellBookChangeActiveSlot(remaining, player);
-                    break;
-                case AMPacketIDs.SYNC_SPELL_KNOWLEDGE:
-                    handleSyncSpellKnowledge(remaining, player);
-                    break;
-                case AMPacketIDs.DECO_BLOCK_UPDATE:
-                    handleDecoBlockUpdate(remaining, player);
-                    break;
-                case AMPacketIDs.INSCRIPTION_TABLE_UPDATE:
-                    handleInscriptionTableUpdate(remaining, player);
-                    break;
-                case AMPacketIDs.CASTER_BLOCK_UPDATE:
-                    handleCasterUpdate(remaining, player);
-                    break;
-                case AMPacketIDs.TK_DISTANCE_SYNC:
-                    ExtendedProperties.For(player).TK_Distance = new AMDataReader(remaining).getFloat();
-                    break;
-                case AMPacketIDs.SAVE_KEYSTONE_COMBO:
-                    handleSaveKeystoneCombo(remaining, player);
-                    break;
-                case AMPacketIDs.SET_KEYSTONE_COMBO:
-                    handleSetKeystoneCombo(remaining, player);
-                    break;
-                case AMPacketIDs.SET_MAG_WORK_REC:
-                    handleSetMagiciansWorkbenchRecipe(remaining, player);
-                    break;
-                case AMPacketIDs.RUNE_BAG_GUI_OPEN:
-                    handleRuneBagGUIOpen(remaining, player);
-                    break;
-                case AMPacketIDs.M_BENCH_LOCK_RECIPE:
-                    handleMBenchLockRecipe(remaining, player);
-                    break;
-                case AMPacketIDs.IMBUE_ARMOR:
-                    handleImbueArmor(remaining, player);
-                    break;
-                case AMPacketIDs.REQUEST_PWR_PATHS:
-                    handlePowerPathSync(remaining, player);
-                    break;
-                case AMPacketIDs.SYNC_EXTENDED_PROPS:
-                    handleExpropOperation(remaining, player);
-                    break;
-                case AMPacketIDs.AFFINITY_ACTIVATE:
-                    handleAffinityActivate(remaining, player);
-                    break;
-            }
-        } catch (Throwable t) {
-            LogHelper.error("Server Packet Failed to Handle!");
-            LogHelper.error("Packet Type: " + packetID);
-            t.printStackTrace();
+            PacketRegistry.Handler<EntityPlayerMP> handler = packetHandlers.get(packetID);
+            if (handler == null) return;
+            handler.handle(player, remaining);
+        } catch (Exception t) {
+            LogHelper.log(Level.ERROR, t, "Server packet %d failed to handle", packetID);
         } finally {
             try {
                 bbis.close();
-            } catch (Throwable t) {
-                t.printStackTrace();
+            } catch (Exception ignored) {
+                // Closing a failed stream must not mask the handler result.
             }
         }
     }
@@ -176,9 +168,11 @@ public class AMPacketProcessorServer {
 
     private void handleRequestWorldDataChange(byte[] remaining, EntityPlayerMP player) {
         AMDataReader rdr = new AMDataReader(remaining, false);
-        World world = DimensionManager.getWorld(rdr.getInt());
+        int dimension = rdr.getInt();
         String name = rdr.getString();
         String value = rdr.getString();
+        if (rdr.hasFailed()) return;
+        World world = DimensionManager.getWorld(dimension);
         CustomWorldData.processRequest(world, name, value, player);
     }
 
@@ -191,11 +185,23 @@ public class AMPacketProcessorServer {
         AMNetHandler.INSTANCE.sendPacketToAllClients(AMPacketIDs.SYNCMAPTOCLIENTS, remaining);
     }
 
+    private void handleTkDistance(byte[] data, EntityPlayerMP player) {
+        AMDataReader rdr = new AMDataReader(data, false);
+        float distance = rdr.getFloat();
+        if (!rdr.hasFailed()) {
+            ExtendedProperties.For(player).TK_Distance = distance;
+        }
+    }
+
     private void handleCasterUpdate(byte[] data, EntityPlayerMP player) {
         World world = player.worldObj;
         AMDataReader rdr = new AMDataReader(data, false);
-        TileEntity te = world.getTileEntity(rdr.getInt(), rdr.getInt(), rdr.getInt());
-        if (!(te instanceof TileEntityBlockCaster)) return;
+        int x = rdr.getInt();
+        int y = rdr.getInt();
+        int z = rdr.getInt();
+        if (rdr.hasFailed()) return;
+        TileEntity te = world.getTileEntity(x, y, z);
+        if (!(te instanceof TileEntityBlockCaster) || !PacketAuthority.isWithinReach(player, te)) return;
         AMDataWriter writer = new AMDataWriter();
         writer.add(te.xCoord);
         writer.add(te.yCoord);
@@ -219,8 +225,11 @@ public class AMPacketProcessorServer {
     }
 
     private void handleExpropOperation(byte[] data, EntityPlayerMP player) {
+        AMDataReader rdr = new AMDataReader(data, false);
+        int operation = rdr.getInt();
+        if (rdr.hasFailed()) return;
         ExtendedProperties.For(player)
-            .performRemoteOp(new AMDataReader(data, false).getInt());
+            .performRemoteOp(operation);
     }
 
     private void handlePowerPathSync(byte[] data, EntityPlayerMP player) {
@@ -228,8 +237,9 @@ public class AMPacketProcessorServer {
         byte nom = rdr.getByte();
         if (nom == 1) {
             AMVector3 loc = new AMVector3(rdr.getFloat(), rdr.getFloat(), rdr.getFloat());
+            if (rdr.hasFailed()) return;
             TileEntity te = player.worldObj.getTileEntity((int) loc.x, (int) loc.y, (int) loc.z);
-            if (te instanceof IPowerNode) {
+            if (te instanceof IPowerNode && PacketAuthority.isWithinReach(player, te)) {
                 AMNetHandler.INSTANCE.sendPowerResponseToClient(
                     PowerNodeRegistry.For(player.worldObj)
                         .getDataCompoundForNode((IPowerNode) te),
@@ -241,9 +251,14 @@ public class AMPacketProcessorServer {
 
     private void handleImbueArmor(byte[] data, EntityPlayerMP player) {
         AMDataReader rdr = new AMDataReader(data, false);
-        TileEntity te = player.worldObj.getTileEntity(rdr.getInt(), rdr.getInt(), rdr.getInt());
-        if (te instanceof TileEntityArmorImbuer) {
-            ((TileEntityArmorImbuer) te).imbueCurrentArmor(rdr.getString());
+        int x = rdr.getInt();
+        int y = rdr.getInt();
+        int z = rdr.getInt();
+        String infusion = rdr.getString();
+        if (rdr.hasFailed()) return;
+        TileEntity te = player.worldObj.getTileEntity(x, y, z);
+        if (te instanceof TileEntityArmorImbuer && PacketAuthority.isWithinReach(player, te)) {
+            ((TileEntityArmorImbuer) te).imbueCurrentArmor(infusion);
         }
     }
 
@@ -252,10 +267,13 @@ public class AMPacketProcessorServer {
         int x = rdr.getInt();
         int y = rdr.getInt();
         int z = rdr.getInt();
+        int recipe = rdr.getInt();
+        boolean locked = rdr.getBoolean();
+        if (rdr.hasFailed()) return;
 
         TileEntity te = player.worldObj.getTileEntity(x, y, z);
-        if (te instanceof TileEntityMagiciansWorkbench) {
-            ((TileEntityMagiciansWorkbench) te).setRecipeLocked(rdr.getInt(), rdr.getBoolean());
+        if (te instanceof TileEntityMagiciansWorkbench && PacketAuthority.isWithinReach(player, te)) {
+            ((TileEntityMagiciansWorkbench) te).setRecipeLocked(recipe, locked);
             te.getWorldObj()
                 .markBlockForUpdate(te.xCoord, te.yCoord, te.zCoord);
         }
@@ -264,6 +282,7 @@ public class AMPacketProcessorServer {
     private void handleRuneBagGUIOpen(byte[] data, EntityPlayerMP player) {
         AMDataReader rdr = new AMDataReader(data, false);
         int entityID = rdr.getInt();
+        if (rdr.hasFailed()) return;
 
         if (player == null) {
             return;
@@ -281,15 +300,21 @@ public class AMPacketProcessorServer {
 
     private void handleSetMagiciansWorkbenchRecipe(byte[] data, EntityPlayerMP player) {
         if (player.openContainer instanceof ContainerMagiciansWorkbench) {
-            ((ContainerMagiciansWorkbench) player.openContainer)
-                .moveRecipeToCraftingGrid(new AMDataReader(data, false).getInt());
+            ContainerMagiciansWorkbench container = (ContainerMagiciansWorkbench) player.openContainer;
+            if (!PacketAuthority.isWithinReach(player, container.getWorkbench())) return;
+            AMDataReader rdr = new AMDataReader(data, false);
+            int index = rdr.getInt();
+            if (rdr.hasFailed()) return;
+            container.moveRecipeToCraftingGrid(index);
         }
     }
 
     private void handleSetKeystoneCombo(byte[] data, EntityPlayerMP player) {
         if (player.openContainer instanceof ContainerKeystone) {
             AMDataReader rdr = new AMDataReader(data, false);
-            ((ContainerKeystone) player.openContainer).setInventoryToCombination(rdr.getInt());
+            int combination = rdr.getInt();
+            if (rdr.hasFailed()) return;
+            ((ContainerKeystone) player.openContainer).setInventoryToCombination(combination);
         }
     }
 
@@ -299,6 +324,7 @@ public class AMPacketProcessorServer {
             boolean add = rdr.getBoolean();
             String name = rdr.getString();
             int[] metas = new int[] { rdr.getInt(), rdr.getInt(), rdr.getInt() };
+            if (rdr.hasFailed()) return;
             if (add) ItemsCommonProxy.keystone
                 .addCombination(((ContainerKeystone) player.openContainer).getKeystoneStack(), name, metas);
             else ItemsCommonProxy.keystone
@@ -309,26 +335,41 @@ public class AMPacketProcessorServer {
     private void handleInscriptionTableUpdate(byte[] data, EntityPlayerMP player) {
         World world = player.worldObj;
         AMDataReader rdr = new AMDataReader(data, false);
-        TileEntity te = world.getTileEntity(rdr.getInt(), rdr.getInt(), rdr.getInt());
+        int x = rdr.getInt();
+        int y = rdr.getInt();
+        int z = rdr.getInt();
+        if (rdr.hasFailed()) return;
+        TileEntity te = world.getTileEntity(x, y, z);
         if (!(te instanceof TileEntityInscriptionTable)) return;
-        ((TileEntityInscriptionTable) te).HandleUpdatePacket(rdr.getRemainingBytes());
 
+        TileEntityInscriptionTable table = (TileEntityInscriptionTable) te;
+        if (!PacketAuthority.isUsingInscriptionTable(player, table)) return;
+
+        byte[] payload = rdr.getRemainingBytes();
+        if (rdr.hasFailed()) return;
+        table.HandleUpdatePacket(payload, player);
         world.markBlockForUpdate(te.xCoord, te.yCoord, te.zCoord);
     }
 
     private void handleDecoBlockUpdate(byte[] data, EntityPlayerMP player) {
         World world = player.worldObj;
         AMDataReader rdr = new AMDataReader(data, false);
-        TileEntity te = world.getTileEntity(rdr.getInt(), rdr.getInt(), rdr.getInt());
-        if (!(te instanceof TileEntityParticleEmitter)) return;
-        te.readFromNBT(rdr.getNBTTagCompound());
+        int x = rdr.getInt();
+        int y = rdr.getInt();
+        int z = rdr.getInt();
+        if (rdr.hasFailed()) return;
+        TileEntity te = world.getTileEntity(x, y, z);
+        if (!(te instanceof TileEntityParticleEmitter) || !PacketAuthority.isWithinReach(player, te)) return;
 
+        NBTTagCompound compound = rdr.getNBTTagCompound();
+        if (rdr.hasFailed() || compound == null) return;
+        te.readFromNBT(compound);
         world.markBlockForUpdate(te.xCoord, te.yCoord, te.zCoord);
     }
 
     private void handleSyncSpellKnowledge(byte[] data, EntityPlayerMP player) {
         SkillData.For(player)
-            .handlePacketData(data);
+            .handlePacketDataFromClient(data);
     }
 
     private void handleSpellBookChangeActiveSlot(byte[] data, EntityPlayerMP player) {
@@ -336,6 +377,8 @@ public class AMPacketProcessorServer {
         byte subID = rdr.getByte();
         int entityID = rdr.getInt();
         int inventorySlot = rdr.getInt();
+        if (rdr.hasFailed()) return;
+        if (inventorySlot < 0 || inventorySlot >= player.inventory.getSizeInventory()) return;
 
         ItemStack stack = player.inventory.getStackInSlot(inventorySlot);
         if (stack == null || !(stack.getItem() instanceof ItemSpellBook)) return;
@@ -349,15 +392,11 @@ public class AMPacketProcessorServer {
     private void handleSpellCustomize(byte[] data, EntityPlayerMP player) {
         AMDataReader rdr = new AMDataReader(data, false);
         int entityID = rdr.getInt();
-
-        EntityLivingBase ent = getEntityByID(entityID);
-
-        if (player == null) {
-            return;
-        }
+        if (!PacketAuthority.isSelf(player, entityID)) return;
 
         int IIconIndex = rdr.getInt();
         String name = rdr.getString();
+        if (rdr.hasFailed()) return;
 
         if (player.openContainer instanceof ContainerSpellCustomization) {
             ((ContainerSpellCustomization) player.openContainer).setNameAndIndex(name, IIconIndex);
@@ -368,6 +407,8 @@ public class AMPacketProcessorServer {
         AMDataReader rdr = new AMDataReader(data, false);
         int requesterID = rdr.getInt();
         int entityID = rdr.getInt();
+        if (rdr.hasFailed()) return;
+        if (!PacketAuthority.isSelf(player, requesterID)) return;
         EntityLivingBase entity = getEntityByID(entityID);
 
         if (player == null || !(entity instanceof EntityPlayer)) return;
@@ -382,21 +423,6 @@ public class AMPacketProcessorServer {
         writer.add(expropData);
 
         AMNetHandler.INSTANCE.sendPacketToClientPlayer(player, AMPacketIDs.REQUEST_BETA_PARTICLES, writer.generate());
-    }
-
-    private void handlePossibleClientExpropDesync(byte[] data) {
-        AMDataReader rdr = new AMDataReader(data, false);
-        int entityID = rdr.getInt();
-
-        EntityLivingBase e = getEntityByID(entityID);
-
-        if (e instanceof EntityPlayer) {
-            ExtendedProperties props = ExtendedProperties.For(e);
-            if (!props.detectPossibleDesync()) {
-                props.setFullSync();
-                props.forceSync();
-            }
-        }
     }
 
     private void handleSyncBetaParticles(byte[] data, EntityPlayerMP player) {
@@ -416,6 +442,7 @@ public class AMPacketProcessorServer {
         int delay = rdr.getInt();
         int quantity = rdr.getInt();
         float speed = rdr.getFloat();
+        if (rdr.hasFailed()) return;
 
         ExtendedProperties.For(player)
             .updateAuraData(index, behaviour, scale, alpha, randomColor, defaultColor, color, delay, quantity, speed);
@@ -425,6 +452,7 @@ public class AMPacketProcessorServer {
         AMDataReader rdr = new AMDataReader(data, false);
         int newShapeGroupOrdinal = rdr.getInt();
         int index = rdr.getInt();
+        if (rdr.hasFailed()) return;
 
         ItemStack stack = player.getCurrentEquippedItem();
         if (stack != null) {
@@ -437,27 +465,6 @@ public class AMPacketProcessorServer {
                     ((ItemSpellBook) stack.getItem()).replaceAciveItemStack(stack, spellStack);
                 }
         }
-    }
-
-    private void handleMagicLevelUp(byte[] data, EntityPlayerMP player) {
-        /*
-         * AMDataReader reader = new AMDataReader(data, false);
-         * int entityID = reader.getInt();
-         * Entity ent = getEntityByID(entityID);
-         * if (ent == null || !(ent instanceof EntityLiving)) return;
-         * if (AMCore.proxy.IncreaseEntityMagicLevel((EntityLiving)ent, ent.worldObj)){
-         * if (ent instanceof EntityPlayerMP){
-         * EntityPlayerMP player = (EntityPlayerMP)ent;
-         * AMDataWriter writer = new AMDataWriter();
-         * writer.add(true);
-         * writer.add(player.experienceLevel);
-         * Packet pkt = createArsMagicaClientPacket(AMPacketIDs.MAGIC_LEVEL_UP, writer.generate());
-         * PacketDispatcher.sendPacketToPlayer(pkt, (Player) player);
-         * }
-         * }
-         */
-
-        // TODO
     }
 
     public WorldServer[] getWorldServers() {

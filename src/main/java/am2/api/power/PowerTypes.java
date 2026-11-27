@@ -2,6 +2,8 @@ package am2.api.power;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import am2.LogHelper;
 import am2.api.ArsMagicaApi;
@@ -22,6 +24,16 @@ public final class PowerTypes {
         }
     };
 
+    private static final Map<Integer, PowerTypes> byId = new ConcurrentHashMap<Integer, PowerTypes>();
+    private static volatile PowerTypes[] allCache;
+
+    static {
+        for (PowerTypes type : allPowerTypes) byId.put(type.ID(), type);
+        // NONE is the fallback for unknown IDs and was never part of all(); keep that contract explicit.
+        byId.put(NONE.ID(), NONE);
+        allCache = allPowerTypes.toArray(new PowerTypes[allPowerTypes.size()]);
+    }
+
     private int _id;
     private String _name;
     private String _chatColor;
@@ -36,14 +48,17 @@ public final class PowerTypes {
         _chatColor = chatColor;
     }
 
-    public static void RegisterPowerType(int id, String name, String chatColor) {
+    public static synchronized void RegisterPowerType(int id, String name, String chatColor) {
         if (getByID(id) != NONE) {
             LogHelper.info(
                 "Attempted to register power type %s with ID of %d, but that ID is already taken!  The type was NOT registered!",
                 name,
                 id);
         } else {
-            allPowerTypes.add(new PowerTypes(id, name, chatColor));
+            PowerTypes type = new PowerTypes(id, name, chatColor);
+            allPowerTypes.add(type);
+            byId.put(id, type);
+            allCache = allPowerTypes.toArray(new PowerTypes[allPowerTypes.size()]);
             LogHelper.info("Registered new power type %s with ID %d", name, id);
         }
     }
@@ -63,12 +78,21 @@ public final class PowerTypes {
         return _chatColor;
     }
 
+    /**
+     * Returns the shared, cached array of registered power types. Callers must not modify it; it is rebuilt when a
+     * type is registered.
+     */
     public static PowerTypes[] all() {
-        return allPowerTypes.toArray(new PowerTypes[allPowerTypes.size()]);
+        PowerTypes[] cache = allCache;
+        if (cache == null) {
+            cache = allPowerTypes.toArray(new PowerTypes[allPowerTypes.size()]);
+            allCache = cache;
+        }
+        return cache;
     }
 
     public static PowerTypes getByID(int id) {
-        for (PowerTypes type : all()) if (type.ID() == id) return type;
-        return NONE;
+        PowerTypes type = byId.get(id);
+        return type != null ? type : NONE;
     }
 }

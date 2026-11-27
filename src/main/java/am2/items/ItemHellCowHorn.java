@@ -52,7 +52,7 @@ public class ItemHellCowHorn extends Item {
 
     public ItemStack createItemStack() {
         ItemStack stack = new ItemStack(this, 1, 0);
-        Map map = new LinkedHashMap();
+        Map<Integer, Integer> map = new LinkedHashMap<Integer, Integer>();
         map.put(AMEnchantments.soulbound.effectId, 1);
         map.put(Enchantment.fireAspect.effectId, 3);
         EnchantmentHelper.setEnchantments(map, stack);
@@ -60,7 +60,7 @@ public class ItemHellCowHorn extends Item {
     }
 
     @Override
-    public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, List par3List) {
+    public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, List<ItemStack> par3List) {
         par3List.add(createItemStack());
     }
 

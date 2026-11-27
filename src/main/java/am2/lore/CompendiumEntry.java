@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import am2.LogHelper;
 import am2.guis.GuiArcaneCompendium;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -144,13 +145,8 @@ public abstract class CompendiumEntry implements Comparable<CompendiumEntry> {
                     for (String s : relatedItems) this.relatedItems.add(s.trim());
                     break;
                 case "subitem":
-                    CompendiumEntry subItem;
-                    try {
-                        subItem = this.getClass()
-                            .getConstructor()
-                            .newInstance();
-                    } catch (Throwable t) {
-                        t.printStackTrace();
+                    CompendiumEntry subItem = this.type == null ? null : this.type.createBlank();
+                    if (subItem == null) {
                         continue;
                     }
                     subItem.parse(childNode);
@@ -190,8 +186,8 @@ public abstract class CompendiumEntry implements Comparable<CompendiumEntry> {
             searchID = split[0];
             try {
                 meta = Integer.parseInt(split[1]);
-            } catch (Throwable t) {
-                t.printStackTrace();
+            } catch (Exception t) {
+                LogHelper.error(t, "Malformed compendium entry metadata");
             }
         }
 

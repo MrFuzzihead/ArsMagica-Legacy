@@ -53,6 +53,7 @@ import am2.entities.EntityAirSled;
 import am2.guis.AMGuiHelper;
 import am2.guis.GuiParticleEmitter;
 import am2.guis.GuiSkillTrees;
+import am2.handlers.BlockOverlayHandler;
 import am2.items.ItemSpellBook;
 import am2.items.ItemsCommonProxy;
 import am2.items.renderers.CustomItemRenderer;
@@ -69,6 +70,7 @@ import am2.proxy.tick.ClientTickHandler;
 import am2.spell.SpellUtils;
 import am2.spell.components.Telekinesis;
 import am2.texture.SpellIconManager;
+import am2.utility.ClientTickrateController;
 import am2.utility.ProxyUtilitiesClient;
 import am2.utility.RenderUtilities;
 import cpw.mods.fml.client.FMLClientHandler;
@@ -117,6 +119,7 @@ public class ClientProxy extends CommonProxy {
         MinecraftForge.EVENT_BUS.post(new RegisterCompendiumEntries(ArcaneCompendium.instance));
         MinecraftForge.EVENT_BUS.post(new RegisterSkillTreeIcons(SpellIconManager.instance));
         MinecraftForge.EVENT_BUS.register(new AMClientEventHandler());
+        MinecraftForge.EVENT_BUS.register(new BlockOverlayHandler());
         ((ParticleManagerClient) particleManager).registerEventHandlers();
 
         FMLCommonHandler.instance()
@@ -169,6 +172,11 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void flashManaBar() {
         AMGuiHelper.instance.flashManaBar();
+    }
+
+    @Override
+    public void changeClientTickrate(float ticksPerSecond) {
+        ClientTickrateController.changeClientTickrate(ticksPerSecond);
     }
 
     @Override

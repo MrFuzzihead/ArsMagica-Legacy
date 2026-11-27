@@ -25,10 +25,15 @@ import net.minecraftforge.common.DimensionManager;
 
 import am2.bosses.BossSpawnHelper;
 import am2.items.ItemsCommonProxy;
+import am2.mixins.early.EntityFishHookAccessor;
 
 public class EntityFishHookArcane extends EntityFishHook {
 
-    public static final List ender_fishing = Arrays.asList(
+    private EntityFishHookAccessor acc() {
+        return (EntityFishHookAccessor) (Object) this;
+    }
+
+    public static final List<WeightedRandomFishable> ender_fishing = Arrays.asList(
         new WeightedRandomFishable[] { new WeightedRandomFishable(new ItemStack(Items.ender_eye), 10),
             new WeightedRandomFishable(new ItemStack(Items.ender_pearl), 10),
             new WeightedRandomFishable(
@@ -57,15 +62,19 @@ public class EntityFishHookArcane extends EntityFishHook {
     public void onUpdate() {
         this.onEntityUpdate();
 
-        if (this.field_146055_aB > 0) {
-            double d7 = this.posX + (this.field_146056_aC - this.posX) / (double) this.field_146055_aB;
-            double d8 = this.posY + (this.field_146057_aD - this.posY) / (double) this.field_146055_aB;
-            double d9 = this.posZ + (this.field_146058_aE - this.posZ) / (double) this.field_146055_aB;
-            double d1 = MathHelper.wrapAngleTo180_double(this.field_146059_aF - (double) this.rotationYaw);
-            this.rotationYaw = (float) ((double) this.rotationYaw + d1 / (double) this.field_146055_aB);
+        if (acc().am2$getCatchAnimationTicks() > 0) {
+            double d7 = this.posX
+                + (acc().am2$getCaughtEntityX() - this.posX) / (double) acc().am2$getCatchAnimationTicks();
+            double d8 = this.posY
+                + (acc().am2$getCaughtEntityY() - this.posY) / (double) acc().am2$getCatchAnimationTicks();
+            double d9 = this.posZ
+                + (acc().am2$getCaughtEntityZ() - this.posZ) / (double) acc().am2$getCatchAnimationTicks();
+            double d1 = MathHelper.wrapAngleTo180_double(acc().am2$getCaughtEntityYaw() - (double) this.rotationYaw);
+            this.rotationYaw = (float) ((double) this.rotationYaw + d1 / (double) acc().am2$getCatchAnimationTicks());
             this.rotationPitch = (float) ((double) this.rotationPitch
-                + (this.field_146060_aG - (double) this.rotationPitch) / (double) this.field_146055_aB);
-            --this.field_146055_aB;
+                + (acc().am2$getCaughtEntityPitch() - (double) this.rotationPitch)
+                    / (double) acc().am2$getCatchAnimationTicks());
+            acc().am2$setCatchAnimationTicks(acc().am2$getCatchAnimationTicks() - 1);
             this.setPosition(d7, d8, d9);
             this.setRotation(this.rotationYaw, this.rotationPitch);
         } else {
@@ -97,26 +106,26 @@ public class EntityFishHookArcane extends EntityFishHook {
                 --this.field_146044_a;
             }
 
-            if (this.field_146051_au) {
-                if (this.worldObj.getBlock(this.field_146037_g, this.field_146048_h, this.field_146050_i)
-                    == this.field_146046_j) {
-                    ++this.field_146049_av;
+            if (acc().am2$isInGround()) {
+                if (this.worldObj.getBlock(acc().am2$getX(), acc().am2$getY(), acc().am2$getZ())
+                    == acc().am2$getInTile()) {
+                    acc().am2$setTicksInGround(acc().am2$getTicksInGround() + 1);
 
-                    if (this.field_146049_av == 1200) {
+                    if (acc().am2$getTicksInGround() == 1200) {
                         this.setDead();
                     }
 
                     return;
                 }
 
-                this.field_146051_au = false;
+                acc().am2$setInGround(false);
                 this.motionX *= (double) (this.rand.nextFloat() * 0.2F);
                 this.motionY *= (double) (this.rand.nextFloat() * 0.2F);
                 this.motionZ *= (double) (this.rand.nextFloat() * 0.2F);
-                this.field_146049_av = 0;
-                this.field_146047_aw = 0;
+                acc().am2$setTicksInGround(0);
+                acc().am2$setTicksInAir(0);
             } else {
-                ++this.field_146047_aw;
+                acc().am2$setTicksInAir(acc().am2$getTicksInAir() + 1);
             }
 
             Vec3 vec31 = Vec3.createVectorHelper(this.posX, this.posY, this.posZ);
@@ -135,7 +144,7 @@ public class EntityFishHookArcane extends EntityFishHook {
             }
 
             Entity entity = null;
-            List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(
+            List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(
                 this,
                 this.boundingBox.addCoord(this.motionX, this.motionY, this.motionZ)
                     .expand(1.0D, 1.0D, 1.0D));
@@ -145,7 +154,7 @@ public class EntityFishHookArcane extends EntityFishHook {
             for (int i = 0; i < list.size(); ++i) {
                 Entity entity1 = (Entity) list.get(i);
 
-                if (entity1.canBeCollidedWith() && (entity1 != this.field_146042_b || this.field_146047_aw >= 5)) {
+                if (entity1.canBeCollidedWith() && (entity1 != this.field_146042_b || acc().am2$getTicksInAir() >= 5)) {
                     float f = 0.3F;
                     AxisAlignedBB axisalignedbb = entity1.boundingBox.expand((double) f, (double) f, (double) f);
                     MovingObjectPosition movingobjectposition1 = axisalignedbb.calculateIntercept(vec31, vec3);
@@ -172,11 +181,11 @@ public class EntityFishHookArcane extends EntityFishHook {
                         this.field_146043_c = movingobjectposition.entityHit;
                     }
                 } else {
-                    this.field_146051_au = true;
+                    acc().am2$setInGround(true);
                 }
             }
 
-            if (!this.field_146051_au) {
+            if (!acc().am2$isInGround()) {
                 this.moveEntity(this.motionX, this.motionY, this.motionZ);
                 float f5 = MathHelper.sqrt_double(this.motionX * this.motionX + this.motionZ * this.motionZ);
                 this.rotationYaw = (float) (Math.atan2(this.motionX, this.motionZ) * 180.0D / Math.PI);
@@ -250,12 +259,12 @@ public class EntityFishHookArcane extends EntityFishHook {
                         --k;
                     }
 
-                    if (this.field_146045_ax > 0) {
-                        --this.field_146045_ax;
+                    if (acc().am2$getTicksCatchable() > 0) {
+                        acc().am2$setTicksCatchable(acc().am2$getTicksCatchable() - 1);
 
-                        if (this.field_146045_ax <= 0) {
-                            this.field_146040_ay = 0;
-                            this.field_146038_az = 0;
+                        if (acc().am2$getTicksCatchable() <= 0) {
+                            acc().am2$setTicksCaughtDelay(0);
+                            acc().am2$setTicksCatchableDelay(0);
                         }
                     } else {
                         float f1;
@@ -265,10 +274,10 @@ public class EntityFishHookArcane extends EntityFishHook {
                         float f7;
                         double d11;
 
-                        if (this.field_146038_az > 0) {
-                            this.field_146038_az -= k;
+                        if (acc().am2$getTicksCatchableDelay() > 0) {
+                            acc().am2$setTicksCatchableDelay(acc().am2$getTicksCatchableDelay() - (k));
 
-                            if (this.field_146038_az <= 0) {
+                            if (acc().am2$getTicksCatchableDelay() <= 0) {
                                 this.motionY -= 0.20000000298023224D;
                                 this.playSound(
                                     "random.fuse",
@@ -295,16 +304,17 @@ public class EntityFishHookArcane extends EntityFishHook {
                                     0.0D,
                                     (double) this.width,
                                     0.20000000298023224D);
-                                this.field_146045_ax = MathHelper.getRandomIntegerInRange(this.rand, 10, 30);
+                                acc().am2$setTicksCatchable(MathHelper.getRandomIntegerInRange(this.rand, 10, 30));
                             } else {
-                                this.field_146054_aA = (float) ((double) this.field_146054_aA
-                                    + this.rand.nextGaussian() * 4.0D);
-                                f1 = this.field_146054_aA * 0.017453292F;
+                                acc().am2$setFishApproachAngle(
+                                    (float) ((double) acc().am2$getFishApproachAngle()
+                                        + this.rand.nextGaussian() * 4.0D));
+                                f1 = acc().am2$getFishApproachAngle() * 0.017453292F;
                                 f7 = MathHelper.sin(f1);
                                 f2 = MathHelper.cos(f1);
-                                d11 = this.posX + (double) (f7 * (float) this.field_146038_az * 0.1F);
+                                d11 = this.posX + (double) (f7 * (float) acc().am2$getTicksCatchableDelay() * 0.1F);
                                 d5 = (double) ((float) MathHelper.floor_double(this.boundingBox.minY) + 1.0F);
-                                d6 = this.posZ + (double) (f2 * (float) this.field_146038_az * 0.1F);
+                                d6 = this.posZ + (double) (f2 * (float) acc().am2$getTicksCatchableDelay() * 0.1F);
 
                                 if (this.rand.nextFloat() < 0.15F) {
                                     worldserver.func_147487_a(
@@ -342,16 +352,16 @@ public class EntityFishHookArcane extends EntityFishHook {
                                     (double) f3,
                                     1.0D);
                             }
-                        } else if (this.field_146040_ay > 0) {
-                            this.field_146040_ay -= k;
+                        } else if (acc().am2$getTicksCaughtDelay() > 0) {
+                            acc().am2$setTicksCaughtDelay(acc().am2$getTicksCaughtDelay() - (k));
                             f1 = 0.15F;
 
-                            if (this.field_146040_ay < 20) {
-                                f1 = (float) ((double) f1 + (double) (20 - this.field_146040_ay) * 0.05D);
-                            } else if (this.field_146040_ay < 40) {
-                                f1 = (float) ((double) f1 + (double) (40 - this.field_146040_ay) * 0.02D);
-                            } else if (this.field_146040_ay < 60) {
-                                f1 = (float) ((double) f1 + (double) (60 - this.field_146040_ay) * 0.01D);
+                            if (acc().am2$getTicksCaughtDelay() < 20) {
+                                f1 = (float) ((double) f1 + (double) (20 - acc().am2$getTicksCaughtDelay()) * 0.05D);
+                            } else if (acc().am2$getTicksCaughtDelay() < 40) {
+                                f1 = (float) ((double) f1 + (double) (40 - acc().am2$getTicksCaughtDelay()) * 0.02D);
+                            } else if (acc().am2$getTicksCaughtDelay() < 60) {
+                                f1 = (float) ((double) f1 + (double) (60 - acc().am2$getTicksCaughtDelay()) * 0.01D);
                             }
 
                             if (this.rand.nextFloat() < f1) {
@@ -372,17 +382,19 @@ public class EntityFishHookArcane extends EntityFishHook {
                                     0.0D);
                             }
 
-                            if (this.field_146040_ay <= 0) {
-                                this.field_146054_aA = MathHelper.randomFloatClamp(this.rand, 0.0F, 360.0F);
-                                this.field_146038_az = MathHelper.getRandomIntegerInRange(this.rand, 20, 80);
+                            if (acc().am2$getTicksCaughtDelay() <= 0) {
+                                acc().am2$setFishApproachAngle(MathHelper.randomFloatClamp(this.rand, 0.0F, 360.0F));
+                                acc().am2$setTicksCatchableDelay(MathHelper.getRandomIntegerInRange(this.rand, 20, 80));
                             }
                         } else {
-                            this.field_146040_ay = MathHelper.getRandomIntegerInRange(this.rand, 100, 900);
-                            this.field_146040_ay -= EnchantmentHelper.func_151387_h(this.field_146042_b) * 20 * 5;
+                            acc().am2$setTicksCaughtDelay(MathHelper.getRandomIntegerInRange(this.rand, 100, 900));
+                            acc().am2$setTicksCaughtDelay(
+                                acc().am2$getTicksCaughtDelay()
+                                    - (EnchantmentHelper.func_151387_h(this.field_146042_b) * 20 * 5));
                         }
                     }
 
-                    if (this.field_146045_ax > 0) {
+                    if (acc().am2$getTicksCatchable() > 0) {
                         this.motionY -= (double) (this.rand.nextFloat() * this.rand.nextFloat() * this.rand.nextFloat())
                             * 0.2D;
                     }
@@ -421,7 +433,7 @@ public class EntityFishHookArcane extends EntityFishHook {
                 this.field_146043_c.motionY += d2 * d8 + (double) MathHelper.sqrt_double(d6) * 0.08D;
                 this.field_146043_c.motionZ += d4 * d8;
                 b0 = 3;
-            } else if (this.field_146045_ax > 0) {
+            } else if (acc().am2$getTicksCatchable() > 0) {
                 EntityItem entityitem = new EntityItem(
                     this.worldObj,
                     field_146042_b.posX,
@@ -444,7 +456,7 @@ public class EntityFishHookArcane extends EntityFishHook {
                 b0 = 1;
             }
 
-            if (this.field_146051_au) {
+            if (acc().am2$isInGround()) {
                 b0 = 2;
             }
 

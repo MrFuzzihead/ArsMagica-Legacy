@@ -145,7 +145,7 @@ public abstract class BlockGroundRune extends AMBlockContainer {
 
     private void setStateIfMobInteractsWithPlate(World world, int i, int j, int k) {
         float f = 0.125F;
-        List list = null;
+        List<Entity> list = null;
         list = world.getEntitiesWithinAABBExcludingEntity(
             null,
             AxisAlignedBB.getBoundingBox(

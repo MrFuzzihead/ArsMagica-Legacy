@@ -20,11 +20,10 @@ import am2.LogHelper;
 import am2.api.math.AMVector3;
 import am2.api.power.IPowerNode;
 import am2.api.power.PowerTypes;
+import am2.world.WorldStateManager;
 
 public class PowerNodeRegistry {
 
-    private static final HashMap<Integer, PowerNodeRegistry> serverDimensionPowerManagers = new HashMap<Integer, PowerNodeRegistry>();
-    private static final HashMap<Integer, PowerNodeRegistry> clientDimensionPowerManagers = new HashMap<Integer, PowerNodeRegistry>();
     private static final PowerNodeRegistry dummyRegistry = new PowerNodeRegistry();
 
     static final int POWER_SEARCH_RADIUS = 10; // The literal power search radius
@@ -34,18 +33,7 @@ public class PowerNodeRegistry {
 
     public static final PowerNodeRegistry For(World world) {
         if (world == null) return dummyRegistry;
-
-        HashMap<Integer, PowerNodeRegistry> dimensionPowerManagers = world.isRemote ? clientDimensionPowerManagers
-            : serverDimensionPowerManagers;
-
-        if (dimensionPowerManagers.containsKey(world.provider.dimensionId)) {
-            return dimensionPowerManagers.get(world.provider.dimensionId);
-        } else {
-            PowerNodeRegistry reg = new PowerNodeRegistry();
-            dimensionPowerManagers.put(world.provider.dimensionId, reg);
-            return reg;
-        }
-
+        return WorldStateManager.<PowerNodeRegistry>getOrCreate(world, PowerNodeRegistry.class, PowerNodeRegistry::new);
     }
 
     private PowerNodeRegistry() {
@@ -471,41 +459,12 @@ public class PowerNodeRegistry {
         return powerNodes.containsKey(chunk.getChunkCoordIntPair());
     }
 
-    private class ChunkCoordComparator implements Comparator<ChunkCoordIntPair> {
+    static class ChunkCoordComparator implements Comparator<ChunkCoordIntPair> {
 
         @Override
         public int compare(ChunkCoordIntPair a, ChunkCoordIntPair b) {
-            if (a.chunkXPos == b.chunkXPos && a.chunkZPos == b.chunkZPos) return 0;
-
-            if (a.chunkXPos > b.chunkXPos) return 1;
-            else if (a.chunkZPos > b.chunkZPos) return 1;
-            return -1;
-        }
-
-    }
-
-    private class IPowerNodeComparer implements Comparator<IPowerNode> {
-
-        @Override
-        public int compare(IPowerNode o1, IPowerNode o2) {
-            TileEntity te1 = (TileEntity) o1;
-            TileEntity te2 = (TileEntity) o2;
-
-            if (te1.xCoord == te2.xCoord && te1.zCoord == te2.zCoord && te1.yCoord == te2.yCoord) return 0;
-
-            if (te1.xCoord > te2.xCoord) {
-                return 1;
-            } else {
-                if (te1.zCoord > te2.zCoord) {
-                    return 1;
-                } else {
-                    if (te1.yCoord > te2.yCoord) {
-                        return 1;
-                    } else {
-                        return -1;
-                    }
-                }
-            }
+            int x = Integer.compare(a.chunkXPos, b.chunkXPos);
+            return x != 0 ? x : Integer.compare(a.chunkZPos, b.chunkZPos);
         }
 
     }

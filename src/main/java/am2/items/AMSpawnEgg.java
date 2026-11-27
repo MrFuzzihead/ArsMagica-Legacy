@@ -1,7 +1,5 @@
 package am2.items;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +7,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
@@ -311,23 +310,8 @@ public class AMSpawnEgg extends ArsMagicaItem {
         if (entityClass == null) {
             return null;
         } else {
-            Entity entity = null;
-            try {
-                Constructor c = entityClass.getConstructor(World.class);
-                entity = (Entity) c.newInstance(par0World);
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (SecurityException e) {
-                e.printStackTrace();
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
+            String entityName = (String) EntityList.classToStringMapping.get(entityClass);
+            Entity entity = entityName == null ? null : EntityList.createEntityByName(entityName, par0World);
 
             if (entity != null && entity instanceof EntityLiving) {
                 EntityLiving entityliving = (EntityLiving) entity;
@@ -348,7 +332,7 @@ public class AMSpawnEgg extends ArsMagicaItem {
     }
 
     @Override
-    public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, List par3List) {
+    public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, List<ItemStack> par3List) {
         for (int i = 0; i < numClasses; ++i) {
             par3List.add(new ItemStack(par1, 1, i));
         }

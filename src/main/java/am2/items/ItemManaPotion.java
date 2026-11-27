@@ -129,7 +129,7 @@ public class ItemManaPotion extends ArsMagicaItem {
     }
 
     @Override
-    public void addInformation(ItemStack stack, EntityPlayer player, List lines, boolean iHaveNoIdea) {
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> lines, boolean iHaveNoIdea) {
         super.addInformation(stack, player, lines, iHaveNoIdea);
         if (this == ItemsCommonProxy.lesserManaPotion) {
             lines.add(StatCollector.translateToLocal("am2.tooltip.potion1"));
@@ -178,6 +178,6 @@ public class ItemManaPotion extends ArsMagicaItem {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, List par3List) {}
+    public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, List<ItemStack> par3List) {}
 
 }

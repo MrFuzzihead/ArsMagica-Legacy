@@ -2,7 +2,11 @@ package am2.spell;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 
 import am2.AMCore;
 import am2.LogHelper;
@@ -18,7 +22,16 @@ public class SkillTreeManager implements ISkillTreeManager {
     private final ArrayList<SkillTreeEntry> defenseTree = new ArrayList<SkillTreeEntry>();
     private final ArrayList<SkillTreeEntry> utilityTree = new ArrayList<SkillTreeEntry>();
     private final ArrayList<SkillTreeEntry> talentTree = new ArrayList<SkillTreeEntry>();
+    private final List<SkillTreeEntry> offenseTreeView = Collections.unmodifiableList(offenseTree);
+    private final List<SkillTreeEntry> defenseTreeView = Collections.unmodifiableList(defenseTree);
+    private final List<SkillTreeEntry> utilityTreeView = Collections.unmodifiableList(utilityTree);
+    private final List<SkillTreeEntry> talentTreeView = Collections.unmodifiableList(talentTree);
     private final HashMap<Integer, SkillPointTypes> skillPointTypeList;
+    /**
+     * Identity-keyed index used by the spell hot path. The old implementation copied and linearly scanned all four
+     * trees for every modifier/stage lookup.
+     */
+    private final Map<ISkillTreeEntry, SkillTreeEntry> entriesByPart = new IdentityHashMap<ISkillTreeEntry, SkillTreeEntry>();
 
     private int highestSkillDepth = 0;
 
@@ -78,10 +91,17 @@ public class SkillTreeManager implements ISkillTreeManager {
             item,
             enabled);
         treeListing.add(newEntry);
+        if (item != null) {
+            entriesByPart.put(item, newEntry);
+        }
 
         skillPointTypeList.put(SkillManager.instance.getShiftedPartID(item), requiredPoint);
     }
 
+    /**
+     * Returns a defensive copy of the requested tree. Kept for API compatibility; hot-path callers should use
+     * {@link #getSkillTreeEntry(ISkillTreeEntry)} or {@link #getTreeView(SkillTrees)}.
+     */
     @SuppressWarnings("incomplete-switch")
     public ArrayList<SkillTreeEntry> getTree(SkillTrees tree) {
         ArrayList<SkillTreeEntry> safeCopy = new ArrayList<SkillTreeEntry>();
@@ -102,40 +122,30 @@ public class SkillTreeManager implements ISkillTreeManager {
         return safeCopy;
     }
 
-    public SkillTreeEntry getSkillTreeEntry(ISkillTreeEntry part) {
-        ArrayList<SkillTreeEntry> treeEntries = SkillTreeManager.instance.getTree(SkillTrees.Offense);
-        for (SkillTreeEntry st_entry : treeEntries) {
-            ISkillTreeEntry item = st_entry.registeredItem;
-            if (item != null && item == part) {
-                return st_entry;
-            }
-        }
-        treeEntries = SkillTreeManager.instance.getTree(SkillTrees.Defense);
-        for (SkillTreeEntry st_entry : treeEntries) {
-            ISkillTreeEntry item = st_entry.registeredItem;
-            if (item != null && item == part) {
-                return st_entry;
-            }
-        }
-        treeEntries = SkillTreeManager.instance.getTree(SkillTrees.Utility);
-        for (SkillTreeEntry st_entry : treeEntries) {
-            ISkillTreeEntry item = st_entry.registeredItem;
-            if (item != null && item == part) {
-                return st_entry;
-            }
-        }
-        treeEntries = SkillTreeManager.instance.getTree(SkillTrees.Talents);
-        for (SkillTreeEntry st_entry : treeEntries) {
-            ISkillTreeEntry item = st_entry.registeredItem;
-            if (item != null && item == part) {
-                return st_entry;
-            }
+    /** Returns the shared, unmodifiable view used by read-only callers such as the skill-tree GUI. */
+    @SuppressWarnings("incomplete-switch")
+    public List<SkillTreeEntry> getTreeView(SkillTrees tree) {
+        switch (tree) {
+            case Defense:
+                return defenseTreeView;
+            case Offense:
+                return offenseTreeView;
+            case Utility:
+                return utilityTreeView;
+            case Talents:
+                return talentTreeView;
         }
 
-        return null;
+        return Collections.emptyList();
+    }
+
+    public SkillTreeEntry getSkillTreeEntry(ISkillTreeEntry part) {
+        return entriesByPart.get(part);
     }
 
     public void init() {
+
+        entriesByPart.clear();
 
         // offense tree
         offenseTree.clear();

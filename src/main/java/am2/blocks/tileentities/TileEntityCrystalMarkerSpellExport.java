@@ -86,10 +86,10 @@ public class TileEntityCrystalMarkerSpellExport extends TileEntityCrystalMarker 
 
     private boolean updateFilter() {
         ArrayList<ItemStack> filter = new ArrayList<ItemStack>();
-        Iterator it = this.craftingAltarCache.iterator();
+        Iterator<AMVector3> it = this.craftingAltarCache.iterator();
         boolean changed = false;
         while (it.hasNext()) {
-            TileEntityCraftingAltar altar = getCATE((AMVector3) it.next());
+            TileEntityCraftingAltar altar = getCATE(it.next());
             if (altar == null) {
                 it.remove();
                 continue;

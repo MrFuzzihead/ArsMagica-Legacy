@@ -70,11 +70,11 @@ import am2.lore.CompendiumEntry;
 import am2.lore.CompendiumEntrySpellComponent;
 import am2.lore.CompendiumEntrySpellModifier;
 import am2.lore.CompendiumEntrySpellShape;
+import am2.mixins.early.ShapedOreRecipeAccessor;
 import am2.spell.SkillManager;
 import am2.spell.SpellRecipeManager;
 import am2.texture.SpellIconManager;
 import am2.utility.RecipeUtilities;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 
 public class GuiArcaneCompendium extends GuiScreen {
 
@@ -338,7 +338,7 @@ public class GuiArcaneCompendium extends GuiScreen {
                                     int amount = (Integer) recipeItems[++i];
                                     recipe.add(
                                         new ItemStack(ItemsCommonProxy.essence, amount, ItemEssence.META_MAX + type));
-                                } catch (Throwable t) {
+                                } catch (Exception t) {
                                     continue;
                                 }
                             } else {
@@ -362,11 +362,9 @@ public class GuiArcaneCompendium extends GuiScreen {
                     recipeHeight = ((ShapedRecipes) recipe).recipeHeight;
                     craftingComponents = ((ShapedRecipes) recipe).recipeItems;
                 } else if (recipe instanceof ShapedOreRecipe) {
-                    recipeWidth = ReflectionHelper
-                        .getPrivateValue(ShapedOreRecipe.class, ((ShapedOreRecipe) recipe), "width");
-
-                    recipeHeight = ReflectionHelper
-                        .getPrivateValue(ShapedOreRecipe.class, ((ShapedOreRecipe) recipe), "height");
+                    ShapedOreRecipeAccessor accessor = (ShapedOreRecipeAccessor) recipe;
+                    recipeWidth = accessor.am2$getWidth();
+                    recipeHeight = accessor.am2$getHeight();
 
                     craftingComponents = ((ShapedOreRecipe) recipe).getInput();
                 } else if (recipe instanceof ShapelessRecipes) {
@@ -429,7 +427,7 @@ public class GuiArcaneCompendium extends GuiScreen {
                 name = split[0];
                 try {
                     meta = Integer.parseInt(split[1]);
-                } catch (Throwable t) {
+                } catch (Exception t) {
                     meta = -1;
                 }
             }
@@ -957,7 +955,7 @@ public class GuiArcaneCompendium extends GuiScreen {
 
     private void renderItemToolTip(ItemStack stack, int x, int y) {
         try {
-            List list = stack.getTooltip(this.mc.thePlayer, this.mc.gameSettings.advancedItemTooltips);
+            List<String> list = stack.getTooltip(this.mc.thePlayer, this.mc.gameSettings.advancedItemTooltips);
 
             CompendiumEntry entry;
             if (stack.getItem() instanceof ItemBlock) {
@@ -1018,12 +1016,12 @@ public class GuiArcaneCompendium extends GuiScreen {
             FontRenderer font = stack.getItem()
                 .getFontRenderer(stack);
             drawHoveringText(list, x, y, (font == null ? this.fontRendererObj : font));
-        } catch (Throwable ignored) {
+        } catch (Exception ignored) {
 
         }
     }
 
-    protected void drawHoveringText(List par1List, int par2, int par3, FontRenderer font) {
+    protected void drawHoveringText(List<String> par1List, int par2, int par3, FontRenderer font) {
         if (!par1List.isEmpty()) {
             GL11.glDisable(GL12.GL_RESCALE_NORMAL);
             RenderHelper.disableStandardItemLighting();
@@ -1351,7 +1349,7 @@ public class GuiArcaneCompendium extends GuiScreen {
         try {
             AMGuiHelper.DrawItemAtXY(stack, sx, sy, this.zLevel);
             RenderHelper.disableStandardItemLighting();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             forcedMetas.put(stack.getItem(), 0);
         }
 

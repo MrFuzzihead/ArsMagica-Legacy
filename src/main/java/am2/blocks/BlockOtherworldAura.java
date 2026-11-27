@@ -49,7 +49,7 @@ public class BlockOtherworldAura extends PoweredBlock {
 
     @Override
     public void addCollisionBoxesToList(World p_149743_1_, int p_149743_2_, int p_149743_3_, int p_149743_4_,
-        AxisAlignedBB p_149743_5_, List p_149743_6_, Entity p_149743_7_) {}
+        AxisAlignedBB p_149743_5_, List<AxisAlignedBB> p_149743_6_, Entity p_149743_7_) {}
 
     @Override
     public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase elb, ItemStack stack) {

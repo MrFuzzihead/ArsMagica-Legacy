@@ -17,6 +17,7 @@ import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
 import am2.AMCore;
+import am2.LogHelper;
 
 public class AM2FontRenderer {
 
@@ -170,8 +171,8 @@ public class AM2FontRenderer {
             widthString = new String(buf).replace("\r", "")
                 .replace("\n", "");
             stream.close();
-        } catch (Throwable e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            LogHelper.error(e, "Failed to load a font definition");
         }
 
         String[] split = widthString.split(",");
@@ -705,9 +706,9 @@ public class AM2FontRenderer {
      * set
      */
     private void renderSplitString(String par1Str, int par2, int par3, int par4, boolean par5) {
-        List list = this.listFormattedStringToWidth(par1Str, par4);
+        List<String> list = this.listFormattedStringToWidth(par1Str, par4);
 
-        for (Iterator iterator = list.iterator(); iterator.hasNext(); par3 += this.FONT_HEIGHT) {
+        for (Iterator<String> iterator = list.iterator(); iterator.hasNext(); par3 += this.FONT_HEIGHT) {
             String s1 = (String) iterator.next();
             this.renderStringAligned(s1, par2, par3, par4, this.textColor, par5);
         }
@@ -747,7 +748,7 @@ public class AM2FontRenderer {
     /**
      * Breaks a string into a list of pieces that will fit a specified width.
      */
-    public List listFormattedStringToWidth(String par1Str, int par2) {
+    public List<String> listFormattedStringToWidth(String par1Str, int par2) {
         return Arrays.asList(
             this.wrapFormattedStringToWidth(par1Str, par2)
                 .split("\n"));

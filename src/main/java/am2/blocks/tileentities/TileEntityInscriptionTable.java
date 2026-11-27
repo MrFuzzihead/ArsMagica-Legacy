@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
@@ -77,9 +76,9 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
     private String currentSpellName;
     private boolean currentSpellIsReadOnly;
 
-    private static final byte FULL_UPDATE = 0x1;
-    private static final byte MAKE_SPELL = 0x2;
-    private static final byte RESET_NAME = 0x4;
+    static final byte FULL_UPDATE = 0x1;
+    static final byte MAKE_SPELL = 0x2;
+    static final byte RESET_NAME = 0x4;
 
     public TileEntityInscriptionTable() {
         inscriptionTableItemStacks = new ItemStack[getSizeInventory()];
@@ -327,7 +326,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
         NBTTagList nbttaglist = par1NBTTagCompound.getTagList("InscriptionTableInventory", Constants.NBT.TAG_COMPOUND);
         inscriptionTableItemStacks = new ItemStack[getSizeInventory()];
         for (int i = 0; i < nbttaglist.tagCount(); i++) {
-            String tag = String.format("ArrayIndex", i);
+            String tag = "ArrayIndex";
             NBTTagCompound nbttagcompound1 = (NBTTagCompound) nbttaglist.getCompoundTagAt(i);
             byte byte0 = nbttagcompound1.getByte(tag);
             if (byte0 >= 0 && byte0 < inscriptionTableItemStacks.length) {
@@ -344,7 +343,7 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
         NBTTagList nbttaglist = new NBTTagList();
         for (int i = 0; i < inscriptionTableItemStacks.length; i++) {
             if (inscriptionTableItemStacks[i] != null) {
-                String tag = String.format("ArrayIndex", i);
+                String tag = "ArrayIndex";
                 NBTTagCompound nbttagcompound1 = new NBTTagCompound();
                 nbttagcompound1.setByte(tag, (byte) i);
                 inscriptionTableItemStacks[i].writeToNBT(nbttagcompound1);
@@ -366,22 +365,14 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
         return false;
     }
 
-    public void HandleUpdatePacket(byte[] data) {
+    public void HandleUpdatePacket(byte[] data, EntityPlayer actor) {
         if (this.worldObj == null) return;
         AMDataReader rdr = new AMDataReader(data);
         switch (rdr.ID) {
             case FULL_UPDATE:
-                if (!rdr.getBoolean()) {
-                    Entity e = this.worldObj.getEntityByID(rdr.getInt());
-                    if (e instanceof EntityPlayer) {
-                        EntityPlayer player = (EntityPlayer) e;
-                        this.setInUse(player);
-                    } else {
-                        this.setInUse(null);
-                    }
-                } else {
-                    this.setInUse(null);
-                }
+                boolean notInUse = rdr.getBoolean();
+                rdr.getInt(); // legacy client entity id; the sender is authoritative
+                this.setInUse(notInUse ? null : actor);
 
                 currentRecipe.clear();
 
@@ -408,17 +399,18 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
                 this.currentSpellIsReadOnly = rdr.getBoolean();
                 break;
             case MAKE_SPELL:
-                int entityID = rdr.getInt();
-                EntityPlayer player = (EntityPlayer) worldObj.getEntityByID(entityID);
-                if (player != null) {
-                    createSpellForPlayer(player);
+                rdr.getInt(); // legacy client entity id; the sender is authoritative
+                if (actor != null && actor == getCurrentPlayerUsing()
+                    && actor.capabilities.isCreativeMode
+                    && isUseableByPlayer(actor)) {
+                    createSpellForPlayer(actor);
                 }
                 break;
             case RESET_NAME:
-                entityID = rdr.getInt();
-                player = (EntityPlayer) worldObj.getEntityByID(entityID);
-                if (player != null) {
-                    ((ContainerInscriptionTable) player.openContainer).resetSpellNameAndIcon();
+                rdr.getInt(); // legacy client entity id; the sender is authoritative
+                if (actor != null && actor.openContainer instanceof ContainerInscriptionTable
+                    && ((ContainerInscriptionTable) actor.openContainer).getTable() == this) {
+                    ((ContainerInscriptionTable) actor.openContainer).resetSpellNameAndIcon();
                 }
                 break;
         }
@@ -499,9 +491,11 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
     }
 
     public void removeMultipleSpellPartsFromStageGroup(int startIndex, int length, int groupIndex) {
+        if (groupIndex < 0 || groupIndex >= this.shapeGroups.size()) return;
         ArrayList<ISpellPart> group = this.shapeGroups.get(groupIndex);
-        if (!currentSpellIsReadOnly) {
-            for (int i = 0; i <= length; ++i) group.remove(startIndex);
+        if (!currentSpellIsReadOnly && startIndex >= 0 && startIndex < group.size()) {
+            int removeCount = Math.min(length, group.size() - startIndex);
+            for (int i = 0; i < removeCount; ++i) group.remove(startIndex);
             countModifiers();
             if (this.worldObj.isRemote) this.sendDataToServer();
         }
@@ -524,9 +518,10 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
     }
 
     public void removeMultipleSpellParts(int startIndex, int length) {
-        if (!currentSpellIsReadOnly) {
-            for (int i = 0; i <= length; ++i) this.getCurrentRecipe()
-                .remove(startIndex);
+        ArrayList<ISpellPart> recipe = this.getCurrentRecipe();
+        if (!currentSpellIsReadOnly && startIndex >= 0 && startIndex < recipe.size()) {
+            int removeCount = Math.min(length, recipe.size() - startIndex);
+            for (int i = 0; i < removeCount; ++i) recipe.remove(startIndex);
             countModifiers();
             if (this.worldObj.isRemote) this.sendDataToServer();
         }
@@ -583,6 +578,9 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
             writer.add(player.getEntityId());
             AMNetHandler.INSTANCE.sendPacketToServer(AMPacketIDs.INSCRIPTION_TABLE_UPDATE, writer.generate());
         } else {
+            if (!player.capabilities.isCreativeMode || !currentRecipeIsValid().valid) {
+                return;
+            }
 
             ArrayList<ArrayList<KeyValuePair<ISpellPart, byte[]>>> shapeGroupSetup = new ArrayList<ArrayList<KeyValuePair<ISpellPart, byte[]>>>();
             ArrayList<KeyValuePair<ISpellPart, byte[]>> curRecipeSetup = new ArrayList<KeyValuePair<ISpellPart, byte[]>>();
@@ -876,10 +874,6 @@ public class TileEntityInscriptionTable extends TileEntity implements IInventory
     public SpellValidator.ValidationResult currentRecipeIsValid() {
         ArrayList<ArrayList<ISpellPart>> segmented = SpellValidator.splitToStages(currentRecipe);
         return SpellValidator.instance.spellDefIsValid(shapeGroups, segmented);
-    }
-
-    public boolean modifierCanBeAdded(ISpellModifier modifier) {
-        return false;
     }
 
     static class ValueComparator implements Comparator<Affinity> {

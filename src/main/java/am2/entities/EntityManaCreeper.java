@@ -6,7 +6,7 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 
 import am2.items.ItemsCommonProxy;
-import cpw.mods.fml.relauncher.ReflectionHelper;
+import am2.mixins.early.EntityCreeperAccessor;
 
 public class EntityManaCreeper extends EntityCreeper {
 
@@ -32,7 +32,7 @@ public class EntityManaCreeper extends EntityCreeper {
     }
 
     private void ForceZeroCreeperFuse() {
-        ReflectionHelper.setPrivateValue(EntityCreeper.class, this, 0, 1);
+        ((EntityCreeperAccessor) this).am2$setTimeSinceIgnited(0);
     }
 
     @Override

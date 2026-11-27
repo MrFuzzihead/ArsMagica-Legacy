@@ -388,7 +388,7 @@ public class MultiblockStructureDefinition {
         public void replaceAllBlocksOfType(Block originalBlock, int originalMeta, Block newBlock, int newMeta) {
             for (ArrayList<BlockDec> list : allowedBlocks.values()) {
                 for (BlockDec bd : list) {
-                    if (bd.block == originalBlock && bd.meta == originalMeta || originalMeta == WILDCARD_VALUE) {
+                    if (bd.block == originalBlock && (originalMeta == WILDCARD_VALUE || bd.meta == originalMeta)) {
                         bd.block = newBlock;
                         if (newMeta != WILDCARD_VALUE) {
                             bd.meta = newMeta;

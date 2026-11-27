@@ -13,6 +13,7 @@ import cpw.mods.fml.common.registry.RegistryDelegate;
  * {@link #isManaStackIdentical(ManaStack)} to determine if ManaID, Amount and NBT Tag are all
  * equal.
  */
+@Deprecated
 public class ManaStack {
 
     private final Mana mana;
@@ -150,9 +151,9 @@ public class ManaStack {
 
     @Override
     public final int hashCode() {
+        // equals() ignores the amount, so the hash must as well; use isManaStackIdentical() for exact comparisons.
         int code = 1;
         code = 31 * code + getMana().hashCode();
-        code = 31 * code + amount;
         if (tag != null) code = 31 * code + tag.hashCode();
         return code;
     }

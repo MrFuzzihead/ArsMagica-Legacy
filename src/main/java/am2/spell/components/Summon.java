@@ -44,18 +44,12 @@ public class Summon implements ISpellComponent {
     public EntityLiving summonCreature(ItemStack stack, EntityLivingBase caster, EntityLivingBase target, World world,
         double x, double y, double z) {
         Class clazz = getSummonType(stack);
-        EntityLiving entity = null;
-        try {
-            entity = (EntityLiving) clazz.getConstructor(World.class)
-                .newInstance(world);
-        } catch (Throwable t) {
-            t.printStackTrace();
+        String entityName = (String) EntityList.classToStringMapping.get(clazz);
+        Entity created = entityName == null ? null : EntityList.createEntityByName(entityName, world);
+        if (!(created instanceof EntityLiving)) {
             return null;
         }
-
-        if (entity == null) {
-            return null;
-        }
+        EntityLiving entity = (EntityLiving) created;
         if (entity instanceof EntitySkeleton) {
             ((EntitySkeleton) entity).setSkeletonType(0);
             ((EntitySkeleton) entity).setCurrentItemOrArmor(0, new ItemStack(Items.bow));

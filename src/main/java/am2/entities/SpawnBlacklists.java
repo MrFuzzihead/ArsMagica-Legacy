@@ -29,9 +29,9 @@ public class SpawnBlacklists {
                 .asSubclass(EntityLivingBase.class);
             blacklistedDimensionSpawns.put(dimensionID, clazz);
             LogHelper.info("Blacklisted %s from spawning in dimension %d.", entityClass, dimensionID);
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | ClassCastException e) {
             LogHelper.info(
-                "Unable to parse class name %s from IMC!  This needs to be corrected by the other mod author!",
+                "Unable to parse class name %s from IMC (must be an EntityLivingBase)!  This needs to be corrected by the other mod author!",
                 entityClass);
         }
     }
@@ -43,9 +43,9 @@ public class SpawnBlacklists {
                 .asSubclass(EntityLivingBase.class);
             blacklistedBiomeSpawns.put(biomeID, clazz);
             LogHelper.info("Blacklisted %s from spawning in biome %d.", entityClass, biomeID);
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | ClassCastException e) {
             LogHelper.info(
-                "Unable to parse class name %s from IMC!  This needs to be corrected by the other mod author!",
+                "Unable to parse class name %s from IMC (must be an EntityLivingBase)!  This needs to be corrected by the other mod author!",
                 entityClass);
         }
     }

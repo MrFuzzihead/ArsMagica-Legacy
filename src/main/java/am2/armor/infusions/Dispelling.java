@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 import am2.api.items.armor.IArmorImbuement;
 import am2.api.items.armor.ImbuementApplicationTypes;
 import am2.api.items.armor.ImbuementTiers;
-import cpw.mods.fml.relauncher.ReflectionHelper;
+import am2.mixins.early.PotionAccessor;
 
 public class Dispelling implements IArmorImbuement {
 
@@ -49,14 +49,9 @@ public class Dispelling implements IArmorImbuement {
             .toArray();
         for (Object o : safeCopy) {
             PotionEffect pe = (PotionEffect) o;
-            boolean badEffect;
-            if (ReflectionHelper
-                .getPrivateValue(Potion.class, Potion.potionTypes[pe.getPotionID()], 35) instanceof Boolean) {
-                badEffect = ReflectionHelper.getPrivateValue(Potion.class, Potion.potionTypes[pe.getPotionID()], 35);
-            } else {
-                badEffect = true; // just get rid of all potion effects if can't determine if it's good or bad, hotfix
-                                  // for crash
-            }
+            Potion potionType = Potion.potionTypes[pe.getPotionID()];
+            // Treat an unknown potion as a bad effect so it is always cleared rather than leaking a harmful buff.
+            boolean badEffect = potionType == null || ((PotionAccessor) potionType).am2$isBadEffect();
             if (pe.getIsAmbient() || !badEffect) continue;
             effectsToRemove.add(pe.getPotionID());
         }

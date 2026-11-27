@@ -1,8 +1,5 @@
 package am2.entities.ai;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAIBase;
@@ -11,7 +8,7 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
-import am2.LogHelper;
+import am2.buffs.BuffList;
 
 public class EntityAIApplyPotionOnCollide extends EntityAIBase {
 
@@ -119,48 +116,10 @@ public class EntityAIApplyPotionOnCollide extends EntityAIBase {
             <= var1) {
             if (this.attackTick <= 0) {
                 this.attackTick = 20;
-                Constructor<PotionEffect> ctor = null;
-                try {
-                    ctor = (Constructor<PotionEffect>) _template.getClass()
-                        .getConstructor(int.class, int.class, int.class);
-                } catch (NoSuchMethodException e1) {
-                    LogHelper.trace(
-                        "Entity AI Potion On Collide Error {0}",
-                        e1.getStackTrace()
-                            .toString());
-                } catch (SecurityException e1) {
-                    LogHelper.trace(
-                        "Entity AI Potion On Collide Error {0}",
-                        e1.getStackTrace()
-                            .toString());
-                }
-                if (ctor != null) {
-                    PotionEffect pe;
-                    try {
-                        pe = ctor
-                            .newInstance(_template.getPotionID(), _template.getDuration(), _template.getAmplifier());
-                        this.entityTarget.addPotionEffect(pe);
-                    } catch (InstantiationException e) {
-                        LogHelper.trace(
-                            "Entity AI Potion On Collide Error {0}",
-                            e.getStackTrace()
-                                .toString());
-                    } catch (IllegalAccessException e) {
-                        LogHelper.trace(
-                            "Entity AI Potion On Collide Error {0}",
-                            e.getStackTrace()
-                                .toString());
-                    } catch (IllegalArgumentException e) {
-                        LogHelper.trace(
-                            "Entity AI Potion On Collide Error {0}",
-                            e.getStackTrace()
-                                .toString());
-                    } catch (InvocationTargetException e) {
-                        LogHelper.trace(
-                            "Entity AI Potion On Collide Error {0}",
-                            e.getStackTrace()
-                                .toString());
-                    }
+                PotionEffect pe = BuffList
+                    .buffEffectFromPotionID(_template.getPotionID(), _template.getDuration(), _template.getAmplifier());
+                if (pe != null) {
+                    this.entityTarget.addPotionEffect(pe);
                 }
             }
         }

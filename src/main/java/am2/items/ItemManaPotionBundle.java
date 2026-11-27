@@ -132,7 +132,8 @@ public class ItemManaPotionBundle extends ArsMagicaItem {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List par3List, boolean par4) {
+    public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par3List,
+        boolean par4) {
         Item potion = getPotion(par1ItemStack.getItemDamage());
         if (potion == ItemsCommonProxy.lesserManaPotion) {
             par3List.add("Lesser Mana Restoration");
@@ -154,7 +155,7 @@ public class ItemManaPotionBundle extends ArsMagicaItem {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, List par3List) {
+    public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, List<ItemStack> par3List) {
         par3List.add(new ItemStack(ItemsCommonProxy.manaPotionBundle, 1, (0 << 8) + 3));
         par3List.add(new ItemStack(ItemsCommonProxy.manaPotionBundle, 1, (1 << 8) + 3));
         par3List.add(new ItemStack(ItemsCommonProxy.manaPotionBundle, 1, (2 << 8) + 3));

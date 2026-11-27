@@ -59,7 +59,7 @@ public class WitchwoodSlabs extends BlockWoodSlab {
     }
 
     @Override
-    public void getSubBlocks(Item par1, CreativeTabs par2CreativeTabs, List par3List) {
+    public void getSubBlocks(Item par1, CreativeTabs par2CreativeTabs, List<ItemStack> par3List) {
         par3List.add(new ItemStack(this));
     }
 }

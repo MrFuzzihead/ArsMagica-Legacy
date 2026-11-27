@@ -84,6 +84,19 @@ public class TileEntityEntropicEnervator extends TileEntityAMPower implements II
         }
     }
 
+    static final int SYNC_INTERVAL = 10;
+    private int syncCooldown = 0;
+
+    /** Throttles the full-NBT update from every tick to roughly twice a second. */
+    boolean shouldSendUpdate() {
+        if (syncCooldown > 0) {
+            syncCooldown--;
+            return false;
+        }
+        syncCooldown = SYNC_INTERVAL;
+        return true;
+    }
+
     private void sendEnervatorUpdateToClient() {
         if (!worldObj.isRemote) {
             NBTTagCompound nbt = new NBTTagCompound();
@@ -93,7 +106,7 @@ public class TileEntityEntropicEnervator extends TileEntityAMPower implements II
                 this.xCoord,
                 this.yCoord,
                 this.zCoord,
-                100,
+                64,
                 AMPacketIDs.ENERVATOR_BLOCK_UPDATE,
                 new AMDataWriter().add(this.xCoord)
                     .add(this.yCoord)
@@ -121,7 +134,9 @@ public class TileEntityEntropicEnervator extends TileEntityAMPower implements II
                 }
                 setActiveTexture();
             }
-            sendEnervatorUpdateToClient();
+            if (shouldSendUpdate()) {
+                sendEnervatorUpdateToClient();
+            }
         } else {
             if (EnervatorRecipeHelper.instance.getRecipe(this.inventory[0]) != null) {
                 rendTimeRemaining = 140;
@@ -145,7 +160,7 @@ public class TileEntityEntropicEnervator extends TileEntityAMPower implements II
             NBTTagList nbttaglist = new NBTTagList();
             for (int i = 0; i < inventory.length; i++) {
                 if (inventory[i] != null) {
-                    String tag = String.format("ArrayIndex", i);
+                    String tag = "ArrayIndex";
                     NBTTagCompound nbttagcompound1 = new NBTTagCompound();
                     nbttagcompound1.setByte(tag, (byte) i);
                     inventory[i].writeToNBT(nbttagcompound1);
@@ -167,7 +182,7 @@ public class TileEntityEntropicEnervator extends TileEntityAMPower implements II
             NBTTagList nbttaglist = nbttagcompound.getTagList("BurnInventory", Constants.NBT.TAG_COMPOUND);
             inventory = new ItemStack[getSizeInventory()];
             for (int i = 0; i < nbttaglist.tagCount(); i++) {
-                String tag = String.format("ArrayIndex", i);
+                String tag = "ArrayIndex";
                 NBTTagCompound nbttagcompound1 = (NBTTagCompound) nbttaglist.getCompoundTagAt(i);
                 byte byte0 = nbttagcompound1.getByte(tag);
                 if (byte0 >= 0 && byte0 < inventory.length) {

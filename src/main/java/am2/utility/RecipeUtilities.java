@@ -14,8 +14,6 @@ import net.minecraft.item.crafting.ShapelessRecipes;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
-import cpw.mods.fml.relauncher.ReflectionHelper;
-
 public class RecipeUtilities {
 
     public static Object[] getRecipeItems(Object recipe) {
@@ -40,13 +38,12 @@ public class RecipeUtilities {
     }
 
     private static Object[] getShapedOreRecipeItems(ShapedOreRecipe recipe) {
-        Object[] components = ReflectionHelper.getPrivateValue(ShapedOreRecipe.class, recipe, 3);
-        return components;
+        return recipe.getInput();
     }
 
     private static Object[] getShapelessOreRecipeItems(ShapelessOreRecipe recipe) {
-        ArrayList components = ReflectionHelper.getPrivateValue(ShapelessOreRecipe.class, recipe, 1);
-        return components.toArray();
+        return recipe.getInput()
+            .toArray();
     }
 
     public static IRecipe getRecipeFor(ItemStack item) {
@@ -54,37 +51,35 @@ public class RecipeUtilities {
         if (item == null || item.getItem() == null) return null;
 
         try {
-            List list = CraftingManager.getInstance()
+            List<IRecipe> list = CraftingManager.getInstance()
                 .getRecipeList();
-            ArrayList possibleRecipes = new ArrayList();
-            for (Object recipe : list) {
-                if (recipe instanceof IRecipe) {
-                    ItemStack output = ((IRecipe) recipe).getRecipeOutput();
-                    if (output == null) continue;
-                    if (output.getItem() == item.getItem() && (output.getItemDamage() == Short.MAX_VALUE
-                        || output.getItemDamage() == item.getItemDamage())) {
-                        possibleRecipes.add(recipe);
-                    }
+            ArrayList<IRecipe> possibleRecipes = new ArrayList<IRecipe>();
+            for (IRecipe recipe : list) {
+                ItemStack output = recipe.getRecipeOutput();
+                if (output == null) continue;
+                if (output.getItem() == item.getItem()
+                    && (output.getItemDamage() == Short.MAX_VALUE || output.getItemDamage() == item.getItemDamage())) {
+                    possibleRecipes.add(recipe);
                 }
             }
 
             if (possibleRecipes.size() > 0) {
-                for (Object recipe : possibleRecipes) {
-                    if (((IRecipe) recipe).getRecipeOutput()
+                for (IRecipe recipe : possibleRecipes) {
+                    if (recipe.getRecipeOutput()
                         .getItemDamage() == item.getItemDamage()) {
-                        return (IRecipe) recipe;
+                        return recipe;
                     }
                 }
-                return (IRecipe) possibleRecipes.get(0);
+                return possibleRecipes.get(0);
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
 
         }
 
         return null;
     }
 
-    public static void addShapedRecipeFirst(List recipeList, ItemStack itemstack, Object... objArray) {
+    public static void addShapedRecipeFirst(List<IRecipe> recipeList, ItemStack itemstack, Object... objArray) {
         String var3 = "";
         int var4 = 0;
         int var5 = 0;
@@ -108,9 +103,9 @@ public class RecipeUtilities {
             }
         }
 
-        HashMap var12;
+        HashMap<Character, ItemStack> var12;
 
-        for (var12 = new HashMap(); var4 < objArray.length; var4 += 2) {
+        for (var12 = new HashMap<Character, ItemStack>(); var4 < objArray.length; var4 += 2) {
             Character var13 = (Character) objArray[var4];
             ItemStack var14 = null;
 
@@ -141,8 +136,9 @@ public class RecipeUtilities {
         recipeList.add(0, var17);
     }
 
-    public static void addShapelessRecipeFirst(List recipeList, ItemStack par1ItemStack, Object... par2ArrayOfObj) {
-        ArrayList arraylist = new ArrayList();
+    public static void addShapelessRecipeFirst(List<IRecipe> recipeList, ItemStack par1ItemStack,
+        Object... par2ArrayOfObj) {
+        ArrayList<ItemStack> arraylist = new ArrayList<ItemStack>();
         Object[] aobject = par2ArrayOfObj;
         int i = par2ArrayOfObj.length;
 

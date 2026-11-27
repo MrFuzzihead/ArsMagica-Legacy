@@ -1,7 +1,6 @@
 package am2.spell.components;
 
 import static am2.AMEventHandler.summonCreature;
-import static am2.AMEventHandler.tempCurseMap;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -35,9 +34,11 @@ import am2.buffs.BuffList;
 import am2.entities.EntitySpecificHallucinations;
 import am2.items.ItemEssence;
 import am2.items.ItemsCommonProxy;
+import am2.mixins.early.PotionAccessor;
 import am2.particles.AMParticle;
 import am2.particles.ParticleArcToEntity;
 import am2.spell.SpellUtils;
+import am2.world.WorldStateManager;
 
 public class Curse implements ISpellComponent, IRitualInteraction {
 
@@ -70,7 +71,7 @@ public class Curse implements ISpellComponent, IRitualInteraction {
             List<Integer> effectsToRemove = new ArrayList<Integer>();
             HashMap<Integer, String> effectsToMagnify = new HashMap<Integer, String>();
 
-            Iterator iter = ((EntityLivingBase) target).getActivePotionEffects()
+            Iterator<PotionEffect> iter = ((EntityLivingBase) target).getActivePotionEffects()
                 .iterator();
 
             int magnitudeLeft = 6 + (SpellUtils.instance.countModifiers(SpellModifiers.BUFF_POWER, stack) * 2);
@@ -88,7 +89,7 @@ public class Curse implements ISpellComponent, IRitualInteraction {
                 PotionEffect potion = ((PotionEffect) iter.next());
                 int potionID = potion.getPotionID();
                 PotionEffect pe = ((EntityLivingBase) target).getActivePotionEffect(Potion.potionTypes[potionID]);
-                if (!Potion.potionTypes[potionID].isBadEffect) { // method is clientside only; we need the field
+                if (!((PotionAccessor) Potion.potionTypes[potionID]).am2$isBadEffect()) {
                     int magnitudeCost = pe.getAmplifier();
                     if (magnitudeLeft >= magnitudeCost) {
                         magnitudeLeft -= magnitudeCost;
@@ -174,7 +175,8 @@ public class Curse implements ISpellComponent, IRitualInteraction {
                 (int) Math.floor(target.posZ));
         }
 
-        tempCurseMap.put(summonCreature(player.worldObj, halclass, x, y, z, player, 4, 9), duration);
+        WorldStateManager.tempCurseMap(player.worldObj)
+            .put(summonCreature(player.worldObj, halclass, x, y, z, player, 4, 9), duration);
         return true;
     }
 

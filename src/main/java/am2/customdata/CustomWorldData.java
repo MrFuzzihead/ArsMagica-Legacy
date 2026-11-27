@@ -17,6 +17,7 @@ import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.SaveHandler;
 import net.minecraftforge.common.DimensionManager;
 
+import am2.LogHelper;
 import am2.network.AMDataWriter;
 import am2.network.AMNetHandler;
 import am2.network.AMPacketIDs;
@@ -122,7 +123,7 @@ public class CustomWorldData {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LogHelper.error(e, "Failed to save custom world data");
         }
     }
 
@@ -145,7 +146,7 @@ public class CustomWorldData {
                             }
                             br.close();
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            LogHelper.error(e, "Failed to read custom world data");
                         }
 
                         // this avoids syncing the same dimension multiple times clogging up the network
@@ -160,7 +161,7 @@ public class CustomWorldData {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LogHelper.error(e, "Failed to load custom world data");
         }
     }
 

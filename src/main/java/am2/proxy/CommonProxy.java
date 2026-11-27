@@ -28,11 +28,11 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 
 import am2.AMCore;
-import am2.AMEventHandler;
 import am2.AMWorldEventHandler;
 import am2.EnervatorRecipeHelper;
 import am2.EntityItemWatcher;
 import am2.ItemFrameWatcher;
+import am2.LivingUpdateHandler;
 import am2.ObeliskFuelHelper;
 import am2.PlayerTracker;
 import am2.ShrinkHandler;
@@ -65,6 +65,27 @@ import am2.buffs.BuffList;
 import am2.enchantments.AMEnchantments;
 import am2.entities.EntityManager;
 import am2.entities.ai.MageVillagerTrade;
+import am2.handlers.AcceleratedEntityTickHandler;
+import am2.handlers.BlockBreakHandler;
+import am2.handlers.BreakSpeedHandler;
+import am2.handlers.BucketHandler;
+import am2.handlers.CombatDefenseHandler;
+import am2.handlers.CompendiumPickupHandler;
+import am2.handlers.ConnectionTickrateHandler;
+import am2.handlers.EndermanTeleportHandler;
+import am2.handlers.EntityConstructionHandler;
+import am2.handlers.EntityDeathHandler;
+import am2.handlers.FallHandler;
+import am2.handlers.ItemWatchHandler;
+import am2.handlers.JumpHandler;
+import am2.handlers.LivingHurtHandler;
+import am2.handlers.ManaCostHandler;
+import am2.handlers.PlayerCloneDataHandler;
+import am2.handlers.PotionBrewingHandler;
+import am2.handlers.SoulboundItemsHandler;
+import am2.handlers.SoulspikeAttackHandler;
+import am2.handlers.SummonDropHandler;
+import am2.handlers.TemporalAnchorHandler;
 import am2.items.ItemOre;
 import am2.items.ItemsCommonProxy;
 import am2.network.AMNetHandler;
@@ -79,8 +100,8 @@ import am2.spell.SkillManager;
 import am2.spell.SkillTreeManager;
 import am2.spell.SpellUnlockManager;
 import am2.utility.ProxyUtilitiesCommon;
+import am2.world.WorldStateManager;
 import am2.worldgen.AM2WorldDecorator;
-import am2.worldgen.RetroactiveWorldgenerator;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -126,10 +147,28 @@ public class CommonProxy {
 
         BuffList.postInit();
 
-        MinecraftForge.EVENT_BUS.register(new AMEventHandler());
-        FMLCommonHandler.instance()
-            .bus()
-            .register(new AMEventHandler());
+        MinecraftForge.EVENT_BUS.register(new BucketHandler());
+        MinecraftForge.EVENT_BUS.register(new PotionBrewingHandler());
+        MinecraftForge.EVENT_BUS.register(new TemporalAnchorHandler());
+        MinecraftForge.EVENT_BUS.register(new BreakSpeedHandler());
+        MinecraftForge.EVENT_BUS.register(new ManaCostHandler());
+        MinecraftForge.EVENT_BUS.register(new ItemWatchHandler());
+        MinecraftForge.EVENT_BUS.register(new EntityConstructionHandler());
+        MinecraftForge.EVENT_BUS.register(new SummonDropHandler());
+        MinecraftForge.EVENT_BUS.register(new CompendiumPickupHandler());
+        MinecraftForge.EVENT_BUS.register(new SoulspikeAttackHandler());
+        MinecraftForge.EVENT_BUS.register(new ConnectionTickrateHandler());
+        MinecraftForge.EVENT_BUS.register(new BlockBreakHandler());
+        MinecraftForge.EVENT_BUS.register(new SoulboundItemsHandler());
+        MinecraftForge.EVENT_BUS.register(new PlayerCloneDataHandler());
+        MinecraftForge.EVENT_BUS.register(new JumpHandler());
+        MinecraftForge.EVENT_BUS.register(new CombatDefenseHandler());
+        MinecraftForge.EVENT_BUS.register(new FallHandler());
+        MinecraftForge.EVENT_BUS.register(new EntityDeathHandler());
+        MinecraftForge.EVENT_BUS.register(new EndermanTeleportHandler());
+        MinecraftForge.EVENT_BUS.register(new LivingHurtHandler());
+        MinecraftForge.EVENT_BUS.register(new AcceleratedEntityTickHandler());
+        MinecraftForge.EVENT_BUS.register(new LivingUpdateHandler());
         MinecraftForge.EVENT_BUS.register(PowerNodeCache.instance);
         MinecraftForge.EVENT_BUS.register(new AffinityHelper());
         MinecraftForge.EVENT_BUS.register(new SpellUnlockManager());
@@ -250,19 +289,15 @@ public class CommonProxy {
         AMNetHandler.INSTANCE.registerChannels(new AMPacketProcessorServer());
     }
 
-    public void addQueuedRetrogen(int dimensionID, ChunkCoordIntPair pair) {
-        ArrayList<ChunkCoordIntPair> chunks;
-        if (RetroactiveWorldgenerator.deferredChunkGeneration.containsKey(dimensionID)) {
-            chunks = RetroactiveWorldgenerator.deferredChunkGeneration.get(dimensionID);
-        } else {
-            chunks = new ArrayList<ChunkCoordIntPair>();
-        }
-
-        chunks.add(pair);
-        RetroactiveWorldgenerator.deferredChunkGeneration.put(dimensionID, chunks);
+    public void addQueuedRetrogen(World world, ChunkCoordIntPair pair) {
+        WorldStateManager.retroGenChunks(world)
+            .add(pair);
     }
 
     public void flashManaBar() {}
+
+    /** Client-only timer replacement for the time-manipulation spells. */
+    public void changeClientTickrate(float ticksPerSecond) {}
 
     public void blackoutArmorPiece(EntityPlayerMP player, int slot, int cooldown) {
         serverTickHandler.blackoutArmorPiece(player, slot, cooldown);

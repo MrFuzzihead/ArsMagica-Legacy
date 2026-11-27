@@ -33,8 +33,8 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
 
     private Entity entity;
 
-    private static final byte SPELL_LEARNED = 0x01;
-    private static final byte CLIENT_SYNC = 0x02;
+    static final byte SPELL_LEARNED = 0x01;
+    static final byte CLIENT_SYNC = 0x02;
 
     private static final byte KNOWN_SHAPE_UPDATE = 0x1;
     private static final byte KNOWN_COMPONENT_UPDATE = 0x2;
@@ -46,9 +46,8 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
 
     private int updateFlags = 0;
 
-    private boolean forcingSync = false;
-    private int ticksToSync = 0;
     private final int syncTickDelay = 2400;
+    private final SyncWindow syncWindow = new SyncWindow(syncTickDelay);
 
     private ArrayList<Integer> shapesKnown;
     private ArrayList<Integer> componentsKnown;
@@ -63,6 +62,11 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
 
     public static SkillData For(EntityPlayer player) {
         return (SkillData) player.getExtendedProperties(identifier);
+    }
+
+    static SkillTrees treeByOrdinal(int ordinal) {
+        SkillTrees[] trees = SkillTrees.values();
+        return ordinal >= 0 && ordinal < trees.length ? trees[ordinal] : SkillTrees.None;
     }
 
     public SkillData(EntityPlayer player) {
@@ -316,11 +320,25 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
         return talentsKnown.toArray(new Integer[talentsKnown.size()]);
     }
 
+    /** Server-to-client sync path; accepts both sub-packet types. */
     public boolean handlePacketData(byte[] data) {
+        return handlePacketData(data, true);
+    }
+
+    /** Client-to-server path; only a validated spell-learn request is allowed. */
+    public boolean handlePacketDataFromClient(byte[] data) {
+        return handlePacketData(data, false);
+    }
+
+    private boolean handlePacketData(byte[] data, boolean allowClientSync) {
         try {
             AMDataReader rdr = new AMDataReader(data, false);
             byte subID = rdr.getByte();
             int entityID = rdr.getInt();
+            if (player != null && entityID != player.getEntityId()) {
+                LogHelper.warn("Rejected skill packet for entity %d from player %d", entityID, player.getEntityId());
+                return false;
+            }
             switch (subID) {
                 case SPELL_LEARNED:
                     int id = rdr.getInt();
@@ -329,10 +347,14 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
                     if (!entity.worldObj.isRemote) forceSync();
                     break;
                 case CLIENT_SYNC:
+                    if (!allowClientSync) {
+                        LogHelper.warn("Rejected client-authoritative skill sync from player %d", entityID);
+                        return false;
+                    }
                     int flags = rdr.getInt();
 
                     if (rdr.getBoolean()) {
-                        this.primaryTree = SkillTrees.values()[rdr.getInt()];
+                        this.primaryTree = treeByOrdinal(rdr.getInt());
                     }
 
                     if ((flags & KNOWN_SHAPE_UPDATE) == KNOWN_SHAPE_UPDATE) {
@@ -372,8 +394,8 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
                     }
                     break;
             }
-        } catch (Throwable t) {
-            t.printStackTrace();
+        } catch (Exception t) {
+            LogHelper.error(t, "Failed to handle skill packet");
             return false;
         }
         return true;
@@ -384,34 +406,28 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
     }
 
     public void setFullSync() {
-        this.ticksToSync = 0;
         this.updateFlags = this.updateFlags | KNOWN_SHAPE_UPDATE
             | KNOWN_COMPONENT_UPDATE
             | KNOWN_MODIFIER_UPDATE
             | KNOWN_TALENTS_UPDATE
             | NUM_SPELL_POINTS;
         this.hasDoneFullSync = true;
-        this.forcingSync = true;
+        this.syncWindow.fullSync();
     }
 
     public void setDelayedSync(int delay) {
         setFullSync();
-        this.ticksToSync = delay;
+        this.syncWindow.setTicks(delay);
     }
 
     @Override
     public void forceSync() {
-        this.forcingSync = true;
-        this.ticksToSync = 0;
+        this.syncWindow.force();
     }
 
     public boolean hasUpdate() {
-        if (!(this.entity instanceof EntityPlayer) && !forcingSync) {
-            return false;
-        }
-        this.ticksToSync--;
-        if (this.ticksToSync <= 0) this.ticksToSync = this.syncTickDelay;
-        return (this.updateFlags != 0 || this.forcingSync) && this.ticksToSync == this.syncTickDelay;
+        return this.syncWindow
+            .shouldSend(this.entity instanceof EntityPlayer, this.updateFlags != 0 || this.syncWindow.isForcing());
     }
 
     private byte[] getUpdateData() {
@@ -460,7 +476,7 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
         }
 
         this.updateFlags = 0;
-        this.forcingSync = false;
+        this.syncWindow.clearForcing();
 
         return writer.generate();
     }
@@ -529,9 +545,7 @@ public class SkillData implements IExtendedEntityProperties, ISkillData {
             }
 
             int ordinal = spellKnowledgeData.getInteger("PrimarySkillTree");
-            if (ordinal > -1) {
-                this.primaryTree = SkillTrees.values()[ordinal];
-            }
+            this.primaryTree = treeByOrdinal(ordinal);
         }
     }
 

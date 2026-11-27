@@ -443,9 +443,6 @@ public class ItemsCommonProxy {
             .setUnlocalizedAndTextureName("arsmagica2:ArcaneCompendium")
             .setCreativeTab(itemTab);
         spell_component = new ItemSpellPart();
-        // TODO: Item.itemsList[BlocksCommonProxy.wakebloom.blockID] = new
-        // ItemWakebloom(BlocksCommonProxy.wakebloom.blockID -
-        // 256).setUnlocalizedName("arsmagica2:wakebloom").setCreativeTab(BlocksCommonProxy.blockTab);
         crystalPhylactery = (ItemCrystalPhylactery) new ItemCrystalPhylactery()
             .setUnlocalizedAndTextureName("arsmagica2:crystal_phylactery")
             .setCreativeTab(itemTab);

@@ -6,6 +6,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
+import am2.LogHelper;
 import am2.api.math.AMVector3;
 
 public class PathNavigator {
@@ -300,7 +301,7 @@ public class PathNavigator {
                 currentWaypoint.Unshift();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LogHelper.error(e, "Path navigation failed");
             currentWaypoint = null;
         }
     }

@@ -1,7 +1,6 @@
 package am2.spell.components;
 
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -26,12 +25,6 @@ import am2.playerextensions.ExtendedProperties;
 import am2.utility.MathUtilities;
 
 public class Attract implements ISpellComponent {
-
-    private final HashMap arcs;
-
-    public Attract() {
-        arcs = new HashMap();
-    }
 
     @Override
     public boolean applyEffectBlock(ItemStack stack, World world, int blockx, int blocky, int blockz, int blockFace,

@@ -11,68 +11,68 @@ public class CompendiumEntryTypes {
         "guide",
         "Guides",
         0,
-        CompendiumEntryGuide.class);
+        CompendiumEntryGuide::new);
     public final CompendiumEntryType MECHANIC = new CompendiumEntryType(
         "mechanics",
         "mechanic",
         "Mechanics",
         1,
-        CompendiumEntryMechanic.class);
+        CompendiumEntryMechanic::new);
     public final CompendiumEntryType ITEM = new CompendiumEntryType(
         "items",
         "item",
         "Items",
         2,
-        CompendiumEntryItem.class);
+        CompendiumEntryItem::new);
     public final CompendiumEntryType BLOCK = new CompendiumEntryType(
         "blocks",
         "block",
         "Blocks",
         3,
-        CompendiumEntryBlock.class);
+        CompendiumEntryBlock::new);
     public final CompendiumEntryType SPELL_SHAPE = new CompendiumEntryType(
         "shapes",
         "shape",
         "Shapes",
         4,
-        CompendiumEntrySpellShape.class);
+        CompendiumEntrySpellShape::new);
     public final CompendiumEntryType SPELL_COMPONENT = new CompendiumEntryType(
         "components",
         "component",
         "Components",
         5,
-        CompendiumEntrySpellComponent.class);
+        CompendiumEntrySpellComponent::new);
     public final CompendiumEntryType SPELL_MODIFIER = new CompendiumEntryType(
         "modifiers",
         "modifier",
         "Modifiers",
         6,
-        CompendiumEntrySpellModifier.class);
+        CompendiumEntrySpellModifier::new);
     public final CompendiumEntryType TALENT = new CompendiumEntryType(
         "talents",
         "talent",
         "Talents",
         7,
-        CompendiumEntryTalent.class);
-    public final CompendiumEntryType MOB = new CompendiumEntryType("mobs", "mob", "Mobs", 8, CompendiumEntryMob.class);
+        CompendiumEntryTalent::new);
+    public final CompendiumEntryType MOB = new CompendiumEntryType("mobs", "mob", "Mobs", 8, CompendiumEntryMob::new);
     public final CompendiumEntryType STRUCTURE = new CompendiumEntryType(
         "structures",
         "structure",
         "Structures",
         9,
-        CompendiumEntryStructure.class);
+        CompendiumEntryStructure::new);
     public final CompendiumEntryType RITUAL = new CompendiumEntryType(
         "structures",
         "ritual",
         "Structures",
         9,
-        CompendiumEntryRitual.class);
+        CompendiumEntryRitual::new);
     public final CompendiumEntryType BOSS = new CompendiumEntryType(
         "bosses",
         "boss",
         "Bosses",
         10,
-        CompendiumEntryBoss.class);
+        CompendiumEntryBoss::new);
 
     public static final CompendiumEntryTypes instance = new CompendiumEntryTypes();
     private boolean initialized = false;

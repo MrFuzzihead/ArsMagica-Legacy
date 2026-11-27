@@ -64,7 +64,7 @@ public class Dispel implements ISpellComponent {
 
         List<Integer> effectsToRemove = new ArrayList<Integer>();
 
-        Iterator iter = ((EntityLivingBase) target).getActivePotionEffects()
+        Iterator<PotionEffect> iter = ((EntityLivingBase) target).getActivePotionEffects()
             .iterator();
 
         int magnitudeLeft = 6 + (SpellUtils.instance.countModifiers(SpellModifiers.BUFF_POWER, stack) * 2);
@@ -97,21 +97,6 @@ public class Dispel implements ISpellComponent {
             removePotionEffects((EntityLivingBase) target, effectsToRemove);
         }
 
-        // TODO:
-        /*
-         * if (ExtendedProperties.For((EntityLivingBase)target).getNumSummons() > 0){
-         * if (!world.isRemote){
-         * Iterator it = world.loadedEntityList.iterator();
-         * while (it.hasNext()){
-         * Entity ent = (Entity)it.next();
-         * if (ent instanceof EntitySummonedCreature && ((EntitySummonedCreature)ent).GetOwningEntity() == target){
-         * ent.attackEntityFrom(DamageSource.outOfWorld, 5000);
-         * break;
-         * }
-         * }
-         * }
-         * }
-         */
         return true;
     }
 

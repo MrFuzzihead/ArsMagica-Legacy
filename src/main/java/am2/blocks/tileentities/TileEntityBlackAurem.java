@@ -252,14 +252,6 @@ public class TileEntityBlackAurem extends TileEntityObelisk implements IMultiblo
                 }
             }
 
-            // TODO:
-            /*
-             * if (rand.nextDouble() < (this.getCharge() / this.getCapacity()) * 0.01) {
-             * int maxSev = (int)Math.ceil((this.getCharge() / this.getCapacity()) * 2) + rand.nextInt(2);
-             * IllEffectsManager.instance.ApplyRandomBadThing(this, IllEffectSeverity.values()[maxSev],
-             * BadThingTypes.DARKNEXUS);
-             * }
-             */
         }
 
         super.callSuperUpdate();

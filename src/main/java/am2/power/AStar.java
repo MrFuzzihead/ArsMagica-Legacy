@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 
+import am2.LogHelper;
+
 public abstract class AStar<T> {
 
     private class Path implements Comparable {
@@ -49,7 +51,7 @@ public abstract class AStar<T> {
         @Override
         public int compareTo(Object o) {
             Path p = (Path) o;
-            return (int) (f - p.f);
+            return Double.compare(f, p.f);
         }
 
         /**
@@ -230,7 +232,7 @@ public abstract class AStar<T> {
                 expand(p);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LogHelper.error(e, "Path search failed");
         }
         return null;
 

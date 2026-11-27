@@ -87,7 +87,7 @@ public class EssenceGeneratorRenderer extends TileEntitySpecialRenderer {
         GL11.glRotatef(j, 0.0F, 1.0F, 0.0F); // rotate based on metadata
         try {
             model_obelisk.renderAll();
-        } catch (Throwable t) {
+        } catch (Exception t) {
 
         }
 
@@ -104,7 +104,7 @@ public class EssenceGeneratorRenderer extends TileEntitySpecialRenderer {
             GL11.glColor4f(1, 1, 1, transp);
             try {
                 model_obelisk.renderAll();
-            } catch (Throwable t) {
+            } catch (Exception t) {
 
             }
             GL11.glPopMatrix();
@@ -129,7 +129,7 @@ public class EssenceGeneratorRenderer extends TileEntitySpecialRenderer {
 
         try {
             model_celestial.renderAll();
-        } catch (Throwable t) {
+        } catch (Exception t) {
 
         }
 
@@ -195,7 +195,7 @@ public class EssenceGeneratorRenderer extends TileEntitySpecialRenderer {
             tessellator.addVertexWithUV(f4 - f5, f4 - f6, 0.0D, BRX, TLY);
             tessellator.addVertexWithUV(0.0F - f5, f4 - f6, 0.0D, TLX, TLY);
             tessellator.draw();
-        } catch (Throwable t) {}
+        } catch (Exception t) {}
     }
 
     @Override

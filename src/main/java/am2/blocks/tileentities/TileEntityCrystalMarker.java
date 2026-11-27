@@ -55,11 +55,12 @@ public class TileEntityCrystalMarker extends TileEntity implements IInventory, I
         this.priority++;
         this.priority %= TileEntityFlickerHabitat.PRIORITY_LEVELS;
         if (!this.worldObj.isRemote) {
+            Packet packet = getDescriptionPacket();
             for (EntityPlayerMP player : (List<EntityPlayerMP>) this.worldObj.getEntitiesWithinAABB(
                 EntityPlayerMP.class,
                 AxisAlignedBB.getBoundingBox(xCoord, yCoord, zCoord, xCoord + 1, yCoord + 1, zCoord + 1)
                     .expand(64, 64, 64))) {
-                player.playerNetServerHandler.sendPacket(getDescriptionPacket());
+                player.playerNetServerHandler.sendPacket(packet);
             }
         }
     }
@@ -179,7 +180,7 @@ public class TileEntityCrystalMarker extends TileEntity implements IInventory, I
 
             for (int i = 0; i < this.getSizeInventory(); i++) {
                 if (filterItems[i] != null) {
-                    String tag = String.format("ArrayIndex", i);
+                    String tag = "ArrayIndex";
                     NBTTagCompound nbttagcompound1 = new NBTTagCompound();
                     nbttagcompound1.setByte(tag, (byte) i);
                     filterItems[i].writeToNBT(nbttagcompound1);
@@ -256,7 +257,7 @@ public class TileEntityCrystalMarker extends TileEntity implements IInventory, I
             NBTTagList filterItemsList = par1.getTagList("filterItems", Constants.NBT.TAG_COMPOUND);
             filterItems = new ItemStack[getSizeInventory()];
             for (int i = 0; i < filterItemsList.tagCount(); i++) {
-                String tag = String.format("ArrayIndex", i);
+                String tag = "ArrayIndex";
                 NBTTagCompound nbttagcompound1 = (NBTTagCompound) filterItemsList.getCompoundTagAt(i);
                 byte byte0 = nbttagcompound1.getByte(tag);
                 if (byte0 >= 0 && byte0 < filterItems.length) {

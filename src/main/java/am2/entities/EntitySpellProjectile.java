@@ -43,6 +43,7 @@ public class EntitySpellProjectile extends Entity {
     private final int maxTicksToExist;
     private int ticksExisted;
     private boolean casterCast;
+    private EntityLivingBase directShooter;
     private int originalBounceCount; // used for resetting bounces
 
     private final double friction_coefficient = AMCore.config.getFrictionCoefficient();
@@ -200,6 +201,7 @@ public class EntitySpellProjectile extends Entity {
 
     public void setShootingEntity(EntityLivingBase caster) {
         if (!this.worldObj.isRemote) {
+            this.directShooter = caster;
             if (caster instanceof DummyEntityPlayer) {
                 this.dataWatcher.updateObject(DW_SHOOTER, -999);
                 return;
@@ -219,9 +221,14 @@ public class EntitySpellProjectile extends Entity {
     private EntityLivingBase getShootingEntity() {
         int entityID = this.dataWatcher.getWatchableObjectInt(DW_SHOOTER);
         if (entityID == -999) {
-            EntityPlayer caster = this.worldObj.getClosestPlayer(this.posX, this.posY, this.posZ, -1);
             casterCast = true;
-            return (EntityLivingBase) caster;
+            if (directShooter != null && !directShooter.isDead) {
+                return directShooter;
+            }
+            if (this.worldObj.isRemote) {
+                return this.worldObj.getClosestPlayer(this.posX, this.posY, this.posZ, -1);
+            }
+            return null;
         }
         casterCast = false;
         Entity e = this.worldObj.getEntityByID(entityID);
@@ -320,7 +327,7 @@ public class EntitySpellProjectile extends Entity {
                 movingobjectposition.hitVec.zCoord);
         }
         Entity entity = null;
-        List list = worldObj.getEntitiesWithinAABBExcludingEntity(
+        List<Entity> list = worldObj.getEntitiesWithinAABBExcludingEntity(
             this,
             boundingBox.addCoord(motionX, motionY, motionZ)
                 .expand(1.0D, 1.0D, 1.0D));

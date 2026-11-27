@@ -3,7 +3,9 @@ package am2.configuration;
 import java.io.File;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.potion.Potion;
+import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
@@ -484,6 +486,8 @@ public class AMConfig extends Configuration {
             110,
             "The biome ID for Moo Moo Farm. Change this if you run into issues with other mods that add biomes.")
                 .getInt();
+        witchwoodForestID = sanitizeBiomeId(witchwoodForestID, 100, id -> BiomeGenBase.getBiome(id) != null);
+        mmfBiomeID = sanitizeBiomeId(mmfBiomeID, 110, id -> BiomeGenBase.getBiome(id) != null);
         mmfDimensionID = get(
             CATEGORY_GENERAL,
             KEY_MMFDimensionID,
@@ -746,9 +750,8 @@ public class AMConfig extends Configuration {
             if (s.isEmpty()) continue;
             try {
                 worldgenWhitelist[count1] = Integer.parseInt(s.trim());
-            } catch (Throwable t) {
-                LogHelper.info("Malformed item in worldgen whitelist (%s).  Skipping.", s);
-                t.printStackTrace();
+            } catch (Exception t) {
+                LogHelper.warn(t, "Malformed item in worldgen whitelist (%s).  Skipping.", s);
                 worldgenWhitelist[count1] = -1;
             } finally {
                 count1++;
@@ -767,9 +770,8 @@ public class AMConfig extends Configuration {
             if (s.isEmpty()) continue;
             try {
                 worldgenBlacklist[count] = Integer.parseInt(s.trim());
-            } catch (Throwable t) {
-                LogHelper.info("Malformed item in worldgen blacklist (%s).  Skipping.", s);
-                t.printStackTrace();
+            } catch (Exception t) {
+                LogHelper.warn(t, "Malformed item in worldgen blacklist (%s).  Skipping.", s);
                 worldgenBlacklist[count] = -1;
             } finally {
                 count++;
@@ -813,9 +815,8 @@ public class AMConfig extends Configuration {
             if (s.isEmpty()) continue;
             try {
                 mobBlacklist[count2] = Integer.parseInt(s.trim());
-            } catch (Throwable t) {
-                LogHelper.info("Malformed item in worldgen blacklist (%s).  Skipping.", s);
-                t.printStackTrace();
+            } catch (Exception t) {
+                LogHelper.warn(t, "Malformed item in mod blacklist (%s).  Skipping.", s);
                 mobBlacklist[count2] = -1;
             } finally {
                 count2++;
@@ -841,10 +842,15 @@ public class AMConfig extends Configuration {
         for (String s : split) {
             if (s.isEmpty()) continue;
             try {
-                appropriationMobBlacklist[count] = Class.forName(s);
-            } catch (Throwable t) {
-                LogHelper.info("Malformed item in appropriation entity blacklist (%s).  Skipping.", s);
-                t.printStackTrace();
+                Class<?> clazz = Class.forName(s);
+                if (!Entity.class.isAssignableFrom(clazz)) {
+                    LogHelper.info("Class %s in the appropriation entity blacklist is not an Entity.  Skipping.", s);
+                    appropriationMobBlacklist[count] = null;
+                } else {
+                    appropriationMobBlacklist[count] = clazz;
+                }
+            } catch (Exception | LinkageError t) {
+                LogHelper.warn(t, "Malformed item in appropriation entity blacklist (%s).  Skipping.", s);
                 appropriationMobBlacklist[count] = null;
             } finally {
                 count++;
@@ -1418,21 +1424,91 @@ public class AMConfig extends Configuration {
         return freeID;
     }
 
+    // Potion IDs are written as a single byte to NBT and the effect packets, so 127 is the highest representable ID.
+    // The PotionMixin grows Potion.potionTypes to this size; an ID at or above it would be truncated as a byte.
+    static final int MAX_POTION_ID = 128;
+
+    /**
+     * Returns a valid potion ID, preferring {@code configured} when it is in range and otherwise using
+     * {@code fallback}.
+     * Package-private so it can be unit-tested without constructing a Forge {@code Configuration}.
+     */
+    static int validatePotionId(int configured, int fallback) {
+        if (fallback < 1 || fallback >= MAX_POTION_ID) {
+            fallback = 1;
+        }
+        if (configured < 1 || configured >= MAX_POTION_ID) {
+            return fallback;
+        }
+        return configured;
+    }
+
+    /** Chooses a free potion ID, preferring the configured value and then the first free slot. */
+    /** Falls back when a dimension ID is reserved or already registered. */
+    public static int sanitizeDimensionId(int configured, int fallback, java.util.function.IntPredicate isRegistered) {
+        if (configured == 0 || configured == -1 || configured == 1 || isRegistered.test(configured)) {
+            return fallback;
+        }
+        return configured;
+    }
+
+    /** Falls back when a biome ID is outside 1..255 or already occupied. */
+    public static int sanitizeBiomeId(int configured, int fallback, java.util.function.IntPredicate isOccupied) {
+        if (configured >= 1 && configured <= 255 && !isOccupied.test(configured)) {
+            return configured;
+        }
+        if (fallback >= 1 && fallback <= 255 && !isOccupied.test(fallback)) {
+            return fallback;
+        }
+        for (int i = 40; i <= 255; i++) {
+            if (!isOccupied.test(i)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    static int resolvePotionId(int configured, int fallback, java.util.function.IntPredicate isOccupied) {
+        int sanitized = validatePotionId(configured, fallback);
+        if (!isOccupied.test(sanitized)) {
+            return sanitized;
+        }
+        for (int i = 1; i < MAX_POTION_ID; i++) {
+            if (!isOccupied.test(i)) {
+                return i;
+            }
+        }
+        return sanitized;
+    }
+
     public int getConfigurablePotionID(String id, int default_value) {
         // because we auto-configure, default_value is ignored
         int val = getNextFreePotionID();
 
-        if (val == -1 && !hasKey(CATEGORY_POTIONS, id)) {
+        if (val == -1) {
             LogHelper.error("Cannot find a free potion ID for the %s effect. This will cause severe problems!", id);
             LogHelper.error(
                 "Effect %s has been assigned to a default of potion ID 1 (movement speed). Erroneous behaviour *will* result.",
                 id);
             val = 1;
         }
+
         Property prop = get(CATEGORY_POTIONS, id, val);
-        val = prop.getInt(val);
-        save();
-        return val;
+        int configured = prop.getInt(val);
+        int sanitized = resolvePotionId(configured, val, index -> Potion.potionTypes[index] != null);
+        if (sanitized != configured) {
+            LogHelper.error(
+                "Potion ID %d configured for the %s effect is unavailable; using %d instead.",
+                configured,
+                id,
+                sanitized);
+            prop.set(sanitized);
+        }
+        if (Potion.potionTypes[sanitized] != null) {
+            LogHelper
+                .error("No free potion ID remains for the %s effect; the configured slot is already occupied.", id);
+        }
+        return sanitized;
     }
 
     // ====================================================================================

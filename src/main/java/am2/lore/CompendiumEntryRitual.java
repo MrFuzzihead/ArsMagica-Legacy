@@ -1,12 +1,11 @@
 package am2.lore;
 
-import java.lang.reflect.Field;
-
 import net.minecraft.item.ItemStack;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import am2.LogHelper;
 import am2.RitualShapeHelper;
 import am2.api.blocks.MultiblockStructureDefinition;
 import am2.api.spell.component.interfaces.IRitualInteraction;
@@ -45,15 +44,14 @@ public class CompendiumEntryRitual extends CompendiumEntry {
     protected GuiArcaneCompendium getCompendiumGui(String searchID, int meta) {
         if (this.ritualShape != null) {
             try {
-                Field f = RitualShapeHelper.class.getField(ritualShape);
-                MultiblockStructureDefinition def = (MultiblockStructureDefinition) f.get(RitualShapeHelper.instance);
+                MultiblockStructureDefinition def = RitualShapeHelper.instance.getRitualShape(this.ritualShape);
                 ISkillTreeEntry entry = SkillManager.instance.getSkill(ritualController);
                 if (entry instanceof IRitualInteraction) {
                     IRitualInteraction controller = (IRitualInteraction) entry;
                     return new GuiArcaneCompendium(searchID, def, controller);
                 }
-            } catch (Throwable e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                LogHelper.error(e, "Failed to create the ritual entry GUI");
             }
         }
         return new GuiArcaneCompendium(searchID);

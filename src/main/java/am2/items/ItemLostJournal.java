@@ -134,7 +134,7 @@ public class ItemLostJournal extends ItemEditableBook {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void getSubItems(Item item, CreativeTabs par2CreativeTabs, List par3List) {
+    public void getSubItems(Item item, CreativeTabs par2CreativeTabs, List<ItemStack> par3List) {
 
         super.getSubItems(item, par2CreativeTabs, par3List);
 

@@ -1,9 +1,7 @@
 package am2.blocks;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -31,9 +29,6 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockEverstone extends PoweredBlock {
-
-    private boolean wiresProvidePower = true;
-    private Set blocksNeedingUpdate = new HashSet();
 
     protected BlockEverstone() {
         super(Material.rock);
@@ -161,7 +156,7 @@ public class BlockEverstone extends PoweredBlock {
 
     @Override
     public void addCollisionBoxesToList(World par1World, int par2, int par3, int par4, AxisAlignedBB par5AxisAlignedBB,
-        List par6List, Entity par7Entity) {
+        List<AxisAlignedBB> par6List, Entity par7Entity) {
         TileEntityEverstone everstone = getTE(par1World, par2, par3, par4);
         if (everstone == null || everstone.isSolid())
             super.addCollisionBoxesToList(par1World, par2, par3, par4, par5AxisAlignedBB, par6List, par7Entity);

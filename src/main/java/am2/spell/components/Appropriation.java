@@ -2,10 +2,12 @@ package am2.spell.components;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.boss.IBossDisplayData;
 import net.minecraft.entity.player.EntityPlayer;
@@ -24,6 +26,7 @@ import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 
 import am2.AMCore;
+import am2.LogHelper;
 import am2.api.spell.component.interfaces.ISpellComponent;
 import am2.api.spell.enums.Affinity;
 import am2.blocks.BlocksCommonProxy;
@@ -224,8 +227,8 @@ public class Appropriation implements ISpellComponent {
                     // remove tile entity first to prevent content dropping which is already saved in the NBT
                     try {
                         world.removeTileEntity(blockx, blocky, blockz);
-                    } catch (Throwable exception) {
-                        exception.printStackTrace();
+                    } catch (Exception exception) {
+                        LogHelper.error(exception, "Failed to remove the appropriated tile entity");
                     }
                 }
 
@@ -337,14 +340,26 @@ public class Appropriation implements ISpellComponent {
                     String clazz = storageCompound.getString("class");
                     NBTTagCompound entData = storageCompound.getCompoundTag("targetNBT");
                     try {
-                        Entity ent = (Entity) Class.forName(clazz)
-                            .getConstructor(World.class)
-                            .newInstance(world);
-                        ent.readFromNBT(entData);
-                        ent.setPosition(hitX, hitY, hitZ);
-                        world.spawnEntityInWorld(ent);
-                    } catch (Throwable t) {
-                        t.printStackTrace();
+                        Class<?> entityClass = null;
+                        for (Map.Entry<String, Class<? extends Entity>> entry : EntityList.stringToClassMapping
+                            .entrySet()) {
+                            if (entry.getValue()
+                                .getName()
+                                .equals(clazz)) {
+                                entityClass = entry.getValue();
+                                break;
+                            }
+                        }
+                        String entityName = entityClass == null ? null
+                            : EntityList.classToStringMapping.get(entityClass);
+                        Entity ent = entityName == null ? null : EntityList.createEntityByName(entityName, world);
+                        if (ent != null) {
+                            ent.readFromNBT(entData);
+                            ent.setPosition(hitX, hitY, hitZ);
+                            world.spawnEntityInWorld(ent);
+                        }
+                    } catch (Exception t) {
+                        LogHelper.error(t, "Failed to place the appropriated entity");
                     }
                 } else if (type.equals("block")) {
                     // String blockName = storageCompound.getString("blockName");

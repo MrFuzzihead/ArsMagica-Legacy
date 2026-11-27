@@ -11,6 +11,7 @@ import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemBook;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 
 import am2.blocks.BlocksCommonProxy;
 import am2.items.ItemsCommonProxy;
@@ -64,6 +65,25 @@ public class ItemFrameWatcher {
      *               thread. Frames belonging to the other side are skipped entirely, so neither side
      *               reaches into a world it does not own.
      */
+    /** Clears everything, e.g. on a client disconnect. */
+    public void clear() {
+        synchronized (lock) {
+            watchedFrames.clear();
+            queuedAddFrames.clear();
+            queuedRemoveFrames.clear();
+        }
+    }
+
+    /** Removes entries for one unloading world. */
+    public void clearWorld(World world) {
+        synchronized (lock) {
+            watchedFrames.keySet()
+                .removeIf(frameComp -> frameComp.frame == null || frameComp.frame.worldObj == world);
+            queuedAddFrames.removeIf(frameComp -> frameComp.frame == null || frameComp.frame.worldObj == world);
+            queuedRemoveFrames.removeIf(frameComp -> frameComp.frame == null || frameComp.frame.worldObj == world);
+        }
+    }
+
     public void checkWatchedFrames(boolean remote) {
         synchronized (lock) {
             ArrayList<EntityItemFrameComparator> toRemove = new ArrayList<EntityItemFrameComparator>();
@@ -251,7 +271,7 @@ public class ItemFrameWatcher {
         }
     }
 
-    private class EntityItemFrameComparator {
+    static class EntityItemFrameComparator {
 
         private final EntityItemFrame frame;
 
@@ -259,16 +279,24 @@ public class ItemFrameWatcher {
             this.frame = frame;
         }
 
+        private int dimension() {
+            return frame == null || frame.worldObj == null ? Integer.MIN_VALUE : frame.worldObj.provider.dimensionId;
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (frame == null) return false;
             if (obj instanceof EntityItemFrame) {
-                return ((EntityItemFrame) obj).getEntityId() == frame.getEntityId()
-                    && ((EntityItemFrame) obj).worldObj.isRemote == frame.worldObj.isRemote;
+                EntityItemFrame other = (EntityItemFrame) obj;
+                return other.getEntityId() == frame.getEntityId() && other.worldObj != null
+                    && other.worldObj.provider.dimensionId == dimension()
+                    && other.worldObj.isRemote == frame.worldObj.isRemote;
             }
             if (obj instanceof EntityItemFrameComparator) {
-                return ((EntityItemFrameComparator) obj).frame.getEntityId() == frame.getEntityId()
-                    && ((EntityItemFrameComparator) obj).frame.worldObj.isRemote == frame.worldObj.isRemote;
+                EntityItemFrameComparator other = (EntityItemFrameComparator) obj;
+                return other.frame != null && other.frame.getEntityId() == frame.getEntityId()
+                    && other.dimension() == dimension()
+                    && other.frame.worldObj.isRemote == frame.worldObj.isRemote;
             }
             return false;
         }
@@ -276,7 +304,10 @@ public class ItemFrameWatcher {
         @Override
         public int hashCode() {
             if (frame == null || frame.worldObj == null) return 0;
-            return frame.getEntityId() + (frame.worldObj.isRemote ? 1 : 2);
+            int result = frame.getEntityId();
+            result = 31 * result + dimension();
+            result = 31 * result + (frame.worldObj.isRemote ? 1 : 2);
+            return result;
         }
     }
 }

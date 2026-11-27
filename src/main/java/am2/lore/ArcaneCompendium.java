@@ -39,7 +39,6 @@ import am2.api.spell.component.interfaces.ISpellShape;
 import am2.items.ItemsCommonProxy;
 import am2.playerextensions.ExtendedProperties;
 import am2.proxy.tick.ClientTickHandler;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -74,7 +73,6 @@ public class ArcaneCompendium implements ILoreHelper {
     private boolean hasLoaded = false;
 
     private String languageCode = "";
-    private String MCVersion = "";
 
     private ArcaneCompendium() {
         compendium = new TreeMap<String, CompendiumEntry>();
@@ -105,8 +103,7 @@ public class ArcaneCompendium implements ILoreHelper {
                 }
             }
         } catch (Exception e) {
-            LogHelper.error("Compendium unlock state failed to save! Please report this error!");
-            e.printStackTrace();
+            LogHelper.error(e, "Compendium unlock state failed to save! Please report this error!");
         }
     }
 
@@ -128,8 +125,7 @@ public class ArcaneCompendium implements ILoreHelper {
                     .requestEntriesUpdateFromServer();
             }
         } catch (Exception e) {
-            LogHelper.error("Compendium unlock state failed to load! Please report this error!");
-            e.printStackTrace();
+            LogHelper.error(e, "Compendium unlock state failed to load! Please report this error!");
         }
     }
 
@@ -142,8 +138,6 @@ public class ArcaneCompendium implements ILoreHelper {
             LogHelper.error("Got a current language of NULL from Minecraft?!?  The compendium cannot load!");
             return;
         }
-        MCVersion = (String) ReflectionHelper
-            .getPrivateValue(Minecraft.class, Minecraft.getMinecraft(), "field_110447_Z", "launchedVersion");
         languageCode = lang.getLanguageCode()
             .trim();
 
@@ -163,7 +157,7 @@ public class ArcaneCompendium implements ILoreHelper {
         try {
             stream.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            LogHelper.error(e, "Failed to close the compendium stream");
         }
     }
 
@@ -232,8 +226,8 @@ public class ArcaneCompendium implements ILoreHelper {
                 }
             }
 
-        } catch (Throwable t) {
-            t.printStackTrace();
+        } catch (Exception t) {
+            LogHelper.error(t, "Failed to load compendium entries");
         }
     }
 
@@ -479,7 +473,7 @@ public class ArcaneCompendium implements ILoreHelper {
                     .setCompendiumEntry(entryKey, state);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LogHelper.error(e, "Failed to update compendium entry state");
         }
 
         LogHelper.debug("Successfully added compendium entry %s", entryKey);

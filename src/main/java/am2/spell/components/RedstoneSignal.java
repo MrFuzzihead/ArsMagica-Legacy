@@ -12,13 +12,13 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
-import net.tclproject.mysteriumlib.asm.fixes.MysteriumPatchesFixesMagicka;
 
 import am2.api.spell.component.interfaces.ISpellComponent;
 import am2.api.spell.enums.Affinity;
 import am2.api.spell.enums.SpellModifiers;
 import am2.items.ItemsCommonProxy;
 import am2.spell.SpellUtils;
+import am2.utility.RedstoneInlayState;
 
 public class RedstoneSignal implements ISpellComponent {
 
@@ -34,8 +34,7 @@ public class RedstoneSignal implements ISpellComponent {
         int activeTime = SpellUtils.instance
             .getModifiedInt_Mul(10, stack, caster, caster, world, 0, SpellModifiers.DURATION);
         activeTime = SpellUtils.instance.modifyDurationBasedOnArmor(caster, activeTime);
-        MysteriumPatchesFixesMagicka.providingRedstone
-            .add(new int[] { world.provider.dimensionId, blockx, blocky, blockz, activeTime });
+        RedstoneInlayState.add(world.provider.dimensionId, blockx, blocky, blockz, activeTime);
         block.onNeighborBlockChange(world, blockx, blocky, blockz, Blocks.stonebrick);
         return true;
     }

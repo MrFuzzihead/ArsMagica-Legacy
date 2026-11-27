@@ -72,7 +72,7 @@ public class FillManaBarCommand extends CommandBase {
     }
 
     @Override
-    public List addTabCompletionOptions(ICommandSender var1, String[] var2) {
+    public List<String> addTabCompletionOptions(ICommandSender var1, String[] var2) {
         if (var2.length == 1) {
             ArrayList<String> completions = new ArrayList<String>();
             EntityPlayer player = getCommandSenderAsPlayer(var1);

@@ -72,6 +72,7 @@ import am2.playerextensions.RiftStorage;
 import am2.playerextensions.SkillData;
 import am2.power.PowerNodeCache;
 import am2.proxy.CommonProxy;
+import am2.spell.SkillManager;
 import am2.spell.SkillTreeManager;
 import am2.spell.SpellUtils;
 import am2.utility.KeystoneUtilities;
@@ -159,8 +160,23 @@ public class AMCore {
 
         initAPI();
 
-        DimensionManager.registerProviderType(config.getMMFDimensionID(), SCLWorldProvider.class, false);
-        DimensionManager.registerDimension(config.getMMFDimensionID(), config.getMMFDimensionID());
+        int mmfDimensionId = AMConfig
+            .sanitizeDimensionId(config.getMMFDimensionID(), -31, DimensionManager::isDimensionRegistered);
+        if (mmfDimensionId != config.getMMFDimensionID()) {
+            LogHelper.warn(
+                "MMF dimension ID %d is reserved or already registered; using %d instead.",
+                config.getMMFDimensionID(),
+                mmfDimensionId);
+        }
+        if (!DimensionManager.isDimensionRegistered(mmfDimensionId)) {
+            if (DimensionManager.registerProviderType(mmfDimensionId, SCLWorldProvider.class, false)) {
+                DimensionManager.registerDimension(mmfDimensionId, mmfDimensionId);
+            } else {
+                LogHelper.error(
+                    "Unable to register the MMF dimension provider type for ID %d; the MMF dimension is unavailable.",
+                    mmfDimensionId);
+            }
+        }
 
         if (AMCore.config.getEnableWitchwoodForest()) {
             BiomeDictionary.registerBiomeType(BiomeWitchwoodForest.instance, Type.FOREST, Type.MAGICAL);
@@ -199,13 +215,13 @@ public class AMCore {
         // if (Loader.isModLoaded("MineFactoryReloaded"))
         // MFRInterop.init();
 
-        try {
-            Class.forName("forestry.api.recipes.RecipeManagers", false, getClass().getClassLoader());
-            Class.forName("magicbees.bees.BeeProductHelper", false, getClass().getClassLoader());
-            Class.forName("magicbees.bees.BeeSpecies", false, getClass().getClassLoader());
-            AMBeeCompat.init();
-        } catch (ClassNotFoundException e) {
-            LogHelper.info("A compatible MagicBees version was not found, compat not loading.");
+        if (Loader.isModLoaded("Forestry") && Loader.isModLoaded("MagicBees")) {
+            try {
+                AMBeeCompat.init();
+            } catch (LinkageError e) {
+                // The mods are present but the API version differs. Keep the rest of AM2 usable.
+                LogHelper.info("A compatible Forestry/MagicBees API was not found, compat not loading.");
+            }
         }
 
         // Reduce onEntityLiving() lag by skipping unnecessary tasks if disabled.
@@ -283,6 +299,7 @@ public class AMCore {
         }
         // custom data
         CustomWorldData.saveAllWorldData();
+        AMEventHandler.clearAllTransientState();
     }
 
     @EventHandler
@@ -291,9 +308,8 @@ public class AMCore {
             switch (msg.key) {
                 case "dsb": {
                     LogHelper.info("Received dimension spawn blacklist IMC!  Processing.");
-                    String[] split = msg.getStringValue()
-                        .split("|");
-                    if (split.length != 2) {
+                    String[] split = parseBlacklistImc(msg.getStringValue());
+                    if (split == null) {
                         LogHelper.warn(
                             "Could not parse dsb IMC - malformed identifiers!  Syntax is 'ClassName|DimensionID', for example:  EntityDryad|22");
                         continue;
@@ -308,9 +324,8 @@ public class AMCore {
                 }
                 case "bsb": {
                     LogHelper.info("Received biome spawn blacklist IMC!  Processing.");
-                    String[] split = msg.getStringValue()
-                        .split("|");
-                    if (split.length != 2) {
+                    String[] split = parseBlacklistImc(msg.getStringValue());
+                    if (split == null) {
                         LogHelper.warn(
                             "Could not parse bsb IMC - malformed identifiers!  Syntax is 'ClassName|BiomeID', for example:  EntityDryad|22");
                         continue;
@@ -345,9 +360,29 @@ public class AMCore {
         }
     }
 
+    /**
+     * Parses the documented {@code ClassName|ID} IMC syntax. {@code split("|")} treats the pipe as a regex
+     * alternation and returns every character, which made every blacklist message look malformed.
+     */
+    static String[] parseBlacklistImc(String value) {
+        if (value == null) {
+            return null;
+        }
+        String[] split = value.split("\\|");
+        if (split.length != 2) {
+            return null;
+        }
+        String className = split[0].trim();
+        String id = split[1].trim();
+        if (className.isEmpty() || id.isEmpty()) {
+            return null;
+        }
+        return new String[] { className, id };
+    }
+
     public void initAPI() {
         LogHelper.info("Initializing API Hooks...");
-        // ArsMagicaApi.instance.setSpellPartManager(new SpellManager());
+        ArsMagicaApi.instance.setSpellPartManager(SkillManager.instance);
         ArsMagicaApi.instance.setEnchantmentHelper(new AMEnchantmentHelper());
         ArsMagicaApi.instance.setSkillTreeManager(SkillTreeManager.instance);
         ArsMagicaApi.instance.setKeystoneHelper(KeystoneUtilities.instance);

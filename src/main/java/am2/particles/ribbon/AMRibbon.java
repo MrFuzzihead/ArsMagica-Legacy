@@ -26,7 +26,7 @@ public class AMRibbon extends EntityFX {
 
     float ribbonSeparation, noisePosn;
     Vector pts;
-    LinkedList curves;
+    LinkedList<RibbonCurve> curves;
     float ribbonColor;
     float ribbonWidth;
     RibbonCurve currentCurve; // current RibbonCurve
@@ -42,7 +42,7 @@ public class AMRibbon extends EntityFX {
         this.setVelocity(0, 0, 0);
         // this.setSize(5, 5);
         noise = new PerlinNoise();
-        curves = new LinkedList();
+        curves = new LinkedList<RibbonCurve>();
         pts = new Vector();
 
         ribbonColor = pcolor;
@@ -112,7 +112,7 @@ public class AMRibbon extends EntityFX {
 
         int size = curves.size();
         if (size > NUMCURVES - 1) {
-            RibbonCurve c = (RibbonCurve) curves.get(0);
+            RibbonCurve c = curves.get(0);
             c.removeSegment();
         }
         stepId++;
@@ -121,7 +121,7 @@ public class AMRibbon extends EntityFX {
 
         // draw curves
         for (int i = 0; i < size; i++) {
-            RibbonCurve c = (RibbonCurve) curves.get(i);
+            RibbonCurve c = curves.get(i);
             c.draw();
         }
     }

@@ -43,7 +43,7 @@ public class AMFlower extends BlockFlower implements ICompendium {
     }
 
     @Override
-    public void getSubBlocks(Item item, CreativeTabs tab, List list) {
+    public void getSubBlocks(Item item, CreativeTabs tab, List<ItemStack> list) {
         list.add(new ItemStack(Item.getItemFromBlock(this), 1, 0));
     }
 

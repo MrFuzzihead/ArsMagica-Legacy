@@ -1,6 +1,5 @@
 package am2.blocks;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,15 +8,16 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemMultiTexture;
 import net.minecraft.item.ItemSlab;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.oredict.RecipeSorter;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
@@ -66,17 +66,17 @@ import am2.blocks.tileentities.TileEntitySpatialVortex;
 import am2.blocks.tileentities.TileEntitySpellReplicator;
 import am2.blocks.tileentities.TileEntitySpellSealedDoor;
 import am2.blocks.tileentities.TileEntitySummoner;
+import am2.crafting.SpellCraftingRecipe;
 import am2.items.ItemEssence;
 import am2.items.ItemOre;
+import am2.items.ItemWakebloom;
 import am2.items.ItemsCommonProxy;
 import am2.items.OreItem;
 import am2.spell.SkillManager;
 import am2.spell.components.Dig;
 import am2.utility.KeystoneUtilities;
 import am2.utility.RecipeUtilities;
-import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 
 public class BlocksCommonProxy {
 
@@ -406,8 +406,16 @@ public class BlocksCommonProxy {
 
     public void InitRecipes() {
 
-        List recipes = CraftingManager.getInstance()
+        List<IRecipe> recipes = CraftingManager.getInstance()
             .getRecipeList();
+
+        // Dynamic staff/scroll/armor combinations have priority over the static recipe list.
+        recipes.add(0, SpellCraftingRecipe.INSTANCE);
+        RecipeSorter.register(
+            "arsmagica2:spell_crafting",
+            SpellCraftingRecipe.class,
+            RecipeSorter.Category.SHAPELESS,
+            "after:minecraft:shapeless");
 
         // essence refiner
         GameRegistry.addRecipe(
@@ -867,7 +875,7 @@ public class BlocksCommonProxy {
         registerBlock(armorInfuser, "armorInfuser");
         registerBlock(flickerLure, "flickerLure");
         registerBlock(arcaneDeconstructor, "arcaneDeconstructor");
-        registerBlock(wakebloom, "wakebloom");
+        registerBlock(wakebloom, ItemWakebloom.class, "wakebloom");
         registerBlock(otherworldAura, "otherworldAura");
         registerBlock(spellSealedDoor, "spellSealedDoor");
         registerBlock(entropicEnervator, "entropicEvervator");
@@ -933,19 +941,10 @@ public class BlocksCommonProxy {
 
     private <T extends ItemBlock> void registerMultiTextureBlock(Block block, String unlocalizedName, T item) {
         arsMagicaBlocksList.add(block);
-        try {
-            GameData data = ReflectionHelper.getPrivateValue(GameData.class, null, "mainData");
-            Method registerBlock = ReflectionHelper
-                .findMethod(GameData.class, data, new String[] { "registerBlock" }, Block.class, String.class);
-            Method registerItem = ReflectionHelper
-                .findMethod(GameData.class, data, new String[] { "registerItem" }, Item.class, String.class);
-            // register block first
-            registerBlock.invoke(data, block, unlocalizedName);
-            // register item second
-            registerItem.invoke(data, item, unlocalizedName);
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
+        // A null ItemBlock class registers the block without creating an ItemBlock. The pre-built instance above is
+        // registered separately so its custom constructor arguments and unlocalized name are preserved.
+        GameRegistry.registerBlock(block, (Class<? extends ItemBlock>) null, unlocalizedName);
+        GameRegistry.registerItem(item, unlocalizedName);
     }
 
     private void registerBlock(Block block, String name) {

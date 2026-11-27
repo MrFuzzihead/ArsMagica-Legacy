@@ -79,7 +79,7 @@ public class BlockCrystalMarker extends BlockContainer {
     }
 
     @Override
-    public void getSubBlocks(Item par1, CreativeTabs par2CreativeTabs, List par3List) {
+    public void getSubBlocks(Item par1, CreativeTabs par2CreativeTabs, List<ItemStack> par3List) {
         par3List.add(new ItemStack(this, 1, META_IN));
         par3List.add(new ItemStack(this, 1, META_OUT));
         par3List.add(new ItemStack(this, 1, META_LIKE_EXPORT));
@@ -369,7 +369,7 @@ public class BlockCrystalMarker extends BlockContainer {
 
     @Override
     public void addCollisionBoxesToList(World par1World, int par2, int par3, int par4, AxisAlignedBB par5AxisAlignedBB,
-        List par6List, Entity par7Entity) {}
+        List<AxisAlignedBB> par6List, Entity par7Entity) {}
 
     @Override
     public void onNeighborBlockChange(World world, int x, int y, int z, Block blockID) {

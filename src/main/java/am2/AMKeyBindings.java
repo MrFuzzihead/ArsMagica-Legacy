@@ -43,7 +43,7 @@ public class AMKeyBindings {
         "key.am2.category");
     public static final KeyBinding AffinityActivationKey = new KeyBinding(
         "key.ActivateAffinityAbility",
-        Keyboard.KEY_X,
+        Keyboard.KEY_V,
         "key.am2.category");
 
     public AMKeyBindings() {
