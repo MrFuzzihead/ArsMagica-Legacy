@@ -997,10 +997,8 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 - **Optional dependencies** — resolved. Unused Baubles/Thermal declarations are gone; CoFH remains `compileOnly` and
   is short-circuited when absent.
 - **`NEIAM2Config`** — verified. NEI discovers classes named `NEI*Config`; the class now documents that contract.
-- **`mcmod.info`** — update the author/credits metadata so it names the current maintainer of this fork and matches the
-  README.
-- **README test counts** — currently says 19 unit tests / 109 server assertions / 23 client assertions. The actual
-  checked state is 472 unit tests / 233 server assertions / 23 client assertions; keep these in sync.
+- **`mcmod.info` / README** — synced: the author list includes the current maintainer and the server assertion count is
+  now 233. Keep both in sync as tests change.
 - **`run`/IDE configuration** — stale jar-name and antlr4 classpath noise remain local-environment cleanup, not source
   defects.
 - **CI** — the game-test workflow already greps for success markers. Add a check that AM2 logs no `ERROR` entries during
