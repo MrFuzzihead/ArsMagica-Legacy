@@ -4,7 +4,7 @@ Review of the current working tree at commit `01775e6` (branch `feature-Refactor
 
 - **Source size:** 1,053 Java files, ~156,400 lines in `src/main/java`.
 - **Tests:** 4 JUnit files (19 tests) and 3 game-test files (~370 lines, 109 server assertions + 23 client assertions).
-- **Measured unit-test coverage:** 177 of 69,939 lines = **0.25%** (39 of 30,318 branches = 0.13%). The `check` gate is 0.2% line coverage, so it is effectively a no-op.
+- **Measured unit-test coverage:** 3,571 of 68,447 lines = **5.22%** (1,385 of 29,815 branches = 4.65%). The `check` gate is 5.0% line / 4.4% branch plus class floors for core utilities.
 - **Review method:** full read of the core lifecycle, event handlers, power system, spell construction/casting, networking, persistence, worldgen, API, build files, and produced logs/artifacts. Findings marked **Verified** are directly visible in the code; **Likely** findings depend on a runtime condition that is not exercised by the current tests.
 
 The codebase is large and has clearly had recent stability work (the CME fixes, the game-test harness, the network-thread guards in `ServerTickHandler`, and the game-test marker checks are all good). The issues below are what is still left, ordered by impact.
@@ -924,7 +924,7 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 - 472 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
 - The server game test has 233 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
 - The client game test has 23 assertions at the main menu (proxy, key bindings, creative tabs, localisation).
-- Coverage is 177/69,939 lines (0.25%), with a 0.2% floor. The game-test coverage report is generated but not enforced.
+- Coverage is 3,571/68,447 lines (5.22%), with a 5.0% line / 4.4% branch floor and class-level floors for core utilities. The game-test coverage report is generated but not enforced.
 
 ### The most valuable missing tests
 
@@ -985,7 +985,8 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 
 ### Coverage gate
 
-A 0.2% floor cannot protect anything. Either set a meaningful per-package floor for the pure utility/API packages, or switch to a changed-line coverage gate in CI (`diff-cover --fail-under=...`) once the baseline is stable. The README already mentions `diff-cover`; make it blocking for new code.
+> **Status: Fixed.** The gate is now 5.0% line / 4.4% branch, with a 55% line floor for the core data/network/API
+> classes. A changed-line `diff-cover` gate is still the better long-term target once the baseline is stable.
 
 ---
 
@@ -1509,9 +1510,9 @@ Java files under src/test/java:     110
 Java files under src/gameTest/java: 3
 JUnit tests:                        472
 Game-test assertions:               233 server + 23 client
-JaCoCo line coverage:               3404 / 68386 (4.98%)
-JaCoCo branch coverage:             1316 / 29755 (4.42%)
-Coverage floor in addon.gradle.kts: 0.002 (0.2%)
+JaCoCo line coverage:               3571 / 68447 (5.22%)
+JaCoCo branch coverage:             1385 / 29815 (4.65%)
+Coverage floor in addon.gradle.kts: 0.050 line / 0.044 branch
 catch (Throwable ...):              0
 printStackTrace():                  0
 TODO/FIXME:                         4

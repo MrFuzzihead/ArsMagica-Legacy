@@ -157,14 +157,39 @@ tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
     executionData.setFrom(jacocoExecFiles)
 
     violationRules {
-        // Bundle-wide regression guard. The floor is the measured value minus a safety margin, not a target. The
-        // suite currently covers the pure math/utility classes; the floor is deliberately low so the game tests can
-        // carry the rest of the mod without failing the build.
+        // Bundle-wide regression guard. The floor is the measured value minus a small safety margin, not a target.
         rule {
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
-                minimum = BigDecimal("0.002")
+                minimum = BigDecimal("0.050")
+            }
+        }
+        rule {
+            limit {
+                counter = "BRANCH"
+                value = "COVEREDRATIO"
+                minimum = BigDecimal("0.044")
+            }
+        }
+
+        // Keep the high-value pure utility/API classes from silently regressing while the bundle floor is still low.
+        rule {
+            element = "CLASS"
+            includes = listOf(
+                "am2.network.AMDataReader",
+                "am2.network.AMDataWriter",
+                "am2.crafting.SpellCraftingRecipe",
+                "am2.playerextensions.effects.TimedEffectCodec",
+                "am2.api.math.AMVector3",
+                "am2.power.PowerNodeEntry",
+                "am2.power.PowerNodeCache",
+                "am2.world.WorldStateManager"
+            )
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = BigDecimal("0.55")
             }
         }
     }

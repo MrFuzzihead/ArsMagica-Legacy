@@ -56,7 +56,7 @@ bytecode target and the newest Mockito release that still runs there (4.x).
 |---|---|
 | `./gradlew test` | 19 headless JUnit 4 tests (JUnit 4.13.2 + Mockito 4.11.0, Java 8 launcher) |
 | `./gradlew check` | the above plus Spotless, Checkstyle, the coverage floor and the gameTest compile |
-| `./gradlew gameTestServer` | boots a real dedicated server, runs 109 in-game assertions, then exits with the result. Also writes an in-game coverage report to `build/reports/jacoco/gameTest/html` |
+| `./gradlew gameTestServer` | boots a real dedicated server, runs 233 in-game assertions, then exits with the result. Also writes an in-game coverage report to `build/reports/jacoco/gameTest/html` |
 | `./gradlew gameTestClient` | boots a real client, runs 23 client-side assertions at the main menu, then exits. Needs a display; use Xvfb on headless machines |
 | `./gradlew jacocoGameTestReport` | reports coverage from the last in-game run using the classes the JaCoCo agent instrumented |
 
