@@ -1001,8 +1001,7 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
   now 233. Keep both in sync as tests change.
 - **`run`/IDE configuration** — stale jar-name and antlr4 classpath noise remain local-environment cleanup, not source
   defects.
-- **CI** — the game-test workflow already greps for success markers. Add a check that AM2 logs no `ERROR` entries during
-  the run, so otherwise-passing tests cannot hide a recoverable startup/runtime failure.
+- **CI** — fixed. `gameTestServer` and both CI marker checks now fail on AM2-owned `ERROR` log entries.
 
 ## 9. Dead code / cleanup inventory
 
