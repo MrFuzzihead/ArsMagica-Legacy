@@ -403,8 +403,12 @@ tasks.named("gameTestServer") {
 
     doLast {
         val log = java.io.File("run/server/logs/fml-server-latest.log")
-        check(log.isFile && log.readText().contains("ARSMAGICA_GAMETEST_OK")) {
+        val contents = if (log.isFile) log.readText() else ""
+        check(contents.contains("ARSMAGICA_GAMETEST_OK")) {
             "the dedicated server did not report ARSMAGICA_GAMETEST_OK; see $log"
+        }
+        check(!Regex("""\[[^]]*/ERROR\].*\[ArsMagica2""").containsMatchIn(contents)) {
+            "AM2 logged an ERROR during the game-test run; see $log"
         }
     }
 }
