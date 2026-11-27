@@ -921,7 +921,7 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 
 ### Current state
 
-- 473 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
+- 474 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
 - The server game test has 233 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
 - The client game test has 23 assertions at the main menu (proxy, key bindings, creative tabs, localisation).
 - Coverage is 3,571/68,447 lines (5.22%), with a 5.0% line / 4.4% branch floor and class-level floors for core utilities. The game-test coverage report is generated but not enforced.
@@ -1505,7 +1505,7 @@ Java files under src/main/java:      1085
 Lines under src/main/java:          152012
 Java files under src/test/java:     110
 Java files under src/gameTest/java: 3
-JUnit tests:                        473
+JUnit tests:                        474
 Game-test assertions:               233 server + 23 client
 JaCoCo line coverage:               3571 / 68447 (5.22%)
 JaCoCo branch coverage:             1385 / 29815 (4.65%)
