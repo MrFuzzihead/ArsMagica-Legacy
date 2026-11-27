@@ -41,7 +41,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Run the unit tests and the in-game server tests
-        run: ./gradlew test gameTestServer --stacktrace
+        run: ./gradlew test jacocoTestReport gameTestServer --stacktrace
 
       - name: Check the server game-test marker
         # The test mod prints ARSMAGICA_GAMETEST_OK only after every assertion has passed and the game has to shut
@@ -120,6 +120,7 @@ jobs:
         run: |
           python3 -m pip install --quiet diff-cover
           git fetch --no-tags origin "+refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
+          test -f build/reports/jacoco/test/jacocoTestReport.xml
           diff-cover build/reports/jacoco/test/jacocoTestReport.xml \
             --compare-branch=origin/${{ github.base_ref }} \
             --fail-under=35
