@@ -985,8 +985,8 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 
 ### Coverage gate
 
-> **Status: Fixed.** The gate is now 5.0% line / 4.4% branch, with a 55% line floor for the core data/network/API
-> classes. A changed-line `diff-cover` gate is still the better long-term target once the baseline is stable.
+> **Status: Fixed.** The gate is 5.0% line / 4.4% branch, with a 55% line floor for the core data/network/API classes.
+> The PR workflow now also enforces a blocking **35% changed-line** `diff-cover` gate (current branch baseline: 40%).
 
 ---
 

@@ -113,15 +113,16 @@ jobs:
           path: build/reports/tests/test/
           if-no-files-found: warn
 
-      # Informational for now: once the changed-line baseline is stable, add --fail-under=NN to make it a gate.
+      # Blocking changed-line gate. The current branch baseline is 40%; 35% leaves a small safety margin while
+      # still rejecting PRs that add mostly-uncovered production code.
       - name: Coverage on changed lines
         if: github.event_name == 'pull_request'
-        continue-on-error: true
         run: |
           python3 -m pip install --quiet diff-cover
           git fetch --no-tags origin "+refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
           diff-cover build/reports/jacoco/test/jacocoTestReport.xml \
-            --compare-branch=origin/${{ github.base_ref }}
+            --compare-branch=origin/${{ github.base_ref }} \
+            --fail-under=35
 
       - name: Publish the check summary
         if: always()
