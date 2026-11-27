@@ -921,7 +921,7 @@ The `mysteriumlib` ASM framework is 2,000+ lines of custom bytecode manipulation
 
 ### Current state
 
-- 472 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
+- 473 JUnit tests cover utilities, API contracts, packet handling, timed effects, power persistence, config IDs and handler behavior.
 - The server game test has 233 assertions: registration smoke tests plus world placement, altar, bucket and authority checks.
 - The client game test has 23 assertions at the main menu (proxy, key bindings, creative tabs, localisation).
 - Coverage is 3,571/68,447 lines (5.22%), with a 5.0% line / 4.4% branch floor and class-level floors for core utilities. The game-test coverage report is generated but not enforced.
@@ -1029,15 +1029,15 @@ These classes/features are unreferenced or incomplete. Some are intentionally re
 - `ItemWakebloom` is now registered as the wakebloom block's ItemBlock, restoring its water-placement behavior and
   removing the last unreferenced item class.
 
-**Commented-out code and stale TODOs (4 TODO/FIXME):**
+**Commented-out code and stale TODOs (1 TODO/FIXME):**
 
 - The stale battery damage scheme, “devastating explosion” commentary and dead `allShapeGroupsAdded` field are gone.
 - `AMEventHandler`/`ExtendedProperties` comment cleanup is substantially improved; the profanity block and unused
   `WorldGenEssenceLakes`/`SpellUtils` locals are gone.
 - The `String.format("ArrayIndex", i)` pattern no longer appears in the source.
 - Battery charge/tooltip strings are localized, the occulus book-slot validation is fixed and null-safe, and the stale
-  AMParticle/Dispel/Lectern/wakebloom/EntityBroom blocks are gone. Remaining TODOs are the two spell-loop sound hooks,
-  one OBJ normal fallback and one WizardsAutumn sound cue.
+  AMParticle/Dispel/Lectern/wakebloom/EntityBroom blocks are gone. The fire/air loop sounds and WizardsAutumn sound cue
+  are implemented; only the OBJ face-normal fallback remains.
 
 **Error-handling cleanup:**
 
@@ -1505,7 +1505,7 @@ Java files under src/main/java:      1085
 Lines under src/main/java:          152012
 Java files under src/test/java:     110
 Java files under src/gameTest/java: 3
-JUnit tests:                        472
+JUnit tests:                        473
 Game-test assertions:               233 server + 23 client
 JaCoCo line coverage:               3571 / 68447 (5.22%)
 JaCoCo branch coverage:             1385 / 29815 (4.65%)
